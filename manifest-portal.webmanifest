@@ -1,0 +1,32 @@
+{
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "display": "standalone",
+  "background_color": "#0A1733",
+  "theme_color": "#0A1733",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "name": "NEXUM Portal do Colaborador",
+  "short_name": "NEXUM Ponto",
+  "description": "Bata o ponto, veja holerites, férias e documentos.",
+  "id": "./nexum_portal.html?app=portal",
+  "start_url": "./nexum_portal.html?app=portal",
+  "scope": "./"
+}
