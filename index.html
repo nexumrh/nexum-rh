@@ -3583,7 +3583,7 @@ const BIO = {
     return { f: a.f, dist: a.d, margem, ok: bate && margem >= BIO.MARGEM, ambiguo: bate && margem < BIO.MARGEM, duvidoso: !bate && a.d < BIO.LIM_DUV };
   },
   /* este rosto já está cadastrado para outra pessoa? */
-  semelhantes(descs, faces, ignorar) { return faces.filter(f => f.colabId !== ignorar && f.descs && f.descs.length).map(f => ({ f, d: BIO.mediana(descs.map(x => BIO.distAmostra(x, f.descs))) })).filter(x => x.d < BIO.SEMELHANTE).sort((a, b) => a.d - b.d); },
+  semelhantes(descs, faces, ignorar) { const ativo = id => { const c = typeof colabById === 'function' && colabById(id); return !!c && c.status !== 'desligado'; }; return faces.filter(f => f.colabId !== ignorar && ativo(f.colabId) && f.descs && f.descs.length).map(f => ({ f, d: BIO.mediana(descs.map(x => BIO.distAmostra(x, f.descs))) })).filter(x => x.d < BIO.SEMELHANTE).sort((a, b) => a.d - b.d); },
   vetor: d => Array.from(d, x => Math.round(x * 10000) / 10000),
   foto(v, w = 240) { const vw = v.videoWidth || 640, vh = v.videoHeight || 480, alvo = 3 / 4, espelho = !(v.classList && v.classList.contains('traseira')); let sw = vw, sh = vh; if (vw / vh > alvo) sw = vh * alvo; else sh = vw / alvo;
     const c = document.createElement('canvas'); c.width = w; c.height = Math.round(w / alvo); const x = c.getContext('2d'); if (espelho) { x.translate(w, 0); x.scale(-1, 1); } x.drawImage(v, (vw - sw) / 2, (vh - sh) / 2, sw, sh, 0, 0, c.width, c.height);
