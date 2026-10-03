@@ -387,7 +387,7 @@ const TAB_PADRAO = {
 };
 
 const ROLES = { admin: 'Administrador', rh: 'RH', gestor: 'Gestor', leitura: 'Somente leitura' };
-const COLS = ['colab', 'ponto', 'ferias', 'folhas', 'ocorr', 'users', 'config', 'audit', 'avisos', 'solic', 'docs', 'metas', 'pesq', 'chat', 'bh', 'assin', 'holerites', 'acessos', 'faces', 'bioFalhas', 'adiant', 'vagas', 'cands', 'admis', 'agenda', 'templates', 'dispositivos', 'externos', 'logins', 'diretorio', 'convites', 'comissoes', 'avaliacoes', 'denuncias', 'pensoes', 'propostas', 'admdocs'];
+const COLS = ['colab', 'ponto', 'ferias', 'folhas', 'ocorr', 'users', 'config', 'audit', 'avisos', 'solic', 'docs', 'metas', 'pesq', 'chat', 'bh', 'assin', 'holerites', 'acessos', 'faces', 'bioFalhas', 'adiant', 'vagas', 'cands', 'admis', 'agenda', 'templates', 'dispositivos', 'externos', 'logins', 'diretorio', 'convites', 'comissoes', 'avaliacoes', 'denuncias', 'pensoes', 'propostas', 'admdocs', 'reunioes'];
 
 /* =====================================================================
    FIREBASE — cole a configuração do seu projeto abaixo para ativar
@@ -406,7 +406,7 @@ const FIREBASE_CONFIG = {
 const FB_ON = !!FIREBASE_CONFIG.apiKey && typeof firebase !== 'undefined' && location.protocol !== 'file:';
 const FB = {
   tid: null, cache: {}, unsubs: [], criando: false, aux: null, escopo: null,
-  PROPRIOS: ['ponto', 'ferias', 'solic', 'docs', 'metas', 'chat', 'bh', 'assin', 'holerites', 'acessos', 'faces', 'bioFalhas', 'dispositivos', 'externos', 'logins', 'ocorr', 'comissoes'],
+  PROPRIOS: ['ponto', 'ferias', 'solic', 'docs', 'metas', 'chat', 'bh', 'assin', 'holerites', 'acessos', 'faces', 'bioFalhas', 'dispositivos', 'externos', 'logins', 'ocorr', 'comissoes', 'reunioes'],
   LIVRES: ['avisos', 'pesq', 'diretorio'],
   init() { if (!FB_ON) return; /* app com nome próprio: o login do RH não se mistura com o do Painel do Dono nem com o do Portal (mesmo endereço) */ FB.app = firebase.initializeApp(FIREBASE_CONFIG, 'nexum-rh'); FB.auth = FB.app.auth(); FB.db = FB.app.firestore(); FB.auth.languageCode = 'pt-BR'; },
   col(c) { return FB.db.collection('tenants').doc(FB.tid).collection(c); },
@@ -578,7 +578,7 @@ function audit(acao) {
   S.data.audit = S.data.audit.slice(0, 500); save('audit');
 }
 const colabById = id => S.data.colab.find(c => c.id === id);
-const ativos = () => S.data.colab.filter(c => c.status !== 'desligado' && noEscopoLoja(c));
+const ativos = () => S.data.colab.filter(c => c.status !== 'desligado' && c.status !== 'admissao' && noEscopoLoja(c));
 function licenca() {
   const t = S.tenant; const exp = pd(t.expira); const d = diffD(hoje(), exp);
   return { ativa: d >= 0 && !t.suspenso, suspenso: !!t.suspenso, dias: d, plano: NEXUM.planos[t.plano] || NEXUM.planos.essencial, trial: !!t.trial };
@@ -637,7 +637,7 @@ function printDoc(titulo, html) {
     <header><div style="display:flex;gap:14px;align-items:center">${e.logo ? `<img src="${e.logo}" alt="" style="max-height:52px;max-width:170px">` : ''}<div><b>${esc(e.nome || S.tenant.nome)}</b><br>CNPJ ${esc(e.cnpj || S.tenant.cnpj || '—')}</div></div><div style="text-align:right">${esc(e.cidade || '')}<br>${new Date().toLocaleDateString('pt-BR')}</div></header>
     ${html}<footer>Gerado pelo NEXUM RH em ${new Date().toLocaleString('pt-BR')}</footer>
     <script>window.onload=()=>setTimeout(()=>window.print(),250)<\/script></body></html>`);
-  w.document.close();
+  if (html.includes('class="rp"')) w.document.querySelectorAll('body > header, body > footer').forEach(x => x.remove()); w.document.close();
 }
 function baixar(nome, conteudo, tipo) {
   const a = document.createElement('a');
@@ -652,6 +652,7 @@ const I = {
   p: d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`
 };
 const ICO = {
+  reuniao: '<path d="M15 10l5-3v10l-5-3M3 7h12v10H3z"/>',
   jornada: '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6M12 2v3"/>',
   sst: '<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3Z"/><path d="M12 9v6M9 12h6"/>',
   obrig: '<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/>',
@@ -704,16 +705,15 @@ const NAV = [
   ['atest', 'Atestados', R_EQ, 'EQUIPE'],
   ['ferias', 'Férias', ['admin', 'rh', 'leitura'], 'EQUIPE'],
   ['bh', 'Banco de Horas', R_EQ, 'EQUIPE'],
-  ['abs', 'Absenteísmo', R_EQ, 'EQUIPE'], ['loja', 'Minha loja', R_EQ, 'EQUIPE'], ['venc', 'Vencimentos', R_EQ, 'EQUIPE'], ['planfer', 'Planejamento de férias', R_EQ, 'EQUIPE'], ['afast', 'Afastamentos e licenças', R_EQ, 'EQUIPE'], ['jornada', 'Infrações de jornada', R_EQ, 'EQUIPE'], ['sst', 'Saúde e segurança', R_EQ, 'EQUIPE'], ['trein', 'Treinamentos', R_EQ, 'EQUIPE'],
+  ['abs', 'Absenteísmo', R_EQ, 'EQUIPE'], ['loja', 'Minha loja', R_EQ, 'EQUIPE'], ['venc', 'Vencimentos', R_EQ, 'EQUIPE'], ['planfer', 'Planejamento de férias', R_EQ, 'EQUIPE'], ['afast', 'Afastamentos e licenças', R_EQ, 'EQUIPE'], ['jornada', 'Infrações de jornada', R_EQ, 'EQUIPE'], ['sst', 'Saúde e segurança', R_EQ, 'EQUIPE'],
   ['adv', 'Advertências', R_EQ, 'EQUIPE'],
   ['susp', 'Suspensões Disciplinares', R_RH, 'EQUIPE'],
   ['com', 'Comunicados', R_RH, 'COMUNICAÇÃO'],
-  ['chat', 'Chat Colaboradores', R_RH, 'COMUNICAÇÃO'], ['etica', 'Canal de ética', R_RH, 'COMUNICAÇÃO'],
+  ['chat', 'Chat Colaboradores', R_RH, 'COMUNICAÇÃO'], ['reuniao', 'Reuniões por vídeo', R_RH, 'COMUNICAÇÃO'], ['etica', 'Canal de ética', R_RH, 'COMUNICAÇÃO'],
   ['portal', 'Portal do Colaborador', R_RH, 'COMUNICAÇÃO'],
   ['fin', 'Financeiro', R_RH, 'FINANCEIRO'],
   ['adiant', 'Adiantamentos & Vales', R_RH, 'FINANCEIRO'], ['comis', 'Comissões', R_RH, 'FINANCEIRO'], ['benef', 'Benefícios e descontos', R_RH, 'FINANCEIRO'], ['conv', 'Convenção coletiva', R_RH, 'FINANCEIRO'], ['obrig', 'Obrigações e eSocial', R_RH, 'FINANCEIRO'],
   ['folha', 'Holerite', R_RH, 'FINANCEIRO'],
-  ['recr', 'Recrutamento', R_EQ, 'CONTRATAÇÃO'],
   ['adm', 'Admissão', R_RH, 'CONTRATAÇÃO'],
   ['resc', 'Demissão', R_RH, 'CONTRATAÇÃO'],
   ['ia', 'Consultor CLT (IA)', R_EQ, 'FERRAMENTAS'],
@@ -968,9 +968,9 @@ function go(v) {
   $('#side').classList.remove('open');
   $('#t-view').textContent = (NAV.find(n => n[0] === v) || [])[1] || '';
   const el = $('#view'); el.innerHTML = '';
-  ({ dash: vDash, tempo: vTempo, colab: vColab, ponto: vPonto, bio: vBio, atest: e => vOcorr(e, '', { tipo: 'atestado' }), ferias: e => { vFerias(e); if (podeEditar()) { e.insertAdjacentHTML('afterbegin', '<div class="row end" style="margin-bottom:10px"><button class="btn sec" id="fe-col">Férias coletivas</button></div>'); $('#fe-col', e).onclick = feriasColetivas; } }, bh: e => vPortal(e, 'bh', true), abs: vAbs,
+  ({ dash: vDash, tempo: vTempo, colab: vColab, ponto: vPonto, bio: vBio, atest: e => vOcorr(e, '', { tipo: 'atestado' }), ferias: e => { vFerias(e); if (podeEditar()) { e.insertAdjacentHTML('afterbegin', '<div class="row end" style="margin-bottom:10px"><button class="btn sec" id="fe-col">Férias coletivas</button></div>'); $('#fe-col', e).onclick = feriasColetivas; } }, bh: e => { vPortal(e, 'bh', true); painelAcoesBH(e); }, abs: vAbs,
     adv: e => vOcorr(e, '', { tipo: 'advertencia' }), susp: e => vOcorr(e, '', { tipo: 'suspensao' }), com: e => vPortal(e, 'avisos', true), chat: e => vPortal(e, 'chat', true), portal: vPortal,
-    fin: vFin, adiant: vAdiant, folha: e => vFolha(e), recr: vRecr, adm: vAdm, resc: e => { vDem(e); painelPrazosResc(e); }, afast: vAfast, benef: e => vBenef(e), jornada: e => vJornada(e), sst: e => vSST(e), obrig: e => vObrig(e), ia: vIA, agenda: vAgenda, docs: vTpl, relat: e => { vRelat(e); painelLojas(e); painelSaidas(e); e.insertAdjacentHTML('afterbegin', `<div class="row" style="margin-bottom:14px"><span class="hint">Arquivos e documentos legais</span><span class="sp"></span><button class="btn" id="rl-rs">Resumo do mês</button><button class="btn sec" id="rl-ct">Pacote do contador</button><button class="btn sec" id="rl-ir">Informes de rendimentos</button><button class="btn sec" id="rl-afd">Arquivos fiscais do ponto (AFD/AEJ)</button></div>`); $('#rl-afd', e).onclick = modalFiscal; $('#rl-rs', e).onclick = () => modalResumo(); $('#rl-ct', e).onclick = () => modal('Pacote do contador', `<p class="hint" style="margin-top:0">Uma planilha com folha, admissões, desligamentos, férias, afastamentos, pensões e vale-transporte do mês, pronta para o contador importar ou conferir.</p><input class="inp" type="month" id="pc-c" value="${iso(addM(hoje(), -1)).slice(0, 7)}" style="width:auto">`, { foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="pc-ok">Baixar planilha</button>', onMount: m => $('#pc-ok', m).onclick = async () => { try { await pacoteContador($('#pc-c', m).value); closeModal(); } catch (er) { toast('Não foi possível carregar o gerador de planilhas. Verifique a internet.', true); } } }); $('#rl-ir', e).onclick = modalInformes; }, venc: vVenc, trein: vTrein, loja: vLoja, planfer: e => vPlanFer(e), conv: vConv, comis: e => vComis(e), etica: vEtica, audit: vAudit, ocorr: e => vOcorr(e, '', { contratados: true }), config: vConfig })[v](el);
+    fin: vFin, adiant: vAdiant, folha: e => vFolha(e), recr: vRecr, adm: vAdm, resc: e => { vDem(e); painelPrazosResc(e); painelPortalDeslig(e); e.insertAdjacentHTML('afterbegin', `<div class="row" style="margin-bottom:12px"><span class="hint">Documentos da rescisão</span><span class="sp"></span><button class="btn sec" id="rs-av">Aviso prévio</button><button class="btn sec" id="rs-np">Não prorrogação da experiência</button></div>`); $('#rs-av', e).onclick = () => modalDocsResc('aviso'); $('#rs-np', e).onclick = () => modalDocsResc('naoprorrog'); }, afast: vAfast, benef: e => vBenef(e), jornada: e => vJornada(e), sst: e => { vSST(e); if ((S.sstAba || 'aso') === 'aso') painelASOs($('#ss-b', e)); }, obrig: e => vObrig(e), ia: vIA, agenda: vAgenda, docs: vTpl, relat: e => { vRelat(e); painelLojas(e); painelSaidas(e); e.insertAdjacentHTML('afterbegin', `<div class="row" style="margin-bottom:14px"><span class="hint">Arquivos e documentos legais</span><span class="sp"></span><button class="btn" id="rl-rs">Resumo do mês</button><button class="btn sec" id="rl-ct">Pacote do contador</button><button class="btn sec" id="rl-ir">Informes de rendimentos</button><button class="btn sec" id="rl-afd">Arquivos fiscais do ponto (AFD/AEJ)</button></div>`); $('#rl-afd', e).onclick = modalFiscal; $('#rl-rs', e).onclick = () => modalResumo(); $('#rl-ct', e).onclick = () => modal('Pacote do contador', `<p class="hint" style="margin-top:0">Uma planilha com folha, admissões, desligamentos, férias, afastamentos, pensões e vale-transporte do mês, pronta para o contador importar ou conferir.</p><input class="inp" type="month" id="pc-c" value="${iso(addM(hoje(), -1)).slice(0, 7)}" style="width:auto">`, { foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="pc-ok">Baixar planilha</button>', onMount: m => $('#pc-ok', m).onclick = async () => { try { await pacoteContador($('#pc-c', m).value); closeModal(); } catch (er) { toast('Não foi possível carregar o gerador de planilhas. Verifique a internet.', true); } } }); $('#rl-ir', e).onclick = modalInformes; }, venc: vVenc, trein: vTrein, loja: vLoja, reuniao: vReunioes, planfer: e => vPlanFer(e), conv: vConv, comis: e => vComis(e), etica: vEtica, audit: vAudit, ocorr: e => vOcorr(e, '', { contratados: true }), config: vConfig })[v](el);
   atualizarBadge();
   $('.content').scrollTop = 0;
 }
@@ -1061,6 +1061,7 @@ function formColab(id) {
       ${f('rg', 'RG')}
       ${f('pis', 'PIS/PASEP/NIT')}
       ${f('nascimento', 'Nascimento', 'type="date"')}
+      ${f('mae', 'Nome da mãe', '', 'full')}
       ${f('telefone', 'Telefone', 'data-mask="tel" inputmode="tel"')}
       ${f('email', 'E-mail', 'type="email"')}
       ${f('cep', 'CEP', 'data-mask="cep" inputmode="numeric"')}
@@ -1068,20 +1069,21 @@ function formColab(id) {
       ${f('cidade', 'Cidade/UF')}
       ${f('cargo', 'Cargo', 'required')}
       ${f('cbo', 'CBO')}
-      ${f('depto', 'Setor')}
+      ${f('depto', 'Departamento')}
       ${f('admissao', 'Admissão', 'type="date" required')}
-      <div class="fld"><label for="f-tipo">Tipo de contrato</label><select class="inp" id="f-tipo" name="tipo">${opts(Object.entries(TIPOS_CONTRATO), c.tipo)}</select></div>
+      <div class="fld"><label for="f-tipo">Regime de contratação</label><select class="inp" id="f-tipo" name="tipo">${opts(Object.entries(TIPOS_CONTRATO), c.tipo)}</select></div>
       ${(S.data.config.lojas || []).length ? `<div class="fld"><label for="f-loja">Loja</label><select class="inp" id="f-loja" name="loja">${opts([['', 'Sem loja definida'], ...(S.data.config.lojas || []).map(l => [l.id, l.nome])], c.loja || '')}</select></div>` : ''}
       <div class="fld"><label for="f-escalaId">Escala de trabalho</label><select class="inp" id="f-escalaId" name="escalaId">${opts(listaEscalas(S.data.config).map(e => [e.id, e.nome]), escalaDe(c, S.data.config).id)}</select></div>
       ${f('salario', 'Salário base (R$)', 'inputmode="decimal" required')}
       ${f('dependentes', 'Dependentes para IRRF', 'type="number" min="0" step="1"')}
       <div class="fld"><label for="f-status">Situação</label><select class="inp" id="f-status" name="status">${opts([['ativo', 'Ativo'], ['afastado', 'Afastado'], ['desligado', 'Desligado']], c.status)}</select></div>
       ${f('banco', 'Banco / Chave PIX', '', 'full')}
+      ${blocoCadastroExtra(c)}
       <label class="full row hint" style="margin-bottom:6px"><input type="checkbox" name="lgpd" ${c.lgpd ? 'checked' : ''}> Colaborador ciente do tratamento dos seus dados pessoais (LGPD)</label>
     </form>`, {
     foot: `<button class="btn sec" data-close>Cancelar</button><button class="btn" id="f-salvar">${id ? 'Salvar alterações' : 'Cadastrar'}</button>`,
     onMount: m => {
-      masks(m);
+      masks(m); const lerX = ligarCadastroExtra(m, c);
       $('#f-cep', m).addEventListener('blur', async e => {
         const cep = e.target.value.replace(/\D/g, ''); if (cep.length !== 8) return;
         try {
@@ -1100,10 +1102,10 @@ function formColab(id) {
         if (d.cpf && !cpfValido(d.cpf)) erros.push('cpf');
         if (d.cpf && S.data.colab.some(x => x.id !== id && x.cpf && x.cpf.replace(/\D/g, '') === d.cpf.replace(/\D/g, ''))) { erros.push('cpf'); toast('Já existe um colaborador com este CPF.', true); }
         if (erros.length) { erros.forEach(n => $(`#f-${n}`, m).classList.add('err')); $(`#f-${erros[0]}`, m).focus(); return toast(erros.includes('cpf') && erros.length === 1 ? 'CPF inválido. Confira os dígitos.' : 'Preencha os campos destacados.', true); }
-        d.salario = num(d.salario); d.dependentes = parseInt(d.dependentes) || 0;
+        d.salario = num(d.salario); d.dependentes = parseInt(d.dependentes) || 0; const xx = lerX(); if (!xx) return; Object.assign(d, xx);
         if (id) { const nomeEsc = x => (listaEscalas(S.data.config).find(e => e.id === x) || {}).nome; registrarHist(c, 'salario', num(c.salario), d.salario); registrarHist(c, 'cargo', c.cargo, d.cargo); registrarHist(c, 'escala', nomeEsc(escalaDe(c, S.data.config).id), nomeEsc(d.escalaId)); registrarHist(c, 'status', c.status, d.status); Object.assign(c, d); audit(`Editou o cadastro de ${d.nome}`); }
         else { S.data.colab.push({ id: uid(), ...d, criadoEm: new Date().toISOString() }); audit(`Cadastrou ${d.nome}`); }
-        save('colab'); closeModal(); toast(id ? 'Alterações salvas.' : 'Colaborador cadastrado.'); go('colab');
+        aplicarHorario(id ? colabById(id) : S.data.colab[S.data.colab.length - 1]); save('colab'); closeModal(); toast(id ? 'Alterações salvas.' : 'Colaborador cadastrado.'); go('colab');
       };
     }
   });
@@ -1359,13 +1361,9 @@ function vFolhaMensal(el, comp = S.folhaComp || iso(hoje()).slice(0, 7)) {
     f.itens.forEach(i => { const k = folhaItem(i); lin.push([i.nome, i.cargo, i.sal, i.adic + r2(k.bruto - i.sal - i.adic), k.bruto, k.inss, k.irrf, r2(num(i.desc) + k.dBase), k.liq, k.fgts].map(v => typeof v === 'number' ? v.toFixed(2).replace('.', ',') : `"${String(v || '').replace(/"/g, '""')}"`).join(';')); });
     baixar(`folha_${comp}.csv`, '\ufeff' + lin.join('\n'), 'text/csv;charset=utf-8');
   };
-  $('#fo-hol', acts).onclick = () => printDoc(`Holerites ${comp}`, f.itens.map(i => { const k = folhaItem(i), c = colabById(i.colabId) || {}; return `<h2>Recibo de pagamento — ${mesNome(comp)}</h2>
-    <p><b>${esc(i.nome)}</b> · ${esc(i.cargo || '')} · Admissão ${fd(c.admissao)} · CPF ${esc(c.cpf || '—')}</p>
-    <table><tr><th>Descrição</th><th class="n">Proventos</th><th class="n">Descontos</th></tr>
-    <tr><td>Salário base</td><td class="n">${brl(i.sal)}</td><td></td></tr>${i.adic ? `<tr><td>Adicionais</td><td class="n">${brl(i.adic)}</td><td></td></tr>` : ''}${rubricasPonto(i).map(([n, v, t]) => `<tr><td>${n}</td>${t === 'p' ? `<td class="n">${brl(v)}</td><td></td>` : `<td></td><td class="n">${brl(v)}</td>`}</tr>`).join('')}
-    <tr><td>INSS</td><td></td><td class="n">${brl(k.inss)}</td></tr><tr><td>IRRF</td><td></td><td class="n">${brl(k.irrf)}</td></tr>${i.desc ? `<tr><td>Outros descontos</td><td></td><td class="n">${brl(i.desc)}</td></tr>` : ''}${num(i.afastV) ? `<tr><td>Dias de afastamento (INSS)</td><td></td><td class="n">${brl(i.afastV)}</td></tr>` : ''}${num(i.pensao) ? `<tr><td>Pensão alimentícia</td><td></td><td class="n">${brl(i.pensao)}</td></tr>` : ''}${num(i.salFam) ? `<tr><td>Salário-família</td><td class="n">${brl(i.salFam)}</td><td></td></tr>` : ''}${(i.adicDet || []).map(([n, v]) => `<tr><td>${esc(n)}</td><td class="n">${brl(v)}</td><td></td></tr>`).join('')}${num(i.benDesc) ? `<tr><td>Benefícios (planos e refeição)</td><td></td><td class="n">${brl(i.benDesc)}</td></tr>` : ''}${num(i.contrib) ? `<tr><td>Contribuição assistencial</td><td></td><td class="n">${brl(i.contrib)}</td></tr>` : ''}
-    <tr><th>Totais</th><th class="n">${brl(r2(k.bruto + num(i.salFam)))}</th><th class="n">${brl(k.desc)}</th></tr><tr><th>Líquido a receber</th><th class="n" colspan="2">${brl(k.liq)}</th></tr></table>
-    <p style="font-family:Arial;font-size:11px">Base INSS: ${brl(k.base)} · Base FGTS: ${brl(k.base)} · FGTS do mês: ${brl(k.fgts)}</p><div class="ass"><div>Assinatura do colaborador</div></div><div class="pb"></div>`; }).join(''));
+  $('#fo-hol', acts).onclick = () => printDoc(`Holerites ${comp}`, f.itens.map(i => holeriteProf(colabById(i.colabId) || { nome: i.nome, cargo: i.cargo }, S.data.config.empresa || {}, comp, i, folhaItem(i))).join('<div class="pb"></div>'));
+  acts.insertAdjacentHTML('beforeend', `${podeEditar() ? '<button class="btn sec sm" id="fo-port">Portal: assinaturas e pagamento</button><button class="btn sec sm" id="fo-comp">Anexar comprovante</button>' : ''}`); const fpo = $('#fo-port', acts); if (fpo) fpo.onclick = () => modalHolerites(comp); const fco = $('#fo-comp', acts); if (fco) fco.onclick = () => modalComprovante(comp);
+  if (!f.fechada && podeEditar() && f.itens.every(i => !i.ponto)) acts.insertAdjacentHTML('afterend', '<div class="banner" style="border-radius:8px;margin:10px 0">As horas do ponto biométrico deste mês ainda não entraram na folha. <button class="btn sm" id="fo-pt2" style="margin-left:8px">Importar do ponto agora</button></div>'), setTimeout(() => { const b = $('#fo-pt2'); if (b) b.onclick = () => importarPonto(f, render); }, 0);
   const fe = $('#fo-fech', acts); if (fe) fe.onclick = () => conferirFolha(f, () => { f.fechada = true; save('folhas'); publicarHolerites(f, true); audit(`Fechou a folha de ${mesNome(comp)}`); vFolhaMensal(el, comp); });
   const ra = $('#fo-reab', acts); if (ra) ra.onclick = () => { f.fechada = false; save('folhas'); publicarHolerites(f, false); audit(`Reabriu a folha de ${mesNome(comp)}`); vFolhaMensal(el, comp); };
   const ex = $('#fo-exc', acts); if (ex) ex.onclick = () => confirmar('Descartar esta folha? Os adicionais e descontos lançados serão perdidos.', () => { S.data.folhas = S.data.folhas.filter(x => x !== f); save('folhas'); publicarHolerites(f, false); audit(`Descartou a folha de ${mesNome(comp)}`); vFolhaMensal(el, comp); }, 'Descartar', true);
@@ -1461,15 +1459,12 @@ function vResc(el) {
       <div class="tot"><span>Líquido estimado</span><span>${brl(r.liq)}</span></div></div>
       <div class="res" style="margin-top:14px">${r.info.map(x => `<div><span class="hint">${x[0]}</span><span>${typeof x[1] === 'number' ? brl(x[1]) : x[1]}</span></div>`).join('')}</div>
       <p class="note">Estimativa para conferência. IRRF sobre verbas, médias de variáveis, adicionais e descontos específicos devem ser revisados antes da homologação.</p>
-      <div class="row end" style="margin-top:14px"><button class="btn sec" id="r-pr">Imprimir demonstrativo</button>${d.colab && podeEditar() && (colabById(d.colab) || {}).status !== 'desligado' ? '<button class="btn" id="r-desl">Registrar desligamento</button>' : ''}</div>`;
-    $('#r-pr', res).onclick = () => { const c = colabById(d.colab) || { nome: '—', cargo: '' }; printDoc('Demonstrativo de rescisão', `<h2>Demonstrativo de verbas rescisórias</h2>
-      <p><b>${esc(c.nome)}</b> ${esc(c.cargo || '')} · CPF ${esc(c.cpf || '—')}<br>Admissão ${fd(d.adm)} · Afastamento ${fd(d.dem)} · ${MOTIVOS[d.motivo]}</p>
-      <table><tr><th>Verba</th><th class="n">Proventos</th><th class="n">Descontos</th></tr>${r.prov.map(x => `<tr><td>${x[0]}</td><td class="n">${brl(x[1])}</td><td></td></tr>`).join('')}${r.desc.map(x => `<tr><td>${x[0]}</td><td></td><td class="n">${brl(x[1])}</td></tr>`).join('')}
-      <tr><th>Totais</th><th class="n">${brl(r.tp)}</th><th class="n">${brl(r.td)}</th></tr><tr><th>Líquido</th><th class="n" colspan="2">${brl(r.liq)}</th></tr></table>
-      <table>${r.info.map(x => `<tr><td>${x[0]}</td><td class="n">${typeof x[1] === 'number' ? brl(x[1]) : x[1]}</td></tr>`).join('')}</table><div class="ass"><div>Empregador</div><div>Colaborador</div></div>`); };
+      <div class="row end" style="margin-top:14px"><button class="btn sec" id="r-pr">Imprimir TRCT</button>${d.colab && podeEditar() && (colabById(d.colab) || {}).status !== 'desligado' ? '<button class="btn" id="r-desl">Registrar desligamento</button>' : ''}</div>`;
+    $('#r-pr', res).onclick = () => { const c = colabById(d.colab) || { nome: '—', cargo: '' }; printDoc('TRCT', trctProf(c, S.data.config.empresa || {}, { ...d, tipoContrato: TIPOS_CONTRATO[c.tipo] }, r)); };
+    res.insertAdjacentHTML('beforeend', '<div class="row end" style="margin-top:8px"><button class="btn sec" id="r-carta">Carta de desligamento</button></div>'); $('#r-carta', res).onclick = () => { const c = colabById(d.colab) || { nome: '—' }; printDoc('Carta de desligamento', cartaDeslig(c, d, r)); };
     const dl = $('#r-desl', res); if (dl) dl.onclick = () => { const c = colabById(d.colab); avisoEstabilidade(c, d.dem, () => confirmar(`Registrar o desligamento de <b>${esc(c.nome)}</b> em ${fd(d.dem)}?`, () => {
-      Object.assign(c, { status: 'desligado', desligamento: d.dem, motivoDeslig: MOTIVOS[d.motivo], rescisao: { ...r, em: iso(hoje()) } }); bloquearPortal(c);
-      save('colab'); audit(`Registrou desligamento de ${c.nome}: ${MOTIVOS[d.motivo]}`); toast('Desligamento registrado.'); vResc(el); setTimeout(() => entrevistaSaida(c), 400); })); };
+      Object.assign(c, { status: 'desligado', desligamento: d.dem, motivoDeslig: MOTIVOS[d.motivo], rescisao: { ...r, em: iso(hoje()) } }); if (c.portal && c.portal.ativo) { c.portal.fimEm = new Date(Date.now() + 72 * 3600000).toISOString(); enviarDocsRescisao(c, { ...d, tipoContrato: TIPOS_CONTRATO[c.tipo] }, r); }
+      save('colab'); audit(`Registrou desligamento de ${c.nome}: ${MOTIVOS[d.motivo]}`); toast(c.portal && c.portal.fimEm ? 'Desligamento registrado. A carta e o TRCT foram ao portal, que fica aberto por 72 horas.' : 'Desligamento registrado.'); vResc(el); setTimeout(() => entrevistaSaida(c), 400); })); };
   };
   $('#r-c', f).onchange = e => { const c = colabById(e.target.value); if (c) { $('#r-sal', f).value = String(c.salario).replace('.', ','); $('#r-adm', f).value = c.admissao; $('#r-fp', f).value = ''; if (c.tipo === 'experiencia') $('#r-mot', f).value = 'fimexp'; } upd(); };
   f.addEventListener('input', upd); f.addEventListener('change', upd); upd();
@@ -2070,7 +2065,6 @@ function itensVencimento() {
     const st = statusFerias(c); if (st.limite && st.saldo > 0 && diffD(hoje(), st.limite) <= 90) add(c, 'Férias', iso(st.limite), `${st.saldo} dias a conceder; depois do limite, o pagamento é em dobro (art. 137)`, ['ferias']);
     const meses = +S.data.config.asoMeses || 12; if (c.tipo !== 'pj') { if (c.asoData) { const v = iso(addM(pd(c.asoData), meses)); if (diffD(hoje(), pd(v)) <= 30) add(c, 'Exame periódico (ASO)', v, `Último exame em ${fd(c.asoData)}`, ['aso']); } else if (c.admissao && diffD(pd(c.admissao), hoje()) > 30) add(c, 'Exame periódico (ASO)', iso(addM(pd(c.admissao), meses)), 'Data do último exame não informada', ['aso']); }
     if (/moto|entreg|motorista/i.test(c.cargo || '')) { if (c.cnhValidade) { if (diffD(hoje(), pd(c.cnhValidade)) <= 45) add(c, 'CNH', c.cnhValidade, 'Validade da habilitação', ['cnh']); } else add(c, 'CNH', H, 'Validade da CNH não informada', ['cnh']); }
-    treinosDe(c).filter(t => t.obrigatorio && !treinoFeito(c.id, t.id) && prazoTreino(t, c) && diffD(hoje(), pd(prazoTreino(t, c))) <= 7).forEach(t => add(c, 'Treinamento', prazoTreino(t, c), t.titulo, ['lembrar', `O treinamento "${t.titulo}" está pendente no portal, em Treinamentos.`]));
   });
   S.data.docs.filter(d => d.status === 'pendente' && d.requer !== false && diffD(new Date(d.enviadoEm), hoje()) >= 7).forEach(d => { const c = colabById(d.colabId); if (c && c.status !== 'desligado') add(c, 'Documento sem assinatura', iso(new Date(d.enviadoEm)), d.titulo, ['lembrar', `O documento "${d.titulo}" aguarda a sua assinatura no portal.`]); });
   return out.sort((a, b) => a.d - b.d);
@@ -2207,11 +2201,11 @@ function sugestoesCobertura(lojaId, d) { const ds = iso(d); return ativos().filt
 /* ---------- Minha loja (visão do gerente) ---------- */
 function vLoja(el) {
   const vis = lojasVisiveis(), lojas = (S.data.config.lojas || []).filter(l => !vis || vis.includes(l.id));
-  if (!lojas.length) { el.innerHTML = '<div class="panel empty"><b>Nenhuma loja cadastrada</b>Cadastre as lojas em Configurações para usar esta visão.</div>'; return; }
+  if (!lojas.length) { el.innerHTML = `<div class="panel empty"><b>Nenhuma loja cadastrada</b>Cadastre as lojas ou unidades da empresa.${podeEditar() ? '<div style="margin-top:12px"><button class="btn" id="lj-nova">Cadastrar loja</button></div>' : ''}</div>`; const nb = $('#lj-nova', el); if (nb) nb.onclick = () => formLoja(null, () => vLoja(el)); return; }
   const lj = lojas.find(l => l.id === S.lojaVis) || lojas[0]; S.lojaVis = lj.id; const pess = ativos().filter(c => (c.loja || '') === lj.id), ed = podeEditar();
   const st = pess.map(c => ({ c, s: statusAgora(c) })), pend = S.data.solic.filter(s => s.status === 'pendente' && pess.some(c => c.id === s.colabId));
   const dias = [...Array(7)].map((_, k) => addD(hoje(), k)).filter(d => diasLoja(lj).includes(d.getDay())), falt = faltasCobertura(14).filter(x => x.l.id === lj.id);
-  el.innerHTML = `<div class="row" style="margin-bottom:12px">${lojas.length > 1 ? `<select class="inp" id="lj-s" style="width:auto">${opts(lojas.map(l => [l.id, l.nome]), lj.id)}</select>` : `<b style="font-size:18px">${esc(lj.nome)}</b>`}<span class="sp"></span>${ed && can('admin', 'rh') ? `<button class="btn sec sm" id="lj-m">Mínimo: ${num(lj.minimo) || 'não definido'} · ${diasLoja(lj).length} dias/semana</button>` : ''}</div>
+  el.innerHTML = `<div class="row" style="margin-bottom:12px">${lojas.length > 1 ? `<select class="inp" id="lj-s" style="width:auto">${opts(lojas.map(l => [l.id, l.nome]), lj.id)}</select>` : `<b style="font-size:18px">${esc(lj.nome)}</b>`}<span class="sp"></span>${ed && can('admin', 'rh') ? `<button class="btn sec sm" id="lj-ed">Editar loja</button><button class="btn sec sm" id="lj-nova">Cadastrar loja</button><button class="btn sec sm" id="lj-m">Mínimo: ${num(lj.minimo) || 'não definido'} · ${diasLoja(lj).length} dias/semana</button>` : ''}</div>
     <div class="kpis" style="margin-bottom:12px"><div class="kpi"><b>${st.filter(x => /presente|trabalhando/i.test(JSON.stringify(x.s))).length}/${pess.length}</b><span>na loja agora</span></div><div class="kpi"><b>${pend.length}</b><span>pedidos para decidir</span></div><div class="kpi"><b>${falt.length}</b><span>dias com equipe abaixo do mínimo (14 dias)</span></div></div>
     ${falt.length ? `<section class="panel"><h2>Loja descoberta</h2>${falt.slice(0, 6).map(x => { const sg = sugestoesCobertura(lj.id, x.d); return `<p style="margin:0 0 8px"><span class="pill bad">${x.d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })}</span> ${x.n} de ${x.min} pessoas. ${sg.length ? `Podem cobrir sem passar de 6 dias seguidos: <b>${sg.map(c => esc(c.nome.split(' ')[0])).join(', ')}</b> (combine a troca de folga).` : 'Ninguém da loja disponível sem passar de 6 dias seguidos.'}</p>`; }).join('')}</section>` : ''}
     ${pend.length ? `<section class="panel"><div class="panel-head"><h2>Pedidos da equipe</h2><button class="btn sm" id="lj-p">Decidir</button></div><ul class="list">${pend.map(s => `<li><div class="t"><div><b>${esc(nome(s.colabId))}</b> · ${TIPOS_SOLIC[s.tipo] || s.tipo}</div><div>${esc(resumoSolic(s))}</div></div></li>`).join('')}</ul></section>` : ''}
@@ -2219,6 +2213,7 @@ function vLoja(el) {
       ${pess.map(c => `<tr><td><b>${esc(c.nome.split(' ').slice(0, 2).join(' '))}</b></td>${dias.map(d => { const f = emFolga(c, iso(d)), t = turnoDia(c, d, S.data.config); return `<td class="n" style="font-size:12px">${f ? `<span class="pill mut">${esc(f.split(' ')[0])}</span>` : t ? `${t.ent}–${t.sai}` : '<span class="hint">folga</span>'}</td>`; }).join('')}</tr>`).join('')}
       <tr><th>Na escala</th>${dias.map(d => { const n = escaladosDia(lj.id, d).length; return `<th class="n" style="color:${num(lj.minimo) && n < num(lj.minimo) ? 'var(--bad)' : 'inherit'}">${n}</th>`; }).join('')}</tr></tbody></table></div></section>`;
   const s = $('#lj-s', el); if (s) s.onchange = e => { S.lojaVis = e.target.value; vLoja(el); };
+  const ln = $('#lj-nova', el); if (ln) ln.onclick = () => formLoja(null, () => vLoja(el)); const le = $('#lj-ed', el); if (le) le.onclick = () => formLoja(lj, () => vLoja(el));
   const p = $('#lj-p', el); if (p) p.onclick = () => { S.portalAba = 'solic'; go('portal'); };
   const m = $('#lj-m', el); if (m) m.onclick = () => modal(`Cobertura de ${lj.nome}`, `<div class="fld"><label for="lm-n">Mínimo de pessoas escaladas por dia</label><input class="inp" type="number" min="0" id="lm-n" value="${num(lj.minimo) || ''}"></div><div class="fld"><span style="display:block;font-weight:600;margin-bottom:6px">Dias em que a loja abre</span><div class="row" style="flex-wrap:wrap;gap:8px 14px">${['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'].map((d, i) => `<label class="row hint" style="gap:4px"><input type="checkbox" data-dl="${i}" ${diasLoja(lj).includes(i) ? 'checked' : ''}> ${d}</label>`).join('')}</div></div>`,
       { size: 'sm', foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="lm-ok">Salvar</button>', onMount: mm => $('#lm-ok', mm).onclick = () => { lj.minimo = Math.max(0, parseInt($('#lm-n', mm).value) || 0); lj.dias = $$('[data-dl]', mm).filter(i => i.checked).map(i => +i.dataset.dl); save('config'); audit(`Definiu cobertura mínima de ${lj.nome}`); closeModal(); vLoja(el); } });
@@ -2310,12 +2305,413 @@ function alertasNovos() {
   (S.data.propostas || []).filter(p => p.status !== 'enviada' && S.data.admis.some(a => a.propostaId === p.id && a.status !== 'concluida')).forEach(p => { const nd = (S.data.admdocs || []).filter(d => d.token === p.id).length; out.push({ p: 0, t: `${p.nome} ${p.status === 'aceita' ? 'aceitou' : 'recusou'} a proposta`, s: p.status === 'aceita' ? `${nd} documento(s) enviado(s) pelo link` : (p.recusaMotivo || 'Sem motivo informado'), cls: p.status === 'aceita' ? 'mut' : 'warn', v: 'adm' }); });
   const cmpA = iso(hoje()).slice(0, 7), cmpP = iso(addM(hoje(), -1)).slice(0, 7);
   [cmpP, cmpA].forEach(cm => { const n = S.data.comissoes.filter(x => x.comp === cm && !x.lancado && num(x.comissao) > 0).length, f = S.data.folhas.find(x => !x.tipo && x.comp === cm); if (n && f && !f.fechada) out.push({ p: 1, t: `Comissões de ${mesNome(cm)} não lançadas na folha`, s: `${n} vendedor(es)`, cls: 'warn', v: 'comis' }); });
-  const nc = S.data.cands.filter(c => c.etapa === 'triagem' && c.criado && diffD(pd(c.criado), hoje()) <= 7).length; if (nc) out.push({ p: 3, t: `${nc} candidato(s) novo(s) na triagem`, s: 'Analise antes que aceitem outra vaga', cls: 'mut', v: 'recr' });
+  const nc = S.data.cands.filter(c => c.etapa === 'triagem' && c.criado && diffD(pd(c.criado), hoje()) <= 7).length; if (false && nc) out.push({ p: 3, t: `${nc} candidato(s) novo(s) na triagem`, s: 'Analise antes que aceitem outra vaga', cls: 'mut', v: 'recr' });
   try { const fc = faltasCobertura(7); if (fc.length) out.push({ p: 0, t: `Loja com equipe abaixo do mínimo`, s: fc.slice(0, 3).map(x => `${x.l.nome} em ${x.d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} (${x.n}/${x.min})`).join(', '), cls: 'warn', v: 'loja' }); } catch (e) { }
   const ab = abaixoPiso(); if (ab.length) out.push({ p: -1, t: `${ab.length} salário(s) abaixo do piso da convenção`, s: ab.slice(0, 3).map(c => c.nome.split(' ')[0]).join(', '), cls: 'bad', v: 'conv' });
   const v = conv(); if (v.dataBase && hoje().getMonth() + 1 === v.dataBase && !(v.reajustes || []).some(r => r.ano === hoje().getFullYear())) out.push({ p: 1, t: 'Mês da data-base da convenção', s: 'Confira o reajuste da nova convenção e aplique em lote', cls: 'warn', v: 'conv' });
   const cp = iso(addM(hoje(), -1)).slice(0, 7); if (hoje().getDate() <= 10 && !((S.data.config.resumos || {})[cp]) && S.data.colab.length) out.push({ p: 4, t: `Resumo de ${mesNome(cp)} pronto`, s: 'Veja e envie ao dono pelo WhatsApp', cls: 'mut', v: 'relat' });
   return out;
+}
+
+/* =====================================================================
+   MODELOS PROFISSIONAIS (iguais no RH e no portal): holerite e TRCT
+   ===================================================================== */
+const CSS_DOC_PRO = `<style>.dp{font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#111}.dp table{width:100%;border-collapse:collapse}.dp td,.dp th{border:1px solid #444;padding:4px 6px;vertical-align:top;text-align:left}.dp th{background:#E9ECF2;font-size:10px;text-transform:uppercase;letter-spacing:.03em}
+.dp .cab td{border:0;padding:0}.dp .tit{font-size:14px;font-weight:700;text-align:center;letter-spacing:.04em}.dp .n{text-align:right;white-space:nowrap}.dp .q{background:#14203D;color:#fff;font-weight:700;font-size:10.5px;letter-spacing:.05em;padding:4px 6px;margin-top:8px}
+.dp .lb{display:block;font-size:8.5px;color:#555;text-transform:uppercase}.dp .vl{font-size:11.5px;font-weight:600}.dp .tot td{font-weight:700;background:#F4F6FA}.dp .liq{font-size:14px;font-weight:800}.dp .ass{display:flex;gap:40px;margin-top:34px}.dp .ass div{flex:1;border-top:1px solid #111;text-align:center;padding-top:4px;font-size:10.5px}.dp .min{font-size:9.5px;color:#444;margin-top:8px}</style>`;
+const celP = (lb, vl, span = 1) => `<td colspan="${span}"><span class="lb">${lb}</span><span class="vl">${vl == null || vl === '' ? '&nbsp;' : vl}</span></td>`;
+const brlP = v => (+v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function linhasHolerite(i, k) {
+  const p = i.ponto || {}, L = [], prov = (c, d, ref, v) => +v ? L.push([c, d, ref, +v, 0]) : 0, desc = (c, d, ref, v) => +v ? L.push([c, d, ref, 0, +v]) : 0;
+  prov('101', 'Salário', `${30 - (num((i.ponto || {}).faltasN) || 0)} d`, i.sal); prov('010', 'Adicionais e comissões', '', i.adic);
+  (i.adicDet || []).forEach((a, x) => prov(String(20 + x).padStart(3, '0'), a[0] || a.t || 'Adicional', '', a[1] ?? a.v)); if (!(i.adicDet || []).length) prov('020', 'Adicionais fixos', '', i.adicFix);
+  prov('050', 'Horas extras 50%', p.he50h ? String(p.he50h).replace('.', ',') : '', p.he50); prov('051', 'Horas extras 100%', p.he100h ? String(p.he100h).replace('.', ',') : '', p.he100);
+  prov('052', 'Adicional noturno', '', p.not); prov('053', 'DSR sobre horas extras e adicionais', '', p.dsr); prov('650', 'Salário-família', '', i.salFam);
+  desc('201', 'Faltas', p.faltasN ? String(p.faltasN) : '', p.faltas); desc('202', 'DSR sobre faltas', '', p.dsrFalta); desc('203', 'Atrasos', '', p.atraso); desc('204', 'Dias de afastamento (INSS)', '', i.afastV);
+  desc('973', 'INSS', k.base ? (k.inss / k.base * 100).toFixed(2).replace('.', ',') + '%' : '', k.inss); desc('987', 'IRRF s/ salário', (() => { const t = T(), b = Math.max(0, k.base - num(i.pensao) - Math.max(k.inss + (i.dep || 0) * t.dep, t.simplificado)), f = t.irrf.find(x => b <= x[0]); return k.irrf && f ? (f[1] * 100).toFixed(2).replace('.', ',') + '%' : ''; })(), k.irrf); desc('310', 'Pensão alimentícia', '', i.pensao);
+  desc('320', 'Benefícios (VR, VA, plano de saúde)', '', i.benDesc); desc('330', 'Contribuição assistencial', '', i.contrib); desc('390', 'Outros descontos e adiantamentos', '', i.desc);
+  return L;
+}
+function holeriteProf(c, e, comp, i, k, extra = {}) {
+  const L = linhasHolerite(i, k), tv = r2(L.reduce((s, x) => s + x[3], 0)), td = r2(L.reduce((s, x) => s + x[4], 0)), [a, m] = comp.split('-');
+  const mes = `${new Date(+a, +m - 1, 1).toLocaleDateString('pt-BR', { month: 'long' })}/${a}`, t = T();
+  const baseIR = Math.max(0, r2(k.base - num(i.pensao) - Math.max(k.inss + (i.dep || 0) * t.dep, t.simplificado))), fx = Math.max(1, t.irrf.findIndex(f => baseIR <= f[0]) + 1);
+  const v = x => x ? brlP(x) : '', cod = esc(c.matricula || String(c.id || '').replace(/\D/g, '').slice(-4) || String(c.id || '').slice(-4).toUpperCase());
+  const vazias = Math.max(0, 14 - L.length);
+  return `<style>.rp-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}.rp{font-family:Arial,Helvetica,sans-serif;color:#111;border:1px dashed #999;padding:8px;margin:0 auto 14px;max-width:920px;min-width:760px;page-break-inside:avoid}@media print{.rp{min-width:0}}
+.rp .fr{display:flex;gap:8px;align-items:stretch}.rp .main{flex:1;min-width:0}.rp table{width:100%;border-collapse:collapse}
+.rp .mono{font-family:"Courier New",Courier,monospace}.rp .lb{font-size:9px;color:#555}.rp .bx{border:1px solid #333}
+.rp .cab td{padding:3px 6px;vertical-align:top}.rp .tit{font-size:15px;font-weight:700;color:#555;text-align:right;white-space:nowrap}
+.rp .mesref{display:inline-block;border-bottom:1px solid #333;padding:0 14px;font-size:12.5px}
+.rp .id td{padding:1px 6px;font-size:12px}.rp .id .lb{display:block}
+.rp .it{margin-top:4px}.rp .it th{font-size:9.5px;font-weight:400;color:#444;border:1px solid #333;padding:2px 5px;text-align:center}
+.rp .it td{border-top:0!important;border-bottom:0!important;border-left:1px solid #333;border-right:1px solid #333;padding:0 6px;font-family:"Courier New",Courier,monospace;font-size:12px;line-height:16px;white-space:nowrap}
+.rp .it td.n{text-align:right}.rp .it td.ds{white-space:normal}.rp .it tbody tr:first-child td{padding-top:4px}.rp .it tbody tr:last-child td{border-bottom:1px solid #333!important;padding-bottom:6px}
+.rp .tt td{padding:2px 6px;vertical-align:top}.rp .tt .lb{display:block;text-align:center}.rp .tt .vl{font-family:"Courier New",Courier,monospace;font-size:13px;font-weight:700;text-align:center;display:block}
+.rp .liq{display:flex;align-items:center;gap:8px;font-size:9.5px;color:#444}.rp .seta{font-size:22px;line-height:1;color:#333}
+.rp .rod td{border:1px solid #333;text-align:center;padding:2px 4px}.rp .rod .lb{display:block}.rp .rod .mono{font-size:12px;font-weight:700}
+.rp .lat{width:64px;border:1px solid #333;display:flex}.rp .lat>div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:8px 0}.rp .lat>div+div{border-left:1px solid #ccc}
+.rp .vt{writing-mode:vertical-rl;transform:rotate(180deg);font-size:8.5px;letter-spacing:.03em;text-transform:uppercase;color:#333;white-space:nowrap}.rp .linha{width:1px;background:#333;flex:1;margin:6px 0;max-height:160px}</style>
+<div class="rp-wrap"><div class="rp"><div class="fr"><div class="main">
+<table class="bx cab"><tr><td class="mono" style="font-size:12.5px">${esc(e.nome || '')}<br>CNPJ:&nbsp;&nbsp;&nbsp;${esc(e.cnpj || '—')}</td><td class="tit">Recibo de Pagamento de Salário<br><span class="mesref mono" style="color:#111;font-weight:400">${esc(mes)}</span></td></tr></table>
+<table class="bx id" style="margin-top:4px"><tr><td style="width:62px"><span class="lb">Código</span><span class="mono">${cod}</span></td><td><span class="lb">Nome do Funcionário</span><span class="mono">${esc(String(c.nome || '').toUpperCase())}</span></td>
+<td style="width:44%"><span class="lb">CBO${c.cbo ? ` ${esc(c.cbo)}` : ''}&nbsp;&nbsp; Emp.&nbsp; Local&nbsp; Depto.&nbsp; Setor&nbsp; Seção&nbsp; Fl.</span><span class="mono">${esc(String(c.cargo || '').toUpperCase())}${c.depto || c.departamento ? ` · ${esc(String(c.depto || c.departamento).toUpperCase())}` : ''}</span></td></tr></table>
+<table class="it"><thead><tr><th style="width:48px">Cód.</th><th>Descrição</th><th style="width:84px">Referência</th><th style="width:104px">Vencimentos</th><th style="width:104px">Descontos</th></tr></thead><tbody>
+${L.map(x => `<tr><td>${x[0]}</td><td class="ds">${esc(String(x[1]).toUpperCase())}</td><td class="n">${esc(x[2] || '')}</td><td class="n">${v(x[3])}</td><td class="n">${v(x[4])}</td></tr>`).join('')}
+${vazias ? `<tr><td style="height:${vazias * 16}px"></td><td></td><td></td><td></td><td></td></tr>` : ''}</tbody></table>
+<table class="tt"><tr><td class="bx" rowspan="2" style="width:56%;font-size:10.5px;color:#444">${extra.pago ? `Pagamento registrado em ${fdP(extra.pago)}.` : ''}${extra.obs ? `<br>${esc(extra.obs)}` : ''}</td>
+<td class="bx"><span class="lb">Total de Vencimentos</span><span class="vl">${brlP(tv)}</span></td><td class="bx"><span class="lb">Total de Descontos</span><span class="vl">${brlP(td)}</span></td></tr>
+<tr><td colspan="2" class="bx"><div class="liq"><span>Valor Líquido</span><span class="seta" aria-hidden="true">⇨</span><span class="vl" style="flex:1;border:1px solid #333;padding:2px 6px">${brlP(r2(tv - td))}</span></div></td></tr></table>
+<table class="rod" style="margin-top:4px"><tr><td><span class="lb">Salário Base</span><span class="mono">${brlP(i.sal)}</span></td><td><span class="lb">Sal. Contr. INSS</span><span class="mono">${brlP(k.base)}</span></td><td><span class="lb">Base Cálc. FGTS</span><span class="mono">${brlP(k.base)}</span></td>
+<td><span class="lb">FGTS do Mês</span><span class="mono">${brlP(k.fgts)}</span></td><td><span class="lb">Base Cálc. IRRF</span><span class="mono">${brlP(baseIR)}</span></td><td><span class="lb">Faixa IRRF</span><span class="mono">${String(fx).padStart(2, '0')}</span></td></tr></table>
+</div><div class="lat" aria-label="Declaração de recebimento"><div><span class="vt">Declaro ter recebido a importância líquida discriminada neste recibo</span><span class="vt">____/____/______&nbsp;&nbsp;Data</span></div><div><span class="linha"></span><span class="vt">Assinatura do funcionário</span></div></div></div></div></div>${extra.assinatura || ''}`;
+}
+const fdP = s => s ? new Date(String(s).length > 10 ? s : s + 'T12:00').toLocaleDateString('pt-BR') : '';
+const COD_AFAST = { sjc: ['02', 'Rescisão sem justa causa por iniciativa do empregador'], pd: ['07', 'Rescisão por iniciativa do empregado'], jc: ['01', 'Rescisão com justa causa por iniciativa do empregador'], acordo: ['33', 'Rescisão por acordo entre as partes (art. 484-A)'], fimexp: ['06', 'Término do contrato a termo (experiência)'], antexp_emp: ['03', 'Rescisão antecipada do contrato a termo pelo empregador (art. 479)'], antexp_col: ['04', 'Rescisão antecipada do contrato a termo pelo empregado (art. 480)'] };
+function trctProf(c, e, p, r, extra = {}) {
+  const ca = COD_AFAST[p.motivo] || ['', ''], prov = r.prov || [], desc = r.desc || [], mx = Math.max(prov.length, desc.length, 8);
+  return `${CSS_DOC_PRO}<div class="dp"><div class="tit" style="margin-bottom:2px">TERMO DE RESCISÃO DO CONTRATO DE TRABALHO</div><div style="text-align:center;font-size:9.5px;margin-bottom:6px">Nos moldes do Anexo I da Portaria MTE nº 1.621/2010 · Código do motivo conforme a Tabela 19 do eSocial</div>
+    <div class="q">IDENTIFICAÇÃO DO EMPREGADOR</div><table><tr>${celP('01 CNPJ/CEI', esc(e.cnpj || ''))}${celP('02 Razão social / nome', esc(e.nome || ''), 3)}</tr><tr>${celP('03 Endereço', esc(e.endereco || ''), 2)}${celP('04 Município/UF', esc(e.cidade || ''))}${celP('05 Responsável', esc(e.responsavel || ''))}</tr></table>
+    <div class="q">IDENTIFICAÇÃO DO TRABALHADOR</div><table><tr>${celP('10 PIS/PASEP', esc(c.pis || ''))}${celP('11 Nome', esc(c.nome), 3)}</tr><tr>${celP('12 Endereço', esc(c.endereco || ''), 2)}${celP('13 Município/UF', esc(c.cidade || ''))}${celP('14 CEP', esc(c.cep || ''))}</tr><tr>${celP('15 CPF', esc(c.cpf || ''))}${celP('16 Data de nascimento', c.nascimento ? fdP(c.nascimento) : '')}${celP('17 Nome da mãe', esc(c.mae || ''), 2)}</tr></table>
+    <div class="q">DADOS DO CONTRATO</div><table><tr>${celP('21 Tipo de contrato', esc(p.tipoContrato || 'Prazo indeterminado'))}${celP('22 Causa do afastamento', esc(ca[1]), 2)}${celP('23 Remuneração p/ fins rescisórios', brlP(p.sal))}</tr>
+    <tr>${celP('24 Data de admissão', fdP(p.adm))}${celP('25 Data do aviso prévio', p.dataAviso ? fdP(p.dataAviso) : '')}${celP('26 Data do afastamento', fdP(p.dem))}${celP('27 Cód. afastamento (eSocial)', ca[0])}</tr>
+    <tr>${celP('28 Pensão alimentícia (%)', p.pensao || '')}${celP('29 Categoria do trabalhador', '101 · Empregado geral')}${celP('30 Cargo', esc(c.cargo || ''))}${celP('31 CBO', esc(c.cbo || ''))}</tr></table>
+    <div class="q">DISCRIMINAÇÃO DAS VERBAS RESCISÓRIAS</div><table><tr><th style="width:50%">Verbas rescisórias (proventos)</th><th class="n" style="width:14%">Valor</th><th style="width:22%">Deduções</th><th class="n" style="width:14%">Valor</th></tr>
+    ${[...Array(mx)].map((_, x) => `<tr><td>${prov[x] ? esc(prov[x][0]) : '&nbsp;'}</td><td class="n">${prov[x] ? brlP(prov[x][1]) : ''}</td><td>${desc[x] ? esc(desc[x][0]) : ''}</td><td class="n">${desc[x] ? brlP(desc[x][1]) : ''}</td></tr>`).join('')}
+    <tr class="tot"><td>Total bruto</td><td class="n">${brlP(r.tp)}</td><td>Total de deduções</td><td class="n">${brlP(r.td)}</td></tr><tr class="tot"><td colspan="2"></td><td>Valor líquido</td><td class="n liq">R$ ${brlP(r.liq)}</td></tr></table>
+    ${(r.info || []).length ? `<table style="margin-top:6px"><tr>${r.info.slice(0, 4).map(x => celP(esc(x[0]), esc(x[1]))).join('')}</tr></table>` : ''}
+    <div class="q">QUITAÇÃO</div><p style="margin:6px 0">Foi realizada a rescisão do contrato de trabalho do trabalhador acima qualificado, nos termos do art. 477 da CLT, com o pagamento dos valores discriminados neste termo no prazo de 10 (dez) dias contados do término do contrato (art. 477, § 6º). A quitação refere-se exclusivamente aos valores e às parcelas aqui discriminados (Súmula 330 do TST).</p>
+    <p style="margin:6px 0">${esc(e.cidade || '')}, ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}.</p>
+    ${extra.assinatura || `<div class="ass"><div>${esc(e.nome || 'Empregador')}<br>Empregador ou preposto</div><div>${esc(c.nome)}<br>Trabalhador</div></div>`}
+    <p class="min">Documento gerado pelo NEXUM RH. Os depósitos do FGTS e a multa rescisória são recolhidos pela guia do FGTS Digital; as guias do seguro-desemprego, quando cabíveis, são comunicadas pelo Empregador Web.</p></div>`;
+}
+/* ---------- Sala de reunião por vídeo (WebRTC). Sinalização: Firestore, ou localStorage sem Firebase ---------- */
+const ICE_R = { iceServers: [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }] };
+function sinal(tid, rid) {
+  if (FB_ON && FB.db) { const ref = FB.db.doc(`tenants/${tid}/reunioes/${rid}`);
+    return { get: async () => (await ref.get()).data() || {}, upd: d => ref.set(d, { merge: true }), ouvir: cb => ref.onSnapshot(s => cb(s.data() || {})), add: (c, d) => ref.collection(c).add({ ...d, em: new Date().toISOString() }), lista: (c, cb) => ref.collection(c).onSnapshot(q => cb(q.docs.map(x => ({ id: x.id, ...x.data() })))), limpa: async c => { const q = await ref.collection(c).get(); await Promise.all(q.docs.map(d => d.ref.delete())); } }; }
+  const K = `nexum:sala:${tid}:${rid}`, rd = () => JSON.parse(localStorage.getItem(K) || '{"doc":{},"c":{}}'), wr = v => { localStorage.setItem(K, JSON.stringify(v)); window.dispatchEvent(new StorageEvent('storage', { key: K })); };
+  const sub = (f) => { const h = e => { if (!e.key || e.key === K) f(); }; window.addEventListener('storage', h); setTimeout(f, 0); return () => window.removeEventListener('storage', h); };
+  return { get: async () => rd().doc, upd: async d => { const v = rd(); v.doc = { ...v.doc, ...d }; wr(v); }, ouvir: cb => { let u = ''; return sub(() => { const j = JSON.stringify(rd().doc); if (j !== u) { u = j; cb(rd().doc); } }); },
+    add: async (c, d) => { const v = rd(); (v.c[c] = v.c[c] || []).push({ id: Math.random().toString(36).slice(2), ...d, em: new Date().toISOString() }); wr(v); }, lista: (c, cb) => { let n = -1; return sub(() => { const l = rd().c[c] || []; if (l.length !== n) { n = l.length; cb(l); } }); }, limpa: async c => { const v = rd(); v.c[c] = []; wr(v); } };
+}
+async function conectarReuniao(sg, papel, vLocal, vRemoto, estado) {
+  let stream; try { stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: { echoCancellation: true, noiseSuppression: true } }); } catch (e) { estado('midia'); throw new Error('Libere a câmera e o microfone no navegador.'); }
+  vLocal.srcObject = stream; vLocal.muted = true; let pc = null, rev = null; const unsubs = [], meu = papel === 'host' ? 'iceHost' : 'iceGuest', deles = papel === 'host' ? 'iceGuest' : 'iceHost', vistos = new Set();
+  const montar = () => { if (pc) pc.close(); pc = new RTCPeerConnection(ICE_R); stream.getTracks().forEach(t => pc.addTrack(t, stream)); const rem = new MediaStream(); vRemoto.srcObject = rem;
+    pc.ontrack = e => e.streams[0].getTracks().forEach(t => rem.addTrack(t)); pc.onconnectionstatechange = () => estado(pc.connectionState); pc.onicecandidate = e => { if (e.candidate && rev) sg.add(meu, { ...e.candidate.toJSON(), rev }); }; };
+  unsubs.push(sg.lista(deles, l => l.forEach(d => { if (vistos.has(d.id) || d.rev !== rev || !pc) return; vistos.add(d.id); pc.addIceCandidate(new RTCIceCandidate({ candidate: d.candidate, sdpMid: d.sdpMid, sdpMLineIndex: d.sdpMLineIndex })).catch(() => {}); })));
+  if (papel === 'host') { await sg.limpa('iceHost'); await sg.limpa('iceGuest'); rev = String(Date.now()); montar(); const of = await pc.createOffer(); await pc.setLocalDescription(of); await sg.upd({ offer: { type: of.type, sdp: of.sdp }, answer: null, rev, hostEm: new Date().toISOString() });
+    unsubs.push(sg.ouvir(d => { if (d.answer && d.ansRev === rev && pc && !pc.currentRemoteDescription) pc.setRemoteDescription(new RTCSessionDescription(d.answer)).catch(() => {}); })); }
+  else { estado('aguardando'); unsubs.push(sg.ouvir(async d => { if (!d.offer || d.rev === rev) return; rev = d.rev; vistos.clear(); montar(); await pc.setRemoteDescription(new RTCSessionDescription(d.offer)); const an = await pc.createAnswer(); await pc.setLocalDescription(an); await sg.upd({ answer: { type: an.type, sdp: an.sdp }, ansRev: rev, guestEm: new Date().toISOString() }); })); }
+  return { sair() { unsubs.forEach(u => u && u()); stream.getTracks().forEach(t => t.stop()); if (pc) pc.close(); }, mic(on) { stream.getAudioTracks().forEach(t => t.enabled = on); }, cam(on) { stream.getVideoTracks().forEach(t => t.enabled = on); } };
+}
+const EST_REU = { aguardando: 'Aguardando a outra pessoa entrar…', new: 'Preparando…', connecting: 'Conectando…', connected: 'Conectado', disconnected: 'Conexão instável, reconectando…', failed: 'Não foi possível conectar. Use o link alternativo.', closed: 'Reunião encerrada', midia: 'Câmera ou microfone bloqueados' };
+function abrirReuniao({ tid, rid, papel, titulo, meuNome, lerArq }) {
+  const sg = sinal(tid, rid), el = document.createElement('div'); el.className = 'reu'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', titulo);
+  el.innerHTML = `<style>.reu{position:fixed;inset:0;background:#0E1630;z-index:90;display:grid;grid-template-columns:1fr 340px;color:#fff}.reu .pal{display:flex;flex-direction:column;min-width:0}.reu .vids{flex:1;position:relative;background:#0A1024}.reu #r-rem{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}.reu #r-loc{position:absolute;right:14px;bottom:14px;width:min(26%,200px);aspect-ratio:4/3;object-fit:cover;border-radius:10px;border:2px solid rgba(255,255,255,.6)}.reu .est{position:absolute;left:14px;top:12px;background:rgba(0,0,0,.45);padding:5px 12px;border-radius:999px;font-size:13px}.reu .ctl{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:12px}.reu .ctl button,.reu .ctl a{border:0;border-radius:8px;padding:9px 14px;font-weight:600;background:#26304F;color:#fff;cursor:pointer;text-decoration:none;font-size:14px}.reu .ctl .sai{background:#C23A2B}.reu .lat{background:#F3F5FA;color:#14203D;display:flex;flex-direction:column;min-height:0}.reu .lat h3{margin:0;padding:12px 14px;border-bottom:1px solid #DCE1EC;font-size:15px}.reu .msgs{flex:1;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:8px}.reu .m{background:#fff;border:1px solid #DCE1EC;border-radius:10px;padding:7px 10px;font-size:14px;max-width:90%;align-self:flex-start;white-space:pre-wrap;word-break:break-word}.reu .m.eu{align-self:flex-end;background:#E6EBFF}.reu .m small{display:block;color:#5F6B85;font-size:11.5px;margin-top:3px}.reu .env{display:flex;gap:6px;padding:10px;border-top:1px solid #DCE1EC}.reu .env input[type=text]{flex:1;border:1px solid #DCE1EC;border-radius:8px;padding:8px 10px;font:inherit}.reu .env button,.reu .env label{border:1px solid #DCE1EC;background:#fff;border-radius:8px;padding:0 10px;font:inherit;cursor:pointer;display:flex;align-items:center}@media(max-width:820px){.reu{grid-template-columns:1fr;grid-template-rows:1fr 42vh}}</style>
+    <div class="pal"><div class="vids"><video id="r-rem" autoplay playsinline></video><video id="r-loc" autoplay playsinline muted></video><div class="est" id="r-est" aria-live="polite">Preparando…</div></div>
+    <div class="ctl"><button id="r-mic" aria-pressed="true">Microfone ligado</button><button id="r-cam" aria-pressed="true">Câmera ligada</button><a href="https://meet.jit.si/nexum-${esc(tid)}-${esc(rid)}" target="_blank" rel="noopener">Link alternativo</a><button class="sai" id="r-sair">Sair da reunião</button></div></div>
+    <aside class="lat"><h3>Bate-papo</h3><div class="msgs" id="r-msgs" aria-live="polite"></div><form class="env" id="r-f"><input type="text" id="r-t" placeholder="Escreva uma mensagem" aria-label="Mensagem" maxlength="1000"><label title="Anexar arquivo">📎<input type="file" id="r-a" hidden></label><button type="submit">Enviar</button></form></aside>`;
+  document.body.appendChild(el); let ses = null, mic = true, cam = true;
+  const est = s => { $('#r-est', el).textContent = EST_REU[s] || s; el.dataset.estado = s; };
+  conectarReuniao(sg, papel, $('#r-loc', el), $('#r-rem', el), est).then(s => ses = s).catch(e => { est('midia'); toast(e.message, true); });
+  const unM = sg.lista('msgs', l => { const b = $('#r-msgs', el); if (!b) return; b.innerHTML = l.sort((a, b2) => a.em.localeCompare(b2.em)).map(m => `<div class="m ${m.papel === papel ? 'eu' : ''}">${m.t ? esc(m.t) : ''}${m.arq ? `<a href="${m.arq.data}" download="${esc(m.arq.nome)}">📎 ${esc(m.arq.nome)}</a>` : ''}<small>${esc(m.nome)} · ${new Date(m.em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</small></div>`).join('') || '<p style="color:#5F6B85;font-size:13px">As mensagens e os arquivos ficam guardados nesta reunião.</p>'; b.scrollTop = b.scrollHeight; });
+  $('#r-f', el).onsubmit = async ev => { ev.preventDefault(); const t = $('#r-t', el).value.trim(); if (!t) return; $('#r-t', el).value = ''; await sg.add('msgs', { t, nome: meuNome, papel }); };
+  $('#r-a', el).onchange = async ev => { const f = ev.target.files[0]; if (!f) return; try { const d = await lerArq(f); await sg.add('msgs', { arq: { nome: f.name, data: d }, nome: meuNome, papel }); } catch (e) { toast(String(e.message || e), true); } ev.target.value = ''; };
+  $('#r-mic', el).onclick = e => { mic = !mic; ses && ses.mic(mic); e.target.textContent = mic ? 'Microfone ligado' : 'Microfone desligado'; e.target.setAttribute('aria-pressed', mic); };
+  $('#r-cam', el).onclick = e => { cam = !cam; ses && ses.cam(cam); e.target.textContent = cam ? 'Câmera ligada' : 'Câmera desligada'; e.target.setAttribute('aria-pressed', cam); };
+  $('#r-sair', el).onclick = () => { ses && ses.sair(); unM && unM(); el.remove(); };
+  return el;
+}
+
+/* =====================================================================
+   NEXUM RH — pacote de ajustes v3 (bloqueio do portal, cadastro, ponto, banco de horas, exames,
+   documentos, holerites, comprovantes, admissão, demissão e reuniões)
+   ===================================================================== */
+const agoraIso = () => new Date().toISOString();
+function nome(id) { const c = colabById(id); return c ? c.nome : '—'; }
+const fdh = s => s ? new Date(s).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+const lerArqRH = f => new Promise((ok, err) => { if (f.size * 1.37 > 700000) return err(new Error('Arquivo grande demais (máximo de cerca de 500 KB). Envie um PDF menor ou uma foto.')); const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = () => err(new Error('Não foi possível ler o arquivo.')); r.readAsDataURL(f); });
+/* ---------- 1. Bloqueio do portal ---------- */
+function estadoPortal(p = S.data.config.portal || {}) {
+  const t = Date.now();
+  if (p.emergenciaAte && t < Date.parse(p.emergenciaAte)) return { aberto: true, emergencia: p.emergenciaAte };
+  if (!p.bloqueado) return { aberto: true };
+  if (p.reabreEm && t >= Date.parse(p.reabreEm)) return { aberto: true, expirou: true };
+  return { aberto: false, ate: p.reabreEm || '', ponto: p.pontoLivre !== false };
+}
+function rotuloPortal() { const e = estadoPortal(); return e.emergencia ? `Portal: emergência até ${new Date(e.emergencia).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : e.aberto ? 'Portal: liberado' : `Portal: bloqueado${e.ate ? ' até ' + fdh(e.ate).slice(0, 16) : ''}`; }
+function modalPortalBloq() {
+  const p = S.data.config.portal || {}, e = estadoPortal(), salva = (d, msg) => { S.data.config.portal = { ...p, ...d }; save('config'); audit(msg); closeModal(); atualizarTopo(); toast(msg + '.'); };
+  if (!podeEditar()) return toast(rotuloPortal());
+  const am = new Date(Date.now() + 864e5); am.setHours(8, 0, 0, 0); const loc = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  modal('Acesso ao Portal do Colaborador', e.aberto && !e.emergencia ? `<p style="margin-top:0">O portal está <b>liberado</b>. Ao bloquear, os funcionários veem só o aviso de bloqueio e um botão para pedir o desbloqueio.</p>
+      <div class="fld"><label for="pb-r">Reabrir automaticamente em</label><input class="inp" type="datetime-local" id="pb-r" value="${loc(am)}"><span class="hint">Deixe em branco para reabrir só quando você liberar.</span></div>
+      <div class="fld"><label for="pb-m">Aviso para os funcionários (opcional)</label><input class="inp" id="pb-m" value="${esc(p.msg || '')}" placeholder="Ex.: fechamento da folha em andamento"></div>
+      <label class="row hint" style="gap:8px;align-items:flex-start"><input type="checkbox" id="pb-p" ${p.pontoLivre !== false ? 'checked' : ''} style="margin-top:4px"> <span>Manter o registro de ponto disponível (recomendado: a empresa deve oferecer meio de registro da jornada, Portaria 671/2021)</span></label>`
+    : `<p style="margin-top:0">${e.emergencia ? `Abertura de emergência ativa até <b>${fdh(e.emergencia)}</b>.` : `Portal <b>bloqueado</b>${e.ate ? ` até <b>${fdh(e.ate)}</b>` : ' até você liberar'}${e.ponto ? ', com o registro de ponto disponível' : ', inclusive o registro de ponto'}.`}</p>${p.msg ? `<p class="hint">Aviso exibido: ${esc(p.msg)}</p>` : ''}`,
+    { foot: e.aberto && !e.emergencia ? '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="pb-ok" style="background:var(--bad);border-color:var(--bad)">Bloquear portal</button>'
+      : `${e.emergencia ? '<button class="btn sec" id="pb-fe">Encerrar emergência</button>' : '<button class="btn sec" id="pb-em">Abrir por 1 hora (emergência)</button>'}<button class="btn" id="pb-lib">Liberar agora</button>`, onMount: m => {
+      const ok = $('#pb-ok', m); if (ok) ok.onclick = () => { const r = $('#pb-r', m).value; if (r && Date.parse(r) <= Date.now()) return toast('A data de reabertura precisa ser no futuro.', true); salva({ bloqueado: true, reabreEm: r ? new Date(r).toISOString() : '', msg: $('#pb-m', m).value.trim(), pontoLivre: $('#pb-p', m).checked, emergenciaAte: '' }, `Bloqueou o portal${r ? ' até ' + fdh(new Date(r).toISOString()) : ''}`); };
+      const em = $('#pb-em', m); if (em) em.onclick = () => salva({ emergenciaAte: new Date(Date.now() + 3600000).toISOString() }, 'Abriu o portal por 1 hora (emergência)');
+      const fe = $('#pb-fe', m); if (fe) fe.onclick = () => salva({ emergenciaAte: '' }, 'Encerrou a abertura de emergência');
+      const lb = $('#pb-lib', m); if (lb) lb.onclick = () => salva({ bloqueado: false, reabreEm: '', emergenciaAte: '' }, 'Liberou o portal do colaborador'); } });
+}
+/* 72 horas de acesso depois da demissão; depois o acesso é encerrado */
+function verificarFimPortal() {
+  if (!podeEditar()) return; let n = 0; const p = S.data.config.portal || {};
+  S.data.colab.filter(c => c.status === 'desligado' && c.portal && c.portal.ativo && c.portal.fimEm && Date.now() >= Date.parse(c.portal.fimEm)).forEach(c => { bloquearPortal(c); n++; audit(`Acesso ao portal de ${c.nome} encerrado após 72 horas do desligamento`); });
+  if (n) save('colab');
+  if (p.bloqueado && p.reabreEm && Date.now() >= Date.parse(p.reabreEm)) { S.data.config.portal = { ...p, bloqueado: false, reabreEm: '' }; save('config'); audit('Portal reaberto automaticamente na data programada'); }
+}
+const restante = iso => { const ms = Date.parse(iso) - Date.now(); if (ms <= 0) return 'encerrado'; const h = Math.floor(ms / 3600000), mi = Math.floor(ms % 3600000 / 60000); return `${h}h${String(mi).padStart(2, '0')}`; };
+function painelPortalDeslig(el) {
+  const l = S.data.colab.filter(c => c.status === 'desligado' && c.portal && c.portal.ativo && c.portal.fimEm); if (!l.length) return;
+  el.insertAdjacentHTML('afterbegin', `<section class="panel" id="pd72"><h2>Acesso ao portal após o desligamento</h2><p class="hint" style="margin-top:0">O funcionário desligado tem 72 horas para baixar holerites e assinar a rescisão. Depois, o acesso é encerrado sozinho.</p>
+    <ul class="list">${l.map(c => `<li><div class="t"><div><b>${esc(c.nome)}</b></div><div>Encerra em ${fdh(c.portal.fimEm)}</div></div><span class="pill warn" data-cr="${c.portal.fimEm}">${restante(c.portal.fimEm)}</span>${podeEditar() ? `<button class="btn ghost sm" data-px="${c.id}|24">+24h</button><button class="btn ghost sm" data-px="${c.id}|0" style="color:var(--bad)">Encerrar agora</button>` : ''}</li>`).join('')}</ul></section>`);
+  $$('[data-px]', el).forEach(b => b.onclick = () => { const [id, h] = b.dataset.px.split('|'), c = colabById(id); if (+h) { c.portal.fimEm = new Date(Date.parse(c.portal.fimEm) + 864e5).toISOString(); audit(`Estendeu em 24h o acesso de ${c.nome}`); } else { bloquearPortal(c); audit(`Encerrou o acesso de ${c.nome} ao portal`); } save('colab'); go('resc'); });
+}
+setInterval(() => { $$('[data-cr]').forEach(s => s.textContent = restante(s.dataset.cr)); try { verificarFimPortal(); } catch (e) { } }, 30000);
+/* ---------- Cadastro do funcionário: experiência, horário individual e dependentes ---------- */
+const DIAS_S = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+function blocoCadastroExtra(c) {
+  const h = c.horario || { ent: '08:00', almSai: '12:00', almVol: '13:00', cafe: false, cafeSai: '15:30', cafeVol: '15:45', sai: '17:48', dias: [1, 2, 3, 4, 5] }, dl = c.dependentesLista || [];
+  const tm = (k, l) => `<div class="fld"><label for="hx-${k}">${l}</label><input class="inp" type="time" id="hx-${k}" data-h="${k}" value="${esc(h[k] || '')}"></div>`;
+  return `<div class="fld full" id="f-expw"><label for="f-expDias">Período de experiência</label><select class="inp" id="f-expDias" data-x="expDias">${opts([['30', '30 dias + prorrogação de 60'], ['45', '45 dias + prorrogação de 45'], ['60', '60 dias + prorrogação de 30'], ['90', '90 dias, sem prorrogação']], String(c.expDias || 45))}</select><span class="hint" id="f-exph"></span></div>
+    <fieldset class="full" style="border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 12px"><legend style="font-weight:700;padding:0 6px">Horário de trabalho</legend>
+      <label class="row hint" style="gap:8px;margin-bottom:8px"><input type="checkbox" id="hx-on" ${c.horario && c.horario.ativo ? 'checked' : ''}> Usar horário individual (substitui a escala)</label>
+      <div id="hx-c" class="grid">${tm('ent', 'Entrada')}${tm('almSai', 'Saída para o almoço')}${tm('almVol', 'Volta do almoço')}${tm('sai', 'Saída final')}
+        <label class="row hint full" style="gap:8px"><input type="checkbox" id="hx-cafe" ${h.cafe ? 'checked' : ''}> Faz pausa para o café à tarde</label><div class="full grid" id="hx-cw" style="gap:0 16px">${tm('cafeSai', 'Saída para o café')}${tm('cafeVol', 'Volta do café')}</div>
+        <div class="fld full"><span class="lbl" style="font-weight:600;font-size:13.5px">Dias de trabalho</span><div class="row" style="gap:6px 14px">${DIAS_S.map((d, i) => `<label class="row hint" style="gap:5px"><input type="checkbox" data-dia="${i}" ${(h.dias || []).includes(i) ? 'checked' : ''}> ${d}</label>`).join('')}</div></div><p class="hint full" id="hx-r" style="margin:0"></p></div></fieldset>
+    <fieldset class="full" style="border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 12px"><legend style="font-weight:700;padding:0 6px">Dependentes</legend><div id="dp-l"></div><button type="button" class="btn sec sm" id="dp-n">Adicionar dependente</button><p class="hint" style="margin:8px 0 0">Os marcados para o IR reduzem o imposto. Filhos até 14 anos entram no salário-família.</p></fieldset>`;
+}
+function ligarCadastroExtra(m, c) {
+  const dl = (c.dependentesLista || []).map(d => ({ ...d })), adm = () => $('#f-admissao', m).value;
+  const exp = () => { const w = $('#f-expw', m), t = $('#f-tipo', m).value; w.style.display = t === 'experiencia' ? '' : 'none'; const d = +$('#f-expDias', m).value, a = adm(); if (!a) return; const f1 = iso(addD(pd(a), d - 1)), f2 = iso(addD(pd(a), 89)); $('#f-exph', m).textContent = d === 90 ? `Termina em ${fd(f2)}.` : `1º período até ${fd(f1)}; prorrogação a partir de ${fd(iso(addD(pd(a), d)))} até ${fd(f2)} (total de 90 dias, CLT art. 445).`; };
+  const hor = () => { const on = $('#hx-on', m).checked; $('#hx-c', m).style.display = on ? '' : 'none'; $('#f-escalaId', m).closest('.fld').style.display = on ? 'none' : ''; $('#hx-cw', m).style.display = $('#hx-cafe', m).checked ? '' : 'none';
+    const g = k => $(`#hx-${k}`, m).value, mm = s => { const [a, b] = String(s || '0:0').split(':').map(Number); return a * 60 + b; }, iv = mm(g('almVol')) - mm(g('almSai')), tot = mm(g('sai')) - mm(g('ent')) - Math.max(0, iv), dias = $$('[data-dia]', m).filter(x => x.checked).length;
+    $('#hx-r', m).textContent = g('ent') && g('sai') ? `${Math.floor(tot / 60)}h${String(tot % 60).padStart(2, '0')} por dia, ${dias} dia(s): ${Math.floor(tot * dias / 60)}h${String(tot * dias % 60).padStart(2, '0')} por semana.${tot * dias > 44 * 60 ? ' Atenção: passa de 44 horas semanais (CF, art. 7º, XIII).' : ''}${iv < 60 && tot > 360 ? ' Atenção: intervalo menor que 1 hora (CLT, art. 71).' : ''}` : ''; };
+  const des = () => { $('#dp-l', m).innerHTML = dl.map((d, i) => `<div class="row" data-dp="${i}" style="flex-wrap:wrap;gap:6px;margin-bottom:8px"><input class="inp" data-k="nome" value="${esc(d.nome || '')}" placeholder="Nome" style="flex:2;min-width:150px"><input class="inp" data-k="cpf" value="${esc(d.cpf || '')}" placeholder="CPF" style="flex:1;min-width:120px"><input class="inp" type="date" data-k="nasc" value="${d.nasc || ''}" style="width:auto"><select class="inp" data-k="par" style="width:auto">${opts([['filho', 'Filho(a)'], ['conjuge', 'Cônjuge'], ['pais', 'Pai/mãe'], ['outro', 'Outro']], d.par || 'filho')}</select><label class="row hint" style="gap:4px"><input type="checkbox" data-k="ir" ${d.ir !== false ? 'checked' : ''}> IR</label><button type="button" class="btn ghost sm" data-rm="${i}" style="color:var(--bad)">Remover</button></div>`).join('') || '<p class="hint" style="margin:0 0 8px">Nenhum dependente.</p>';
+    $$('[data-rm]', m).forEach(b => b.onclick = () => { ler(); dl.splice(+b.dataset.rm, 1); des(); }); };
+  const ler = () => $$('[data-dp]', m).forEach(r => { const d = dl[+r.dataset.dp]; $$('[data-k]', r).forEach(i => d[i.dataset.k] = i.type === 'checkbox' ? i.checked : i.value.trim()); });
+  $('#dp-n', m).onclick = () => { ler(); dl.push({ par: 'filho', ir: true }); des(); };
+  ['#f-tipo', '#f-admissao', '#f-expDias'].forEach(q => $(q, m).addEventListener('change', exp)); $$('#hx-c input, #hx-on', m).forEach(i => i.addEventListener('input', hor));
+  exp(); hor(); des();
+  return () => { ler(); const on = $('#hx-on', m).checked, g = k => $(`#hx-${k}`, m).value, x = { expDias: +$('#f-expDias', m).value, dependentesLista: dl.filter(d => d.nome) };
+    if (x.dependentesLista.some(d => d.cpf && !cpfValido(d.cpf))) { toast('Há um CPF de dependente inválido.', true); return null; }
+    if (on) { if (!g('ent') || !g('sai') || g('sai') <= g('ent')) { toast('Confira a entrada e a saída do horário.', true); return null; } if (g('almSai') && g('almVol') && g('almVol') <= g('almSai')) { toast('A volta do almoço deve ser depois da saída.', true); return null; }
+      x.horario = { ativo: true, ent: g('ent'), almSai: g('almSai'), almVol: g('almVol'), cafe: $('#hx-cafe', m).checked, cafeSai: g('cafeSai'), cafeVol: g('cafeVol'), sai: g('sai'), dias: $$('[data-dia]', m).filter(i => i.checked).map(i => +i.dataset.dia) };
+      if (!x.horario.dias.length) { toast('Marque os dias de trabalho.', true); return null; } } else x.horario = { ...(c.horario || {}), ativo: false };
+    if (x.dependentesLista.length) x.dependentes = x.dependentesLista.filter(d => d.ir !== false).length;
+    if ($('#f-tipo', m).value === 'experiencia' && $('#f-admissao', m).value) { const a = $('#f-admissao', m).value; x.expFim1 = iso(addD(pd(a), x.expDias - 1)); x.expFim2 = iso(addD(pd(a), 89)); }
+    return x; };
+}
+function aplicarHorario(c) {
+  if (!c || !c.horario || !c.horario.ativo) return; const cfg = S.data.config, h = c.horario, mm = s => { const [a, b] = String(s || '0:0').split(':').map(Number); return a * 60 + b; };
+  if (!(cfg.escalas && cfg.escalas.length)) cfg.escalas = JSON.parse(JSON.stringify(ESCALAS_PADRAO));
+  const id = 'pess_' + c.id, iv = h.almSai && h.almVol ? Math.max(0, mm(h.almVol) - mm(h.almSai)) : 0, e = { id, nome: `Horário individual: ${c.nome.split(' ')[0]}`, tipo: 'semanal', pessoal: c.id, dias: [0, 1, 2, 3, 4, 5, 6].map(d => h.dias.includes(d) ? TURNO(h.ent, h.sai, iv) : null), horario: h };
+  cfg.escalas = [...cfg.escalas.filter(x => x.id !== id), e]; c.escalaId = id; save('config');
+}
+/* ---------- 4. Ajuste de ponto com campos de hora ---------- */
+const ROT_AJ = ['Entrada', 'Saída para o almoço', 'Volta do almoço', 'Saída para o café', 'Volta do café', 'Saída final'];
+function camposMarcacao(marc) {
+  const m = (marc || []).slice().sort(), v = m.length >= 6 ? m.slice(0, 6) : m.length === 2 ? [m[0], '', '', '', '', m[1]] : m.length === 4 ? [m[0], m[1], m[2], '', '', m[3]] : [...m, '', '', '', '', '', ''].slice(0, 6);
+  if (m.length === 3 || m.length === 5) { for (let i = 0; i < 6; i++) v[i] = m[i] || ''; }
+  return `<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">${ROT_AJ.map((l, i) => `<div class="fld"><label for="aj-${i}">${l}</label><input class="inp" type="time" id="aj-${i}" data-aj value="${v[i] || ''}"></div>`).join('')}</div>${m.length > 6 ? `<p class="hint">Marcações extras mantidas: ${m.slice(6).join(', ')}</p>` : ''}`;
+}
+/* ---------- 5 e N3. Banco de horas: pagar, compensar, recalcular, salvar, imprimir ---------- */
+function vHora(c) { return num(c.salario) / (Math.round(semanalMin(escalaDe(c, S.data.config)) / 60 * 5) || 220); }
+const hmS = min => `${min < 0 ? '−' : ''}${Math.floor(Math.abs(min) / 60)}h${String(Math.abs(min) % 60).padStart(2, '0')}`;
+function painelAcoesBH(el) {
+  if (!podeEditar() || $('#bh-acts', el)) return; const fech = (S.data.config.bhFech || []).slice(-1)[0];
+  el.insertAdjacentHTML('afterbegin', `<div class="row" id="bh-acts" style="margin-bottom:12px"><span class="hint">Calculado direto das marcações do ponto biométrico e dos lançamentos.${fech ? ` Último fechamento salvo em ${fdh(fech.em)}.` : ''}</span><span class="sp"></span><button class="btn sec sm" id="bh-rc">Recalcular</button><button class="btn sec sm" id="bh-sv">Salvar fechamento</button><button class="btn sec sm" id="bh-cp">Compensação</button><button class="btn sec sm" id="bh-pg">Pagar horas</button><button class="btn sec sm" id="bh-pr">Imprimir / exportar</button></div>`);
+  const saldos = () => ativos().map(c => ({ c, s: extratoBH(c.id, S.data.ponto, S.data.bh, c, S.data.config).saldo })), pick = (filtro) => opts(saldos().filter(filtro).map(x => [x.c.id, `${x.c.nome} (${hmS(x.s)})`]), '');
+  $('#bh-rc', el).onclick = () => { const l = saldos(); toast(`Banco de horas recalculado: ${l.filter(x => x.s > 0).length} com saldo positivo, ${l.filter(x => x.s < 0).length} com saldo negativo.`); go('bh'); };
+  $('#bh-sv', el).onclick = () => { const l = saldos(); S.data.config.bhFech = [...(S.data.config.bhFech || []).slice(-23), { em: agoraIso(), por: S.user.nome, saldos: Object.fromEntries(l.map(x => [x.c.id, x.s])) }]; save('config'); audit('Salvou o fechamento do banco de horas'); toast('Fechamento salvo com o saldo de todos.'); go('bh'); };
+  $('#bh-cp', el).onclick = () => modal('Compensação de horas', `<p class="hint" style="margin-top:0">Registra uma folga ou saída antecipada paga com o saldo do banco de horas.</p><div class="fld"><label for="cp-c">Funcionário</label><select class="inp" id="cp-c">${pick(() => true)}</select></div><div class="grid"><div class="fld"><label for="cp-d">Data</label><input class="inp" type="date" id="cp-d" value="${iso(hoje())}"></div><div class="fld"><label for="cp-h">Horas a compensar</label><input class="inp" type="time" id="cp-h" value="08:00"></div></div><label class="row hint" style="gap:8px"><input type="checkbox" id="cp-f" checked> Folga do dia inteiro (não conta como falta)</label>`,
+    { foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="cp-ok">Registrar compensação</button>', onMount: m => $('#cp-ok', m).onclick = () => { const c = colabById($('#cp-c', m).value), d = $('#cp-d', m).value, [h, mi] = $('#cp-h', m).value.split(':').map(Number), min = h * 60 + mi; if (!c || !d || !min) return toast('Preencha funcionário, data e horas.', true);
+      S.data.bh.push({ id: uid(), colabId: c.id, data: d, min: -min, desc: 'Compensação (folga paga com o banco de horas)', por: S.user.nome }); save('bh');
+      if ($('#cp-f', m).checked) { S.data.ocorr.push({ id: uid(), colabId: c.id, tipo: 'abono', data: d, inicio: d, dias: 1, desc: 'Folga compensatória (banco de horas)' }); save('ocorr'); }
+      audit(`Registrou compensação de ${hmS(min)} para ${c.nome}`); closeModal(); toast('Compensação registrada.'); go('bh'); } });
+  $('#bh-pg', el).onclick = () => { const pos = saldos().filter(x => x.s > 0); if (!pos.length) return toast('Ninguém tem saldo positivo para pagar.', true);
+    modal('Pagar horas do banco', `<p class="hint" style="margin-top:0">As horas pagas entram na folha como hora extra com adicional e saem do banco de horas (CLT, art. 59, § 3º).</p><div class="fld"><label for="pg-c">Funcionário</label><select class="inp" id="pg-c">${opts(pos.map(x => [x.c.id, `${x.c.nome} (${hmS(x.s)})`]), pos[0].c.id)}</select></div>
+      <div class="grid"><div class="fld"><label for="pg-h">Horas a pagar</label><input class="inp" type="time" id="pg-h"></div><div class="fld"><label for="pg-a">Adicional</label><select class="inp" id="pg-a">${opts([['50', '50%'], ['100', '100%']], '50')}</select></div><div class="fld"><label for="pg-m">Na folha de</label><input class="inp" type="month" id="pg-m" value="${iso(hoje()).slice(0, 7)}"></div></div><p class="hint" id="pg-v"></p>`,
+      { foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="pg-ok">Lançar na folha</button>', onMount: m => {
+        const up = () => { const x = pos.find(y => y.c.id === $('#pg-c', m).value); if (!$('#pg-h', m).value || up.c !== x.c.id) { $('#pg-h', m).value = `${String(Math.floor(x.s / 60)).padStart(2, '0')}:${String(x.s % 60).padStart(2, '0')}`; up.c = x.c.id; } const [h, mi] = $('#pg-h', m).value.split(':').map(Number), min = h * 60 + mi; $('#pg-v', m).textContent = `Valor: ${brl(r2(vHora(x.c) * (1 + +$('#pg-a', m).value / 100) * min / 60))}`; };
+        $$('input,select', m).forEach(i => i.addEventListener('input', up)); up();
+        $('#pg-ok', m).onclick = () => { const x = pos.find(y => y.c.id === $('#pg-c', m).value), [h, mi] = $('#pg-h', m).value.split(':').map(Number), min = h * 60 + mi, cmp = $('#pg-m', m).value; if (!min || min > x.s) return toast('Informe horas até o saldo disponível.', true);
+          const f = S.data.folhas.find(y => !y.tipo && y.comp === cmp); if (!f || f.fechada) return toast(f ? 'A folha deste mês está fechada.' : `Gere a folha de ${mesNome(cmp)} primeiro.`, true); const it = f.itens.find(i => i.colabId === x.c.id); if (!it) return toast('Funcionário não está nesta folha.', true);
+          const v = r2(vHora(x.c) * (1 + +$('#pg-a', m).value / 100) * min / 60); it.adic = r2(num(it.adic) + v); S.data.bh.push({ id: uid(), colabId: x.c.id, data: iso(hoje()), min: -min, desc: `Pago na folha de ${mesNome(cmp)} (${$('#pg-a', m).value}%)`, por: S.user.nome });
+          save('folhas'); save('bh'); audit(`Pagou ${hmS(min)} do banco de horas de ${x.c.nome}`); closeModal(); toast(`${brl(v)} lançados na folha.`); go('bh'); }; } }); };
+  $('#bh-pr', el).onclick = () => modal('Imprimir ou exportar', `<div class="fld"><label for="bp-c">Funcionário</label><select class="inp" id="bp-c">${opts([['*', 'Todos (resumo dos saldos)'], ...ativos().map(c => [c.id, c.nome])], '*')}</select></div>`, { foot: '<button class="btn sec" id="bp-csv">Exportar CSV</button><button class="btn" id="bp-pr">Imprimir / PDF</button>', onMount: m => {
+    const dados = () => { const id = $('#bp-c', m).value; if (id === '*') return { t: 'Banco de horas: saldos', cab: ['Funcionário', 'Cargo', 'Saldo'], l: saldos().map(x => [x.c.nome, x.c.cargo || '', hmS(x.s)]) }; const c = colabById(id), ex = extratoBH(id, S.data.ponto, S.data.bh, c, S.data.config); return { t: `Extrato do banco de horas: ${c.nome}`, cab: ['Data', 'Descrição', 'Horas'], l: [...(ex.ev || []).map(e => [fd(e.data), e.desc || '', hmS(e.min)]), ['', 'Saldo', hmS(ex.saldo)]] }; };
+    $('#bp-pr', m).onclick = () => { const d = dados(); printDoc(d.t, `<h2>${esc(d.t)}</h2><p style="font-family:Arial;font-size:12px">Emitido em ${fdh(agoraIso())}</p><table><tr>${d.cab.map(x => `<th>${x}</th>`).join('')}</tr>${d.l.map(r => `<tr>${r.map(x => `<td>${esc(x)}</td>`).join('')}</tr>`).join('')}</table><div class="ass"><div>Empresa</div><div>Funcionário</div></div>`); };
+    $('#bp-csv', m).onclick = () => { const d = dados(); baixar('banco_de_horas.csv', '\ufeff' + [d.cab, ...d.l].map(r => r.map(x => `"${String(x).replace(/"/g, '""')}"`).join(';')).join('\n'), 'text/csv'); }; } });
+}
+/* ---------- N2. Calendário de batidas ---------- */
+function calBatidas(w, cid = S.calColab, comp = S.calComp || iso(hoje()).slice(0, 7)) {
+  const l = ativos().sort((a, b) => a.nome.localeCompare(b.nome)); cid = cid || (l[0] || {}).id; S.calColab = cid; S.calComp = comp; const c = colabById(cid);
+  if (!c) { w.innerHTML = '<div class="panel empty"><b>Nenhum funcionário</b></div>'; return; }
+  const [a, mo] = comp.split('-').map(Number), pri = new Date(a, mo - 1, 1), nd = new Date(a, mo, 0).getDate(), cel = [];
+  for (let k = 0; k < pri.getDay(); k++) cel.push('<div></div>');
+  for (let d = 1; d <= nd; d++) { const dt = new Date(a, mo - 1, d), ds = iso(dt), r = S.data.ponto.find(p => p.colabId === cid && p.data === ds), m = r ? r.marc.slice().sort() : [], t = turnoDia(c, dt, S.data.config), f = emFolga(c, ds), fer = feriado(ds, S.data.config), fut = ds > iso(hoje());
+    const st = m.length ? (m.length % 2 ? ['warn', 'incompleto'] : ['ok', hmS(horasTrab(m))]) : f ? ['mut', f] : fer ? ['mut', 'feriado'] : !t ? ['mut', 'folga'] : fut ? ['', ''] : ['bad', 'falta'];
+    cel.push(`<button class="cal-d ${ds === iso(hoje()) ? 'hj' : ''}" data-cd="${ds}" ${m.length || t ? '' : 'tabindex="-1"'}><b>${d}</b>${m.map(x => `<span>${x}</span>`).join('')}${st[1] ? `<em class="pill ${st[0]}">${esc(st[1])}</em>` : ''}</button>`); }
+  w.innerHTML = `<style>.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.cal-h{font-size:12px;color:var(--mut);text-align:center;font-weight:600}.cal-d{min-height:96px;border:1px solid var(--line);border-radius:8px;background:var(--sf);padding:6px;text-align:left;display:flex;flex-direction:column;gap:1px;cursor:pointer;font-size:12px}.cal-d b{font-size:14px}.cal-d.hj{border-color:var(--pri);box-shadow:0 0 0 2px var(--pri-s)}.cal-d em{font-style:normal;margin-top:auto;font-size:11px;padding:1px 6px}@media(max-width:700px){.cal-d span{display:none}.cal-d{min-height:60px}}</style>
+    <div class="row" style="margin-bottom:12px"><select class="inp" id="cb-c" style="width:auto">${opts(l.map(x => [x.id, x.nome]), cid)}</select><input class="inp" type="month" id="cb-m" value="${comp}" style="width:auto"><span class="hint">Marcações do ponto biométrico. Clique no dia para ver ou ajustar.</span></div>
+    <div class="cal">${DIAS_S.map(d => `<div class="cal-h">${d}</div>`).join('')}${cel.join('')}</div>`;
+  $('#cb-c', w).onchange = e => calBatidas(w, e.target.value, comp); $('#cb-m', w).onchange = e => calBatidas(w, cid, e.target.value);
+  $$('[data-cd]', w).forEach(b => b.onclick = () => ajustarPonto(cid, b.dataset.cd, () => calBatidas(w, cid, comp)));
+}
+/* ---------- 6. Cadastrar loja ---------- */
+function formLoja(l, depois) {
+  modal(l ? 'Editar loja' : 'Cadastrar loja', `<div class="grid"><div class="fld full"><label for="lo-n">Nome da loja ou unidade</label><input class="inp" id="lo-n" value="${esc(l ? l.nome : '')}" placeholder="Ex.: Loja Centro"></div><div class="fld"><label for="lo-c">CNPJ da filial (opcional)</label><input class="inp" id="lo-c" value="${esc(l ? l.cnpj || '' : '')}"></div><div class="fld"><label for="lo-t">Telefone</label><input class="inp" id="lo-t" value="${esc(l ? l.tel || '' : '')}"></div><div class="fld full"><label for="lo-e">Endereço</label><input class="inp" id="lo-e" value="${esc(l ? l.endereco || '' : '')}"></div></div>`,
+    { foot: `${l ? '<button class="btn ghost" id="lo-x" style="color:var(--bad);margin-right:auto">Excluir</button>' : ''}<button class="btn sec" data-close>Cancelar</button><button class="btn" id="lo-ok">Salvar</button>`, onMount: m => {
+      $('#lo-ok', m).onclick = () => { const n = $('#lo-n', m).value.trim(); if (n.length < 2) return toast('Informe o nome da loja.', true); const d = { nome: n, cnpj: $('#lo-c', m).value.trim(), tel: $('#lo-t', m).value.trim(), endereco: $('#lo-e', m).value.trim() };
+        if (l) Object.assign(l, d); else S.data.config.lojas = [...(S.data.config.lojas || []), { id: uid(), ...d }]; save('config'); audit(`${l ? 'Editou' : 'Cadastrou'} a loja ${n}`); closeModal(); toast('Loja salva.'); depois && depois(); };
+      const x = $('#lo-x', m); if (x) x.onclick = () => { const n = S.data.colab.filter(c => c.loja === l.id && c.status !== 'desligado').length; if (n) return toast(`${n} funcionário(s) estão nesta loja. Mude a loja deles antes de excluir.`, true); confirmar(`Excluir a loja ${esc(l.nome)}?`, () => { S.data.config.lojas = S.data.config.lojas.filter(y => y.id !== l.id); save('config'); audit(`Excluiu a loja ${l.nome}`); depois && depois(); }, 'Excluir', true); }; } });
+}
+/* ---------- 8. Encaminhamento de exames ocupacionais ---------- */
+const TIPOS_EXAME = { admissional: 'Admissional', periodico: 'Periódico', retorno: 'Retorno ao trabalho', mudanca: 'Mudança de risco ocupacional', demissional: 'Demissional' };
+function docEncaminhamento(c, tipo, x) {
+  const e = S.data.config.empresa || {}, sst = S.data.config.sst || {};
+  return `${CSS_DOC_PRO}<div class="dp"><table class="cab"><tr><td><b style="font-size:13px">${esc(e.nome || '')}</b><br>CNPJ ${esc(e.cnpj || '—')}<br>${esc([e.endereco, e.cidade].filter(Boolean).join(' · '))}</td><td class="n" style="vertical-align:bottom"><div class="tit">GUIA DE ENCAMINHAMENTO PARA EXAME OCUPACIONAL</div><div style="text-align:right">Nº ${esc(x.num)} · emitida em ${new Date().toLocaleDateString('pt-BR')}</div></td></tr></table>
+    <div class="q">CLÍNICA / MÉDICO DO TRABALHO</div><table><tr>${celP('Clínica', esc(x.clinica || sst.clinica || ''), 2)}${celP('Telefone', esc(x.telClinica || sst.telClinica || ''))}</tr><tr>${celP('Endereço', esc(x.endClinica || sst.endClinica || ''), 2)}${celP('Comparecer até', x.ate ? fdP(x.ate) : '')}</tr></table>
+    <div class="q">TRABALHADOR</div><table><tr>${celP('Nome', esc(c.nome), 2)}${celP('CPF', esc(c.cpf || ''))}${celP('Nascimento', c.nascimento ? fdP(c.nascimento) : '')}</tr><tr>${celP('Cargo', esc(c.cargo || ''))}${celP('CBO', esc(c.cbo || ''))}${celP('Setor', esc(c.depto || ''))}${celP('Admissão', c.admissao ? fdP(c.admissao) : '')}</tr></table>
+    <div class="q">EXAME SOLICITADO</div><table><tr>${Object.entries(TIPOS_EXAME).map(([k, t]) => celP(t, k === tipo ? '☒' : '☐')).join('')}</tr></table>
+    <div class="q">RISCOS OCUPACIONAIS (PGR) E EXAMES COMPLEMENTARES (PCMSO)</div><table><tr>${celP('Riscos a que o trabalhador está ou estará exposto', esc(x.riscos || sst.riscos || 'Ausência de risco ocupacional específico identificado no PGR'), 2)}</tr><tr>${celP('Exames complementares', esc(x.exames || 'Exame clínico (anamnese ocupacional e exame físico e mental)'), 2)}</tr></table>
+    <p style="margin:10px 0 0">Solicitamos a realização do exame ${esc(TIPOS_EXAME[tipo].toLowerCase())} do trabalhador acima, nos termos da NR-7, com a emissão do Atestado de Saúde Ocupacional (ASO).${tipo === 'admissional' ? ' O exame deve ser feito antes do início das atividades.' : tipo === 'demissional' ? ' O exame deve ser feito em até 10 dias do término do contrato.' : tipo === 'retorno' ? ' O exame deve ser feito antes da volta ao trabalho.' : ''} Os custos são da empresa (NR-7, item 7.3.1).</p>
+    <p class="min">Depois do exame, envie a foto do ASO pelo Portal do Colaborador, em Documentos.</p><div class="ass"><div>${esc(e.responsavel || e.nome || '')}<br>Responsável pela empresa</div><div>Recebido pelo trabalhador</div></div></div>`;
+}
+function modalEncaminhamento(cid, tipo = 'periodico', depois) {
+  const l = S.data.colab.filter(c => c.status !== 'desligado' || (c.desligamento && diffD(pd(c.desligamento), hoje()) <= 15)).sort((a, b) => a.nome.localeCompare(b.nome)), sst = S.data.config.sst || {};
+  modal('Encaminhar para exame ocupacional', `<div class="grid"><div class="fld"><label for="en-c">Funcionário</label><select class="inp" id="en-c">${opts(l.map(c => [c.id, c.nome]), cid || '')}</select></div><div class="fld"><label for="en-t">Exame</label><select class="inp" id="en-t">${opts(Object.entries(TIPOS_EXAME), tipo)}</select></div>
+    <div class="fld"><label for="en-cl">Clínica</label><input class="inp" id="en-cl" value="${esc(sst.clinica || '')}"></div><div class="fld"><label for="en-tc">Telefone da clínica</label><input class="inp" id="en-tc" value="${esc(sst.telClinica || '')}"></div><div class="fld full"><label for="en-ec">Endereço da clínica</label><input class="inp" id="en-ec" value="${esc(sst.endClinica || '')}"></div>
+    <div class="fld full"><label for="en-r">Riscos ocupacionais (do PGR)</label><input class="inp" id="en-r" value="${esc(sst.riscos || '')}" placeholder="Ex.: ergonômico (postura em pé); acidente (trânsito, para motoboys)"></div><div class="fld full"><label for="en-x">Exames complementares (do PCMSO)</label><input class="inp" id="en-x" placeholder="Em branco = só exame clínico"></div><div class="fld"><label for="en-a">Comparecer até</label><input class="inp" type="date" id="en-a" value="${iso(addD(hoje(), 5))}"></div></div>`,
+    { size: 'lg', foot: '<button class="btn sec" id="en-pr">Visualizar / imprimir</button><button class="btn sec" id="en-wa">WhatsApp</button><button class="btn" id="en-ok">Enviar ao portal</button>', onMount: m => {
+      const dados = () => { const c = colabById($('#en-c', m).value), t = $('#en-t', m).value, x = { num: `${new Date().getFullYear()}-${String((S.data.config.encSeq || 0) + 1).padStart(4, '0')}`, clinica: $('#en-cl', m).value.trim(), telClinica: $('#en-tc', m).value.trim(), endClinica: $('#en-ec', m).value.trim(), riscos: $('#en-r', m).value.trim(), exames: $('#en-x', m).value.trim(), ate: $('#en-a', m).value };
+        S.data.config.sst = { ...(S.data.config.sst || {}), clinica: x.clinica, telClinica: x.telClinica, endClinica: x.endClinica, riscos: x.riscos || (S.data.config.sst || {}).riscos }; return { c, t, x }; };
+      $('#en-pr', m).onclick = () => { const { c, t, x } = dados(); printDoc(`Encaminhamento ${TIPOS_EXAME[t]}`, docEncaminhamento(c, t, x)); };
+      $('#en-wa', m).onclick = () => { const { c, t, x } = dados(), tel = (c.telefone || '').replace(/\D/g, ''); if (!tel) return toast('Funcionário sem telefone.', true); window.open(`https://wa.me/55${tel}?text=${encodeURIComponent(`Olá, ${c.nome.split(' ')[0]}! Você está encaminhado(a) para o exame ${TIPOS_EXAME[t].toLowerCase()}.\nClínica: ${x.clinica}\nEndereço: ${x.endClinica}\nTelefone: ${x.telClinica}\nCompareça até ${fd(x.ate)} com documento com foto. A guia está no Portal do Colaborador. Depois, envie a foto do ASO pelo portal.`)}`, '_blank', 'noopener'); };
+      $('#en-ok', m).onclick = () => { const { c, t, x } = dados(); if (!x.clinica) return toast('Informe a clínica.', true); S.data.config.encSeq = (S.data.config.encSeq || 0) + 1; save('config');
+        const id = enviarDoc(c, `Encaminhamento: exame ${TIPOS_EXAME[t].toLowerCase()}`, docEncaminhamento(c, t, x), 'exame', false); const d = S.data.docs.find(y => y.id === id); if (d) { d.exame = { tipo: t, ate: x.ate, num: x.num }; save('docs'); }
+        if (!c.portal || !c.portal.ativo) toast(`${c.nome.split(' ')[0]} ainda não tem acesso ao portal: use o WhatsApp ou imprima a guia.`, true); else toast('Encaminhamento enviado ao portal.');
+        audit(`Encaminhou ${c.nome} para exame ${TIPOS_EXAME[t].toLowerCase()}`); closeModal(); depois && depois(); }; } });
+}
+function painelASOs(w) {
+  const l = S.data.solic.filter(s => s.tipo === 'aso' && s.status === 'pendente'), enc = S.data.docs.filter(d => d.categoria === 'exame').sort((a, b) => (b.enviadoEm || '').localeCompare(a.enviadoEm || '')).slice(0, 12);
+  w.insertAdjacentHTML('afterbegin', `<div class="row" style="margin-bottom:12px"><span class="hint">A guia vai ao portal; o funcionário faz o exame e envia a foto do ASO, que chega aqui para você aprovar.</span><span class="sp"></span>${podeEditar() ? '<button class="btn" id="ss-enc">Encaminhar para exame</button>' : ''}</div>
+    ${l.length ? `<section class="panel"><h2>ASOs recebidos para aprovar (${l.length})</h2><ul class="list">${l.map(s => `<li><div class="t"><div><b>${esc(nome(s.colabId))}</b> · ${esc(TIPOS_EXAME[s.dados.tipo] || 'Exame')}</div><div>Exame em ${fd(s.dados.data)} · resultado informado: ${s.dados.resultado === 'inapto' ? 'inapto' : 'apto'}</div></div>${s.dados.anexo ? `<a class="btn ghost sm" href="${s.dados.anexo.data}" download="${esc(s.dados.anexo.nome || 'aso')}">Ver ASO</a>` : ''}<button class="btn sm" data-dec="${s.id}">Analisar</button></li>`).join('')}</ul></section>` : ''}
+    ${enc.length ? `<section class="panel"><h2>Encaminhamentos enviados</h2><ul class="list">${enc.map(d => `<li><div class="t"><div><b>${esc(nome(d.colabId))}</b> · ${esc(d.titulo)}</div><div>Enviado em ${fdh(d.enviadoEm)}${d.exame && d.exame.ate ? ` · comparecer até ${fd(d.exame.ate)}` : ''}</div></div>${S.data.solic.some(s => s.tipo === 'aso' && s.dados.docId === d.id) ? '<span class="pill ok">ASO enviado</span>' : '<span class="pill warn">aguardando ASO</span>'}</li>`).join('')}</ul></section>` : ''}`);
+  const b = $('#ss-enc', w); if (b) b.onclick = () => modalEncaminhamento('', 'periodico', () => go('sst'));
+  $$('[data-dec]', w).forEach(x => x.onclick = () => { S.portalAba = 'solic'; go('portal'); });
+}
+/* ---------- 11 e N7. Documentos e assinaturas ---------- */
+function modalDocumentos(filtro = 'todos') {
+  const st = d => d.status === 'assinado' ? '<span class="pill ok">Assinado</span>' : d.status === 'recusado' ? '<span class="pill bad">Recusado</span>' : d.requer === false ? '<span class="pill">Enviado</span>' : '<span class="pill warn">Aguardando</span>';
+  const l = S.data.docs.filter(d => d.categoria !== 'comprovante' && (filtro === 'todos' || (filtro === 'pend' ? d.status === 'pendente' && d.requer !== false : d.status === filtro))).sort((a, b) => (b.enviadoEm || '').localeCompare(a.enviadoEm || ''));
+  const cnt = k => S.data.docs.filter(d => d.categoria !== 'comprovante' && (k === 'pend' ? d.status === 'pendente' && d.requer !== false : d.status === k)).length;
+  modal('Documentos e assinaturas', `<div class="row" style="margin-bottom:12px">${[['todos', 'Todos'], ['pend', `Aguardando (${cnt('pend')})`], ['assinado', `Assinados (${cnt('assinado')})`], ['recusado', `Recusados (${cnt('recusado')})`]].map(([k, t]) => `<button class="btn ${k === filtro ? '' : 'sec'} sm" data-fl="${k}">${t}</button>`).join('')}<span class="sp"></span>${podeEditar() ? '<button class="btn sm" id="md-nv">Novo documento ou contrato</button>' : ''}</div>
+    ${l.length ? `<div class="tbl-wrap" style="max-height:60vh;overflow:auto"><table><thead><tr><th>Funcionário</th><th>Documento</th><th>Enviado</th><th>Situação</th><th>Assinatura</th><th></th></tr></thead><tbody>${l.map(d => { const a = d.assinatura || {}; return `<tr><td><b>${esc(nome(d.colabId))}</b></td><td>${esc(d.titulo)}</td><td class="hint">${fdh(d.enviadoEm)}</td><td>${st(d)}${d.status === 'recusado' && d.recusa ? `<div class="hint" style="max-width:220px">Motivo: ${esc(d.recusa.motivo)}</div>` : ''}</td>
+      <td>${d.status === 'assinado' ? `<div class="row" style="gap:6px;flex-wrap:nowrap">${a.selfie ? `<img src="${a.selfie}" alt="Selfie" style="width:44px;height:44px;object-fit:cover;border-radius:6px">` : ''}<div class="hint">${fdh(a.em)}${a.geo ? '<br>com localização' : ''}</div></div>` : ''}</td><td class="n" style="white-space:nowrap"><button class="btn ghost sm" data-vd="${d.id}">Ver</button>${podeEditar() && d.status !== 'assinado' ? `<button class="btn ghost sm" data-rd="${d.id}">Reenviar</button>` : ''}</td></tr>`; }).join('')}</tbody></table></div>` : '<div class="panel empty"><b>Nenhum documento</b></div>'}`,
+    { size: 'lg', onMount: m => {
+      $$('[data-fl]', m).forEach(b => b.onclick = () => modalDocumentos(b.dataset.fl)); const nv = $('#md-nv', m); if (nv) nv.onclick = () => { closeModal(); S.tplAba = 'padrao'; go('docs'); };
+      $$('[data-vd]', m).forEach(b => b.onclick = () => { const d = S.data.docs.find(x => x.id === b.dataset.vd), html = d.html + (typeof blocoAssin === 'function' ? blocoAssin(d) : '');
+        modal(d.titulo, `<div class="doc-prev">${html}</div>`, { size: 'lg', foot: `<button class="btn sec" id="vd-b">Voltar</button><button class="btn" id="vd-p">Imprimir / PDF</button>`, onMount: mm => { $('#vd-p', mm).onclick = () => printDoc(d.titulo, html); $('#vd-b', mm).onclick = () => modalDocumentos(filtro); } }); });
+      $$('[data-rd]', m).forEach(b => b.onclick = () => { const d = S.data.docs.find(x => x.id === b.dataset.rd); d.status = 'pendente'; delete d.recusa; d.enviadoEm = agoraIso(); save('docs'); audit(`Reenviou "${d.titulo}" para ${nome(d.colabId)}`); toast('Documento reenviado para assinatura.'); modalDocumentos(filtro); }); } });
+}
+/* ---------- 13 e N4. Holerites: publicar, assinaturas, pagamento, republicar e excluir ---------- */
+function modalHolerites(comp) {
+  const f = S.data.folhas.find(x => !x.tipo && x.comp === comp); if (!f) return toast('Gere a folha primeiro.', true);
+  const pub = S.data.holerites.filter(h => h.comp === comp), ass = cid => S.data.assin.filter(a => a.tipo === 'holerite' && a.ref === comp && a.colabId === cid).sort((a, b) => b.em.localeCompare(a.em))[0];
+  const st = (h, a) => !h ? '<span class="pill">Não publicado</span>' : !a || (a.versao || 1) !== (h.versao || 1) ? '<span class="pill warn">Aguardando assinatura</span>' : a.aceito === false ? `<span class="pill bad">Recusado</span><div class="hint" style="max-width:240px">Motivo: ${esc(a.motivo || '')}</div>` : `<span class="pill ok">Aceito</span><div class="hint">${fdh(a.em)}${a.metodo === 'facial' ? ' · biometria facial' : a.metodo ? ' · ' + a.metodo : ''}</div>`;
+  modal(`Holerites de ${mesNome(comp)} no portal`, `<div class="row" style="margin-bottom:12px"><span class="hint">O funcionário assina o holerite no portal com biometria facial e informa se aceita os valores.</span><span class="sp"></span>${podeEditar() ? `<button class="btn sm" id="hp-pub">${pub.length ? 'Publicar os que faltam' : 'Publicar todos no portal'}</button>` : ''}</div>
+    <div class="tbl-wrap" style="max-height:60vh;overflow:auto"><table><thead><tr><th>Funcionário</th><th class="n">Líquido</th><th>Assinatura</th><th>Pago</th><th></th></tr></thead><tbody>${f.itens.map(i => { const h = pub.find(x => x.colabId === i.colabId), a = h && ass(i.colabId), c = colabById(i.colabId) || { nome: i.nome };
+      return `<tr><td><b>${esc(c.nome)}</b></td><td class="n">${brl(folhaItem(i).liq)}</td><td>${st(h, a)}</td><td>${h ? `<label class="row hint" style="gap:6px"><input type="checkbox" data-pg="${h.id}" ${h.pagoEm ? 'checked' : ''} ${podeEditar() ? '' : 'disabled'}> ${h.pagoEm ? fd(h.pagoEm) : 'não'}</label>` : ''}</td>
+        <td class="n" style="white-space:nowrap">${podeEditar() ? (h ? `<button class="btn ghost sm" data-rp="${i.colabId}">Republicar</button><button class="btn ghost sm" data-ex="${h.id}" style="color:var(--bad)">Excluir do portal</button>` : `<button class="btn ghost sm" data-p1="${i.colabId}">Publicar</button>`) : ''}</td></tr>`; }).join('')}</tbody></table></div>`,
+    { size: 'lg', onMount: m => {
+      const publicar = (it, motivo) => { const ant = S.data.holerites.find(x => x.comp === comp && x.colabId === it.colabId), v = ant ? (ant.versao || 1) + 1 : 1; S.data.holerites = S.data.holerites.filter(x => !(x.comp === comp && x.colabId === it.colabId)); S.data.holerites.push({ id: `${comp}_${it.colabId}`, colabId: it.colabId, comp, item: { ...it }, versao: v, publicadoEm: agoraIso(), ...(motivo ? { motivoRepub: motivo } : {}), ...(ant && ant.pagoEm ? { pagoEm: ant.pagoEm } : {}) }); };
+      const pb = $('#hp-pub', m); if (pb) pb.onclick = () => { let n = 0; f.itens.forEach(i => { if (!pub.some(x => x.colabId === i.colabId)) { publicar(i); n++; } }); save('holerites'); audit(`Publicou ${n} holerite(s) de ${mesNome(comp)} no portal`); toast(`${n} holerite(s) publicados para assinatura.`); modalHolerites(comp); };
+      $$('[data-p1]', m).forEach(b => b.onclick = () => { publicar(f.itens.find(i => i.colabId === b.dataset.p1)); save('holerites'); modalHolerites(comp); });
+      $$('[data-rp]', m).forEach(b => b.onclick = () => { const mt = prompt('Motivo da republicação (o funcionário verá):', 'Correção de valores'); if (mt === null) return; publicar(f.itens.find(i => i.colabId === b.dataset.rp), mt.trim() || 'Correção'); save('holerites'); audit(`Republicou o holerite de ${nome(b.dataset.rp)} (${mesNome(comp)}): ${mt}`); toast('Holerite republicado. O funcionário precisa assinar de novo.'); modalHolerites(comp); });
+      $$('[data-ex]', m).forEach(b => b.onclick = () => { const mt = prompt('Motivo da exclusão do portal:', 'Erro no cálculo'); if (mt === null) return; const h = S.data.holerites.find(x => x.id === b.dataset.ex); S.data.holerites = S.data.holerites.filter(x => x.id !== h.id); save('holerites'); audit(`Excluiu do portal o holerite de ${nome(h.colabId)} (${mesNome(comp)}): ${mt}`); toast('Holerite retirado do portal.'); modalHolerites(comp); });
+      $$('[data-pg]', m).forEach(i => i.onchange = () => { const h = S.data.holerites.find(x => x.id === i.dataset.pg); h.pagoEm = i.checked ? iso(hoje()) : null; save('holerites'); audit(`${i.checked ? 'Marcou como pago' : 'Desmarcou o pagamento de'} o holerite de ${nome(h.colabId)} (${mesNome(comp)})`); modalHolerites(comp); }); } });
+}
+/* ---------- N5. Comprovantes de pagamento e vales ---------- */
+function modalComprovante(comp) {
+  modal('Anexar comprovante ao portal', `<div class="grid"><div class="fld full"><label for="cv-c">Funcionário</label><select class="inp" id="cv-c">${opts(ativos().map(c => [c.id, c.nome]), '')}</select></div><div class="fld"><label for="cv-t">Tipo</label><select class="inp" id="cv-t">${opts(['Pagamento de salário', 'Adiantamento salarial', 'Vale', 'Férias', '13º salário', 'Rescisão', 'Outro'].map(x => [x, x]), 'Pagamento de salário')}</select></div>
+    <div class="fld"><label for="cv-m">Referência</label><input class="inp" type="month" id="cv-m" value="${comp || iso(hoje()).slice(0, 7)}"></div><div class="fld"><label for="cv-v">Valor (R$)</label><input class="inp" id="cv-v" inputmode="decimal"></div><div class="fld"><label for="cv-d">Data do pagamento</label><input class="inp" type="date" id="cv-d" value="${iso(hoje())}"></div>
+    <div class="fld full"><label for="cv-a">Comprovante (PDF ou foto)</label><input class="inp" type="file" id="cv-a" accept="application/pdf,image/*"></div></div>`,
+    { foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="cv-ok">Enviar ao portal</button>', onMount: m => $('#cv-ok', m).onclick = async () => {
+      const c = colabById($('#cv-c', m).value), f = $('#cv-a', m).files[0], t = $('#cv-t', m).value; if (!c || !f) return toast('Escolha o funcionário e o arquivo.', true); let data; try { data = await lerArqRH(f); } catch (e) { return toast(e.message, true); }
+      const id = enviarDoc(c, `Comprovante: ${t} (${mesNome($('#cv-m', m).value)})`, `<h2>Comprovante de ${esc(t.toLowerCase())}</h2><p>Referência: ${mesNome($('#cv-m', m).value)}${num($('#cv-v', m).value) ? ` · Valor: ${brl(num($('#cv-v', m).value))}` : ''} · Pago em ${fd($('#cv-d', m).value)}</p>`, 'comprovante', false);
+      const d = S.data.docs.find(x => x.id === id); if (d) { d.anexo = { nome: f.name, tipo: f.type, data }; save('docs'); } audit(`Enviou comprovante (${t}) para ${c.nome}`); closeModal(); toast('Comprovante enviado ao portal.'); } });
+}
+/* ---------- 16 e N6. Carta de desligamento, aviso prévio e não prorrogação ---------- */
+function cartaDeslig(c, p, r) {
+  const e = S.data.config.empresa || {}, emp = esc(e.nome || ''), loc = `${esc(e.cidade || '')}, ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}`, ass = (a, b) => `<div class="ass"><div>${a}</div><div>${b}</div></div>`, dias = r.avisoDias || 30, dem = fd(p.dem);
+  const corpo = {
+    sjc: `<h2>Comunicado de dispensa sem justa causa</h2><p>Prezado(a) <b>${esc(c.nome)}</b>, CPF ${esc(c.cpf || '')}, ${esc(c.cargo || '')}.</p><p>Comunicamos que, por decisão da empresa, seu contrato de trabalho será rescindido <b>sem justa causa</b>, com ${p.aviso === 'trabalhado' ? `aviso prévio <b>trabalhado</b> de ${Math.min(dias, 30)} dias a partir desta data${dias > 30 ? ` e mais ${dias - 30} dias de aviso proporcional indenizado (Lei 12.506/2011)` : ''}. Durante o aviso, você poderá optar pela redução de 2 horas diárias ou por faltar 7 dias corridos, sem prejuízo do salário (CLT, art. 488)` : `aviso prévio <b>indenizado</b> de ${dias} dias (CLT, art. 487, § 1º; Lei 12.506/2011), com afastamento a partir de ${dem}`}.</p><p>As verbas rescisórias serão pagas em até 10 dias contados do término do contrato (art. 477, § 6º). Você terá direito ao saque do FGTS com a multa de 40% e, se preencher os requisitos, ao seguro-desemprego. Compareça ao exame demissional conforme o encaminhamento.</p>`,
+    pd: `<h2>Pedido de demissão</h2><p>A ${emp}.</p><p>Eu, <b>${esc(c.nome)}</b>, CPF ${esc(c.cpf || '')}, ocupante do cargo de ${esc(c.cargo || '')}, comunico por livre e espontânea vontade o meu pedido de demissão${p.aviso === 'naocumprido' ? ', solicitando a dispensa do cumprimento do aviso prévio, ciente de que a empresa poderá descontar o período não cumprido (CLT, art. 487, § 2º)' : ', cumprindo o aviso prévio de 30 dias (CLT, art. 487)'}.</p><p>Estou ciente de que, nesta modalidade, não há direito à multa de 40% do FGTS, ao saque do FGTS nem ao seguro-desemprego.</p>`,
+    jc: `<h2>Comunicado de dispensa por justa causa</h2><p>Prezado(a) <b>${esc(c.nome)}</b>, CPF ${esc(c.cpf || '')}.</p><p>Comunicamos a rescisão do seu contrato de trabalho <b>por justa causa</b>, com efeito em ${dem}, nos termos do art. 482 da CLT, em razão dos fatos já apurados e registrados${p.fatos ? `: ${esc(p.fatos)}` : ''}.</p><p>Serão pagos o saldo de salário e as férias vencidas com 1/3, se houver, em até 10 dias (art. 477, § 6º). A assinatura indica apenas o recebimento deste comunicado.</p>`,
+    acordo: `<h2>Termo de rescisão por acordo entre as partes</h2><p>${emp} e <b>${esc(c.nome)}</b>, CPF ${esc(c.cpf || '')}, acordam a extinção do contrato de trabalho em ${dem}, nos termos do art. 484-A da CLT: aviso prévio indenizado e multa do FGTS pela metade (20%), demais verbas integrais, saque de até 80% do FGTS e sem direito ao seguro-desemprego.</p><p>As partes declaram que o acordo é livre e de comum consentimento.</p>`,
+    fimexp: `<h2>Comunicado de término do contrato de experiência</h2><p>Prezado(a) <b>${esc(c.nome)}</b>.</p><p>Comunicamos que o seu contrato de experiência, iniciado em ${fd(p.adm)}, <b>não será prorrogado nem convertido</b> em contrato por prazo indeterminado, encerrando-se em ${dem}, no seu término normal (CLT, art. 443, § 2º, "c"). Nesta hipótese não há aviso prévio nem a indenização do art. 479.</p>`,
+    antexp_emp: `<h2>Comunicado de rescisão antecipada do contrato de experiência</h2><p>Prezado(a) <b>${esc(c.nome)}</b>.</p><p>Comunicamos a rescisão antecipada do seu contrato de experiência em ${dem}, por iniciativa da empresa, com o pagamento da indenização do art. 479 da CLT (metade da remuneração devida até o fim do contrato).</p>`,
+    antexp_col: `<h2>Pedido de rescisão antecipada do contrato de experiência</h2><p>Eu, <b>${esc(c.nome)}</b>, peço a rescisão antecipada do meu contrato de experiência em ${dem}, ciente da indenização prevista no art. 480 da CLT, limitada ao valor do art. 479.</p>`
+  }[p.motivo] || `<h2>Comunicado de desligamento</h2><p>${esc(c.nome)} — desligamento em ${dem}.</p>`;
+  return `${corpo}<p>${loc}.</p>${p.motivo === 'pd' || p.motivo === 'antexp_col' ? ass(esc(c.nome) + '<br>Empregado(a)', `Recebido por ${emp}`) : ass(emp + '<br>Empregador', esc(c.nome) + '<br>Ciente em ___/___/______')}`;
+}
+function docAvisoPrevio(c, x) {
+  const e = S.data.config.empresa || {}, anos = Math.floor(diffD(pd(c.admissao), pd(x.data)) / 365), dias = Math.min(90, 30 + 3 * anos), fim = iso(addD(pd(x.data), (x.modo === 'trabalhado' ? 30 : dias) - 1));
+  return x.quem === 'empresa' ? `<h2>Aviso prévio do empregador</h2><p>Prezado(a) <b>${esc(c.nome)}</b>, CPF ${esc(c.cpf || '')}, ${esc(c.cargo || '')}.</p><p>Pelo presente, comunicamos que a partir de <b>${fd(x.data)}</b> fica V.Sa. em aviso prévio ${x.modo === 'trabalhado' ? `<b>trabalhado</b> de 30 dias, até ${fd(fim)}${dias > 30 ? `, com ${dias - 30} dias de aviso proporcional indenizado (Lei 12.506/2011)` : ''}. Escolha a redução da jornada: <br>( ) 2 horas a menos por dia &nbsp;&nbsp; ( ) 7 dias corridos sem trabalhar no final do aviso (CLT, art. 488)` : `<b>indenizado</b> de ${dias} dias, ficando dispensado(a) do trabalho a partir desta data`}.</p><p>${esc(e.cidade || '')}, ${new Date().toLocaleDateString('pt-BR')}.</p><div class="ass"><div>${esc(e.nome || '')}<br>Empregador</div><div>${esc(c.nome)}<br>Ciente em ___/___/______</div></div>`
+    : `<h2>Aviso prévio do empregado (pedido de demissão)</h2><p>A ${esc(e.nome || '')}.</p><p>Eu, <b>${esc(c.nome)}</b>, CPF ${esc(c.cpf || '')}, comunico meu pedido de demissão e ${x.modo === 'trabalhado' ? `cumprirei o aviso prévio de 30 dias, de ${fd(x.data)} a ${fd(iso(addD(pd(x.data), 29)))}` : 'solicito a dispensa do cumprimento do aviso prévio, ciente do desconto previsto no art. 487, § 2º, da CLT, caso a empresa não a aceite'}.</p><p>${esc(e.cidade || '')}, ${new Date().toLocaleDateString('pt-BR')}.</p><div class="ass"><div>${esc(c.nome)}<br>Empregado(a)</div><div>Recebido por ${esc(e.nome || '')}</div></div>`;
+}
+function docNaoProrrog(c, data) { const e = S.data.config.empresa || {}; return `<h2>Comunicado de não prorrogação do contrato de experiência</h2><p>Prezado(a) <b>${esc(c.nome)}</b>, CPF ${esc(c.cpf || '')}.</p><p>Comunicamos que o seu contrato de experiência, iniciado em ${fd(c.admissao)}, <b>não será prorrogado</b> e se encerra em <b>${fd(data)}</b>, no seu término normal (CLT, arts. 443, § 2º, "c", e 445, parágrafo único). Não há aviso prévio nem a indenização do art. 479 nesta hipótese. As verbas rescisórias serão pagas em até 10 dias (art. 477, § 6º).</p><p>${esc(e.cidade || '')}, ${new Date().toLocaleDateString('pt-BR')}.</p><div class="ass"><div>${esc(e.nome || '')}<br>Empregador</div><div>${esc(c.nome)}<br>Ciente em ___/___/______</div></div>`; }
+function modalDocsResc(tipo) {
+  const l = S.data.colab.filter(c => c.status !== 'desligado' || (c.desligamento && diffD(pd(c.desligamento), hoje()) <= 30)).sort((a, b) => a.nome.localeCompare(b.nome)), tit = { aviso: 'Aviso prévio', naoprorrog: 'Não prorrogação da experiência' }[tipo];
+  modal(tit, `<div class="grid"><div class="fld full"><label for="dr-c">Funcionário</label><select class="inp" id="dr-c">${opts(l.filter(c => tipo !== 'naoprorrog' || c.tipo === 'experiencia').map(c => [c.id, c.nome]), '')}</select></div>
+    ${tipo === 'aviso' ? `<div class="fld"><label for="dr-q">Quem dá o aviso</label><select class="inp" id="dr-q">${opts([['empresa', 'A empresa (dispensa)'], ['empregado', 'O empregado (pedido de demissão)']], 'empresa')}</select></div><div class="fld"><label for="dr-m">Aviso</label><select class="inp" id="dr-m">${opts([['trabalhado', 'Trabalhado'], ['indenizado', 'Indenizado ou dispensado']], 'trabalhado')}</select></div>` : ''}
+    <div class="fld"><label for="dr-d">${tipo === 'aviso' ? 'Data do aviso' : 'Término da experiência'}</label><input class="inp" type="date" id="dr-d" value="${iso(hoje())}"></div></div>`, { foot: '<button class="btn sec" id="dr-pr">Visualizar / imprimir</button><button class="btn" id="dr-env">Enviar ao portal para assinar</button>', onMount: m => {
+    const sel = () => { const c = colabById($('#dr-c', m).value); if (tipo === 'naoprorrog' && c && c.admissao) { const f = c.expFim2 && c.expFim2 >= iso(hoje()) ? c.expFim2 : c.expFim1 || iso(addD(pd(c.admissao), 44)); $('#dr-d', m).value = f; } }; $('#dr-c', m).onchange = sel; sel();
+    const html = () => { const c = colabById($('#dr-c', m).value); return c ? (tipo === 'aviso' ? docAvisoPrevio(c, { quem: $('#dr-q', m).value, modo: $('#dr-m', m).value, data: $('#dr-d', m).value }) : docNaoProrrog(c, $('#dr-d', m).value)) : ''; };
+    $('#dr-pr', m).onclick = () => { const h = html(); if (!h) return toast('Escolha o funcionário.', true); printDoc(tit, h); };
+    $('#dr-env', m).onclick = () => { const c = colabById($('#dr-c', m).value), h = html(); if (!h) return toast('Escolha o funcionário.', true); enviarDoc(c, `${tit} (${fd($('#dr-d', m).value)})`, h, 'documento', true); audit(`Enviou ${tit.toLowerCase()} para ${c.nome}`); closeModal(); toast('Enviado ao portal para assinatura.'); }; } });
+}
+function enviarDocsRescisao(c, p, r) {
+  if (!c.portal || !c.portal.ativo) return 0; const e = S.data.config.empresa || {};
+  enviarDoc(c, `Carta de desligamento (${fd(p.dem)})`, cartaDeslig(c, p, r), 'documento', true);
+  const id = enviarDoc(c, `Termo de rescisão (TRCT) — ${fd(p.dem)}`, trctProf(c, e, p, r), 'documento', true); const d = S.data.docs.find(x => x.id === id); if (d) { d.aceite = true; d.liquido = r.liq; save('docs'); }
+  return 2;
+}
+/* ---------- 15. Admissão: ficha pelo portal, acesso automático e encaminhamento ---------- */
+async function iniciarAdmissaoDigital(p) {
+  if (S.data.colab.some(c => c.cpf && p.cpf && c.cpf.replace(/\D/g, '') === p.cpf.replace(/\D/g, '') && c.status !== 'desligado')) return toast('Já existe um cadastro ativo com este CPF.', true);
+  const c = { id: uid(), nome: p.nome, cpf: p.cpf, telefone: p.telefone, email: p.email || '', cargo: p.cargo, depto: p.depto || '', salario: p.salario, tipo: p.tipo, admissao: p.inicio, status: 'admissao', dependentes: 0, criadoEm: agoraIso() };
+  S.data.colab.push(c); save('colab'); p.colabId = c.id; save('admis');
+  const id = enviarDoc(c, 'Encaminhamento: exame admissional', docEncaminhamento(c, 'admissional', { num: `${new Date().getFullYear()}-${String((S.data.config.encSeq || 0) + 1).padStart(4, '0')}`, ate: iso(addD(pd(p.inicio), -1)) }), 'exame', false);
+  S.data.config.encSeq = (S.data.config.encSeq || 0) + 1; save('config'); const d = S.data.docs.find(x => x.id === id); if (d) { d.exame = { tipo: 'admissional', ate: iso(addD(pd(p.inicio), -1)) }; save('docs'); }
+  audit(`Iniciou a admissão digital de ${c.nome}`);
+  if (!c.cpf) return toast('Informe o CPF para liberar o portal ao candidato.', true);
+  await gerarAcesso(c, 'admissao');
+}
+function aplicarFichaAdmissao(s, c) {
+  const d = s.dados || {}; ['rg', 'pis', 'nascimento', 'mae', 'cep', 'endereco', 'cidade', 'email', 'telefone', 'banco', 'escolaridade', 'estadoCivil'].forEach(k => { if (d[k]) c[k] = d[k]; });
+  if (d.foto) c.foto = d.foto; if (Array.isArray(d.dependentesLista)) { c.dependentesLista = d.dependentesLista; c.dependentes = d.dependentesLista.filter(x => x.ir !== false).length; }
+  const p = S.data.admis.find(a => a.colabId === c.id); if (p) { const ck = { 'Documento com foto (RG ou CNH) e CPF': d.rg, 'Comprovante de residência': d.endereco, 'PIS/NIT': d.pis, 'Dados bancários ou chave PIX': d.banco }; Object.entries(ck).forEach(([k, v]) => { if (v && !p.check[k]) p.check[k] = `${fd(iso(hoje()))} · informado pelo portal`; }); save('admis'); }
+  save('colab'); return 'Ficha de admissão aplicada ao cadastro.';
+}
+/* ---------- N8. Reuniões por vídeo ---------- */
+function vReunioes(el) {
+  const l = (S.data.reunioes || []).slice().sort((a, b) => b.inicio.localeCompare(a.inicio)), ed = podeEditar();
+  el.innerHTML = `<div class="row" style="margin-bottom:12px"><span class="hint">Sala com câmera, bate-papo e envio de arquivos, para conversar com um funcionário à distância. Ele entra pelo portal.</span><span class="sp"></span>${ed ? '<button class="btn" id="ru-n">Nova reunião</button>' : ''}</div>
+    ${l.length ? `<section class="panel"><ul class="list">${l.map(r => `<li><div class="t"><div><b>${esc(r.titulo)}</b> · ${esc(nome(r.colabId))}</div><div>${fdh(r.inicio)} · ${r.status === 'encerrada' ? 'encerrada' : 'agendada'}</div></div>${r.status !== 'encerrada' ? `<button class="btn sm" data-ru="${r.id}">Entrar</button>${ed ? `<button class="btn ghost sm" data-rx="${r.id}">Encerrar</button>` : ''}` : ''}</li>`).join('')}</ul></section>` : '<div class="panel empty"><b>Nenhuma reunião</b>Marque uma conversa por vídeo com qualquer funcionário que tenha acesso ao portal.</div>'}`;
+  const n = $('#ru-n', el); if (n) n.onclick = () => { const ps = ativos().filter(c => c.portal && c.portal.ativo); if (!ps.length) return toast('Ninguém tem acesso ao portal ainda.', true); const d0 = new Date(Date.now() + 15 * 60000), loc = new Date(d0.getTime() - d0.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    modal('Nova reunião por vídeo', `<div class="fld"><label for="ru-c">Com</label><select class="inp" id="ru-c">${opts(ps.map(c => [c.id, c.nome]), ps[0].id)}</select></div><div class="fld"><label for="ru-t">Assunto</label><input class="inp" id="ru-t" placeholder="Ex.: alinhamento de metas"></div><div class="fld"><label for="ru-d">Data e hora</label><input class="inp" type="datetime-local" id="ru-d" value="${loc}"></div>`,
+      { foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="ru-ok">Agendar</button>', onMount: m => $('#ru-ok', m).onclick = () => { const t = $('#ru-t', m).value.trim(), d = $('#ru-d', m).value; if (!t || !d) return toast('Informe o assunto e a data.', true); const r = { id: uid(), colabId: $('#ru-c', m).value, titulo: t, inicio: new Date(d).toISOString(), status: 'agendada', por: S.user.nome, criadoEm: agoraIso() };
+        S.data.reunioes = [...(S.data.reunioes || []), r]; save('reunioes'); S.data.chat.push({ id: uid(), colabId: r.colabId, de: 'rh', texto: `Reunião por vídeo marcada: "${t}", ${fdh(r.inicio)}. Entre pelo portal, em Reuniões.`, em: agoraIso(), por: S.user.nome, lido: false }); save('chat'); audit(`Marcou reunião com ${nome(r.colabId)}`); closeModal(); go('reuniao'); } }); };
+  $$('[data-ru]', el).forEach(b => b.onclick = () => { const r = l.find(x => x.id === b.dataset.ru); abrirReuniao({ tid: S.tenant.id, rid: r.id, papel: 'host', titulo: r.titulo, meuNome: `${S.user.nome} (RH)`, lerArq: lerArqRH }); });
+  $$('[data-rx]', el).forEach(b => b.onclick = () => { const r = S.data.reunioes.find(x => x.id === b.dataset.rx); r.status = 'encerrada'; save('reunioes'); go('reuniao'); });
 }
 
 /* ---------- IA no chat do RH: sugere a resposta com os dados do funcionário ---------- */
@@ -2821,12 +3217,15 @@ function extratoBH(cid, ponto, lanc, c, cfg) {
   ev.sort((a, b) => a.data.localeCompare(b.data)); let s = 0; ev.forEach(e => e.saldo = (s += e.min));
   return { ev, saldo: s };
 }
-const TIPOS_SOLIC = { lgpd: 'Pedido sobre dados pessoais (LGPD)', vaga_interna: 'Candidatura a vaga interna', indicacao: 'Indicação de candidato', cadastro: 'Atualização cadastral', justificativa: 'Justificativa de ponto', ferias: 'Férias', ajuste_ponto: 'Ajuste de ponto', he: 'Hora extra', atestado: 'Atestado / comprovante', segunda_via: '2ª via de documento', declaracao: 'Declaração', adiantamento: 'Adiantamento salarial', folga: 'Folga', troca: 'Troca de turno', dados: 'Alteração de dados', outro: 'Outros assuntos' };
+const TIPOS_SOLIC = { desbloqueio: 'Pedido de desbloqueio do portal', aso: 'ASO enviado pelo funcionário', admissao: 'Ficha de admissão', lgpd: 'Pedido sobre dados pessoais (LGPD)', vaga_interna: 'Candidatura a vaga interna', indicacao: 'Indicação de candidato', cadastro: 'Atualização cadastral', justificativa: 'Justificativa de ponto', ferias: 'Férias', ajuste_ponto: 'Ajuste de ponto', he: 'Hora extra', atestado: 'Atestado / comprovante', segunda_via: '2ª via de documento', declaracao: 'Declaração', adiantamento: 'Adiantamento salarial', folga: 'Folga', troca: 'Troca de turno', dados: 'Alteração de dados', outro: 'Outros assuntos' };
 const CAMPOS_DADOS = { telefone: 'Telefone', email: 'E-mail', cep: 'CEP', endereco: 'Endereço', cidade: 'Cidade/UF', banco: 'Banco / Chave PIX' };
 function resumoSolic(s) {
   const d = s.dados || {};
   switch (s.tipo) {
     case 'ferias': return `${d.dias} dias a partir de ${fd(d.inicio)}${d.abono ? ' + abono' : ''}${d.adiant13 ? ' + 1ª parcela 13º' : ''}${d.obs ? ' — ' + d.obs : ''}`;
+    case 'desbloqueio': return d.motivo || '';
+    case 'aso': return `${({ admissional: 'Admissional', periodico: 'Periódico', retorno: 'Retorno ao trabalho', mudanca: 'Mudança de risco', demissional: 'Demissional' })[d.tipo] || 'Exame'} em ${fd(d.data)} · ${d.resultado === 'inapto' ? 'inapto' : 'apto'}`;
+    case 'admissao': return `Dados pessoais${d.foto ? ', foto' : ''}${(d.dependentesLista || []).length ? `, ${d.dependentesLista.length} dependente(s)` : ''}`;
     case 'lgpd': return `${d.pedidoTxt}: ${d.texto}`;
     case 'vaga_interna': return `${d.titulo}: ${d.motivo || ''}`;
     case 'indicacao': return `${d.nome} (${d.telefone}) para ${d.titulo}${d.relacao ? ' · ' + d.relacao : ''}`;
@@ -2911,6 +3310,9 @@ async function gerarAcesso(c, acao) {
 function aplicarSolic(s) {
   const c = colabById(s.colabId), d = s.dados;
   if (s.tipo === 'folga' || s.tipo === 'troca') return aplicarFolgaTroca(s);
+  if (s.tipo === 'desbloqueio') { c.portal = { ...(c.portal || {}), emergenciaAte: new Date(Date.now() + 3600000).toISOString() }; save('colab'); return 'Portal aberto para o funcionário por 1 hora.'; }
+  if (s.tipo === 'aso') { c.asos = [...(c.asos || []), { id: uid(), tipo: d.tipo, data: d.data, resultado: d.resultado, arquivo: d.anexo || null, origem: 'portal' }]; if (['periodico', 'admissional', 'retorno', 'mudanca'].includes(d.tipo)) c.asoData = d.data; save('colab'); const p = S.data.admis.find(a => a.colabId === c.id && a.status !== 'concluida'); if (p && d.tipo === 'admissional') { p.check['Exame admissional (ASO)'] = `${fd(d.data)} · ${d.resultado}`; save('admis'); } return `Exame registrado: ${d.resultado}.`; }
+  if (s.tipo === 'admissao') return aplicarFichaAdmissao(s, c);
   if (s.tipo === 'lgpd') return 'Pedido registrado como atendido. A resposta escrita fica visível para o funcionário.';
   if (s.tipo === 'vaga_interna' || s.tipo === 'indicacao') { const v = S.data.vagas.find(x => x.id === d.vagaId); if (!v) return 'Vaga não encontrada; nada foi criado.';
     const ind = s.tipo === 'indicacao', tel = String(ind ? d.telefone : (c.telefone || '')).replace(/\D/g, ''), tf = tel.length === 11 ? `(${tel.slice(0, 2)}) ${tel.slice(2, 7)}-${tel.slice(7)}` : tel;
@@ -2962,7 +3364,7 @@ function vPortal(el, aba = S.portalAba || 'solic', solo = false) {
     $$('[data-dec]', pt).forEach(b => b.onclick = () => decidirSolic(S.data.solic.find(x => x.id === b.dataset.dec), re));
   }
 
-  if (aba === 'docs') {
+  if (aba === 'docs') { setTimeout(() => { const host = $('#pt') || el; if (host && !$('#md-open', host)) { host.insertAdjacentHTML('afterbegin', '<div class="row" style="margin-bottom:12px"><span class="hint">Veja quem assinou, quem recusou e o motivo, com a foto e a hora de cada assinatura.</span><span class="sp"></span><button class="btn" id="md-open">Documentos e assinaturas</button></div>'); $('#md-open', host).onclick = () => modalDocumentos(); } }, 0);
     const l = S.data.docs.slice().sort((a, b) => b.enviadoEm.localeCompare(a.enviadoEm));
     pt.innerHTML = `<div class="row" style="margin-bottom:14px"><span class="hint">Documentos e contratos enviados para os colaboradores lerem e assinarem no celular.</span><span class="sp"></span>${ed ? '<button class="btn" id="pd-n">Enviar documento</button>' : ''}</div>
       ${l.length ? `<div class="tbl-wrap"><table><thead><tr><th>Enviado</th><th>Colaborador</th><th>Documento</th><th>Situação</th><th></th></tr></thead><tbody>${l.map(d => `<tr><td>${new Date(d.enviadoEm).toLocaleDateString('pt-BR')}</td><td><b>${nome(d.colabId)}</b></td><td>${esc(d.titulo)}${d.categoria === 'contrato' ? ' <span class="pill mut">Contrato</span>' : ''}</td>
@@ -3087,7 +3489,7 @@ function vPortal(el, aba = S.portalAba || 'solic', solo = false) {
   if (aba === 'acessos') {
     const l = ativos().sort((a, b) => a.nome.localeCompare(b.nome)), link = new URL('nexum_portal.html', location.href).href;
     pt.innerHTML = `<section class="panel"><div class="row"><div style="flex:1;min-width:220px"><b>Endereço do portal</b><div class="hint" style="word-break:break-all">${esc(link)}</div></div><button class="btn sec sm" id="ac-cp">Copiar link</button></div>
-      <p class="note">Coloque o arquivo nexum_portal.html na mesma pasta do sistema do RH. O colaborador entra com o código <b>${esc(S.tenant.id)}</b>, o CPF e a senha.</p></section>
+      </section>
       ${l.length ? `<div class="tbl-wrap"><table><thead><tr><th>Colaborador</th><th>CPF</th><th>Acesso</th><th>Último acesso</th><th></th></tr></thead><tbody>${l.map(c => { const p = c.portal && { ...c.portal, ...(S.data.acessos.find(a => a.colabId === c.id) || {}) }; return `<tr><td><b>${esc(c.nome)}</b></td><td>${esc(c.cpf || '—')}</td>
         <td>${!p ? '<span class="pill mut">Sem acesso</span>' : !p.ativo ? '<span class="pill bad">Bloqueado</span>' : p.trocar ? '<span class="pill warn">Aguardando 1º acesso</span>' : '<span class="pill ok">Ativo</span>'}</td>
         <td>${p && p.ultimoAcesso ? new Date(p.ultimoAcesso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—'}</td>
@@ -3325,12 +3727,11 @@ function statusAgora(c, dia = iso(hoje())) {
 function ajustarPonto(cid, dia, depois) {
   const c = colabById(cid), r = regDia(cid, dia);
   if (pontoFechado(dia)) return toast(`O ponto de ${mesNome(dia.slice(0, 7))} está fechado. Reabra em Ponto Biométrico > Mensal.`, true);
-  modal(`Ajustar ponto — ${c.nome}`, `<p class="hint" style="margin-top:0">${fd(dia)}. Horários separados por vírgula, ex.: 08:00, 12:00, 13:00, 17:48</p>
-    <div class="fld"><label for="aj-m">Marcações</label><input class="inp" id="aj-m" value="${r ? r.marc.slice().sort().join(', ') : ''}"></div>
+  modal(`Ajustar ponto — ${c.nome}`, `<p class="hint" style="margin-top:0">${fd(dia)}. Preencha só os horários que existem; deixe em branco os que não houve.</p>${camposMarcacao(r ? r.marc : [])}
     <div class="fld"><label for="aj-j">Justificativa do ajuste</label><input class="inp" id="aj-j" placeholder="Ex.: esqueceu de marcar a saída"></div>`, {
     size: 'sm', foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="aj-ok">Salvar ajuste</button>',
     onMount: m => $('#aj-ok', m).onclick = () => {
-      const v = $('#aj-m', m).value.split(/[,;\s]+/).filter(Boolean), j = $('#aj-j', m).value.trim();
+      const v = [...$$('[data-aj]', m).map(i => i.value).filter(Boolean), ...((r ? r.marc.slice().sort() : []).slice(6))], j = $('#aj-j', m).value.trim();
       if (v.some(x => !/^([01]\d|2[0-3]):[0-5]\d$/.test(x))) return toast('Use o formato HH:MM, por exemplo 08:05.', true);
       if (!j) return toast('Informe a justificativa do ajuste.', true);
       let reg = regDia(cid, dia); if (!reg) { reg = { id: uid(), colabId: cid, data: dia, marc: [] }; S.data.ponto.push(reg); }
@@ -3523,10 +3924,10 @@ function vBio(el, aba = S.bioAba || 'hoje') {
   const nMon = anomalias(30).filter(a => a.g === 'bad').length, nRev = revisoesPend().length, nFace = S.data.faces.filter(f => f.status === 'pendente').length;
   const nAp = S.data.dispositivos.reduce((t, d) => t + Object.keys(d.pedidos || {}).length, 0);
   const nJus = S.data.solic.filter(s => s.status === 'pendente' && ['ajuste_ponto', 'atestado'].includes(s.tipo)).length, nFal = S.data.bioFalhas.filter(f => f.em >= iso(addD(hoje(), -7))).length;
-  const abas = [['hoje', 'Hoje'], ['monitor', 'IA Monitor', nMon], ['revisao', 'Revisão', nRev], ['faces', 'Biometria', nFace], ['mensal', 'Mensal e fechamento'], ['justif', 'Justificativas', nJus], ['geo', 'Geolocalização'], ['falhas', 'Falhas de biometria', nFal], ['aparelhos', 'Celulares', nAp], ['analise', 'Análise IA'], ['conf', 'Configurar']];
+  const abas = [['hoje', 'Hoje'], ['cal', 'Calendário de batidas'], ['monitor', 'IA Monitor', nMon], ['revisao', 'Revisão', nRev], ['faces', 'Biometria', nFace], ['mensal', 'Mensal e fechamento'], ['justif', 'Justificativas', nJus], ['geo', 'Geolocalização'], ['falhas', 'Falhas de biometria', nFal], ['aparelhos', 'Celulares', nAp], ['analise', 'Análise IA'], ['conf', 'Configurar']];
   el.innerHTML = `<div class="tabs">${abas.map(([k, l, n]) => `<button class="${k === aba ? 'on' : ''}" data-a="${k}">${l}${n ? ` <span class="bdg" style="margin:0 0 0 4px">${n}</span>` : ''}</button>`).join('')}</div><div id="bi"></div>`;
   $$('.tabs button', el).forEach(b => b.onclick = () => { clearInterval(S.timer); clearInterval(S.relogio); vBio(el, b.dataset.a); });
-  const bi = $('#bi', el), ed = podeEditar(), re = () => vBio(el, aba), cfg = S.data.config;
+  const bi = $('#bi', el), ed = podeEditar(), re = () => vBio(el, aba), cfg = S.data.config; if (aba === 'cal') return calBatidas(bi);
 
   if (aba === 'hoje') return vTempo(bi);
 
@@ -3990,13 +4391,14 @@ function enviarLinkProposta(p, pr) {
 const CHECK_ADM = ['Documento com foto (RG ou CNH) e CPF', 'Carteira de Trabalho Digital', 'Comprovante de residência', 'PIS/NIT', 'Título de eleitor', 'Certidão de nascimento ou casamento', 'Certidão e vacinação dos filhos menores de 14 anos', 'Exame admissional (ASO)', 'Dados bancários ou chave PIX', 'Contrato de trabalho assinado', 'Termo LGPD assinado', 'Opção de vale-transporte', 'Envio ao eSocial (S-2200) até o dia anterior ao início'];
 function novaAdmissao(pre = {}) {
   modal('Nova admissão', `<div class="grid"><div class="fld full"><label for="nd-n">Nome completo</label><input class="inp" id="nd-n" value="${esc(pre.nome || '')}"></div>
-    <div class="fld"><label for="nd-cpf">CPF</label><input class="inp" id="nd-cpf" data-mask="cpf" value="${esc(pre.cpf || '')}"></div><div class="fld"><label for="nd-t">Telefone</label><input class="inp" id="nd-t" data-mask="tel" value="${esc(pre.telefone || '')}"></div>
+    <div class="fld"><label for="nd-cpf">CPF</label><input class="inp" id="nd-cpf" data-mask="cpf" value="${esc(pre.cpf || '')}"></div><div class="fld"><label for="nd-t">Telefone (WhatsApp)</label><input class="inp" id="nd-t" data-mask="tel" value="${esc(pre.telefone || '')}"></div><div class="fld"><label for="nd-e">E-mail</label><input class="inp" id="nd-e" type="email" value="${esc(pre.email || '')}"></div>
     <div class="fld"><label for="nd-c">Cargo</label><input class="inp" id="nd-c" value="${esc(pre.cargo || '')}"></div><div class="fld"><label for="nd-d">Setor</label><input class="inp" id="nd-d" value="${esc(pre.depto || '')}"></div>
     <div class="fld"><label for="nd-s">Salário (R$)</label><input class="inp" id="nd-s" inputmode="decimal" value="${pre.salario ? String(pre.salario).replace('.', ',') : ''}"></div><div class="fld"><label for="nd-tp">Contrato</label><select class="inp" id="nd-tp">${opts(Object.entries(TIPOS_CONTRATO), 'experiencia')}</select></div>
-    <div class="fld"><label for="nd-i">Início previsto</label><input class="inp" type="date" id="nd-i" value="${iso(addD(hoje(), 7))}"></div></div>`, {
+    <div class="fld"><label for="nd-i">Início previsto</label><input class="inp" type="date" id="nd-i" value="${iso(addD(hoje(), 7))}"></div><label class="full row hint" style="gap:8px;align-items:flex-start"><input type="checkbox" id="nd-dig" checked style="margin-top:4px"> <span>Admissão digital: criar o acesso ao portal agora, enviar a ficha para o funcionário completar (com foto) e o encaminhamento para o exame admissional</span></label></div>`, {
     foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="nd-ok">Abrir processo</button>', onMount: m => { masks(m); $('#nd-ok', m).onclick = () => {
       const nome = $('#nd-n', m).value.trim(), cpf = $('#nd-cpf', m).value.trim(); if (!nome) return toast('Informe o nome.', true); if (cpf && !cpfValido(cpf)) return toast('CPF inválido.', true);
-      S.data.admis.push({ id: uid(), nome, cpf, telefone: $('#nd-t', m).value.trim(), email: pre.email || '', cargo: $('#nd-c', m).value.trim(), depto: $('#nd-d', m).value.trim(), salario: num($('#nd-s', m).value), tipo: $('#nd-tp', m).value, inicio: $('#nd-i', m).value, check: {}, status: 'andamento', criado: iso(hoje()), candId: pre.candId || null });
+      S.data.admis.push({ id: uid(), nome, cpf, telefone: $('#nd-t', m).value.trim(), email: $('#nd-e', m).value.trim() || pre.email || '', cargo: $('#nd-c', m).value.trim(), depto: $('#nd-d', m).value.trim(), salario: num($('#nd-s', m).value), tipo: $('#nd-tp', m).value, inicio: $('#nd-i', m).value, check: {}, status: 'andamento', criado: iso(hoje()), candId: pre.candId || null });
+      if ($('#nd-dig', m) && $('#nd-dig', m).checked) { const pNovo = S.data.admis[S.data.admis.length - 1]; if (!pNovo.cpf) toast('Para a admissão digital, informe o CPF.', true); else setTimeout(() => iniciarAdmissaoDigital(pNovo), 300); }
       save('admis'); audit(`Abriu admissão de ${nome}`); closeModal(); toast('Processo de admissão aberto.'); go('adm'); } } });
 }
 function vAdm(el) {
@@ -4010,8 +4412,8 @@ function vAdm(el) {
     if (!d || d.formato !== 'nexum-admissao' || !d.candidato || !d.vaga) return toast('Este arquivo não veio do NEXUM Recrutamento. Use o botão "Enviar para admissão" na ficha do candidato aprovado.', true);
     const c = d.candidato, t = String(c.telefone || '').replace(/\D/g, ''), tf = t.length === 11 ? `(${t.slice(0, 2)}) ${t.slice(2, 7)}-${t.slice(7)}` : t;
     if (S.data.admis.some(x => x.nome === c.nome && x.status !== 'concluida')) toast(`Já existe uma admissão em andamento para ${c.nome}. Confira antes de salvar.`, true);
-    novaAdmissao({ nome: c.nome, telefone: tf, email: c.email, cargo: d.vaga.cargo, depto: d.vaga.area, salario: d.vaga.salario || '' });
-    audit(`Importou ${c.nome} do NEXUM Recrutamento para admissão`); toast(`Dados de ${c.nome} carregados. Informe o CPF e a data de início para salvar.`); }; i.click(); };
+    novaAdmissao({ nome: c.nome, cpf: c.cpf || '', telefone: tf, email: c.email, cargo: d.vaga.cargo, depto: d.vaga.area, salario: d.vaga.salario || '' }); if (d.proposta && d.proposta.inicio) setTimeout(() => { const ini = $('#nd-i'); if (ini) ini.value = d.proposta.inicio; }, 60);
+    audit(`Importou ${c.nome} do NEXUM Recrutamento para admissão`); toast(c.cpf ? `Dados de ${c.nome} carregados da proposta aceita${(d.proposta && (d.proposta.documentos || []).length) ? `, com ${d.proposta.documentos.length} documento(s) recebido(s) no recrutamento` : ''}. Confira e clique em Abrir processo.` : `Dados de ${c.nome} carregados. Informe o CPF e a data de início para salvar.`); }; i.click(); };
   $$('[data-p]', el).forEach(s => s.onclick = () => { const p = S.data.admis.find(x => x.id === s.dataset.p), fe = p.status === 'concluida' || !ed;
     modal(`Admissão — ${p.nome}`, `<div class="hint" style="margin-bottom:12px">${esc(p.cargo)} · ${TIPOS_CONTRATO[p.tipo]} · início ${fd(p.inicio)} · CPF ${esc(p.cpf || 'não informado')}</div>
       ${CHECK_ADM.map((x, i) => `<label class="check-row" style="padding:8px 0;border-bottom:1px solid var(--line2)"><input type="checkbox" data-i="${i}" ${p.check[x] ? 'checked' : ''} ${fe ? 'disabled' : ''}> <span>${esc(x)}${p.check[x] ? `<br><span class="hint">${esc(p.check[x])}</span>` : ''}</span></label>`).join('')}`, {
@@ -4020,6 +4422,7 @@ function vAdm(el) {
         const x = $('#am-x', m); if (x) x.onclick = () => confirmar('Cancelar este processo de admissão?', () => { S.data.admis = S.data.admis.filter(y => y !== p); save('admis'); go('adm'); }, 'Cancelar processo', true);
         const ok = $('#am-ok', m); if (ok) ok.onclick = () => { const falta = CHECK_ADM.filter(k => !p.check[k]);
           const fazer = () => { if (ativos().length >= licenca().plano.limite) return toast(`Seu plano permite até ${licenca().plano.limite} colaboradores ativos.`, true);
+            const ex = p.colabId && colabById(p.colabId); if (ex) { ex.status = 'ativo'; ex.admissao = p.inicio; save('colab'); p.status = 'concluida'; save('admis'); audit(`Concluiu a admissão de ${p.nome}`); closeModal(); toast('Admissão concluída. O cadastro já tem os dados enviados pelo portal.'); return formColab(ex.id); }
             const c = { id: uid(), nome: p.nome, cpf: p.cpf, telefone: p.telefone, email: p.email, cargo: p.cargo, depto: p.depto, salario: p.salario, tipo: p.tipo, admissao: p.inicio, status: 'ativo', dependentes: 0, lgpd: !!p.check['Termo LGPD assinado'], criadoEm: new Date().toISOString() };
             S.data.colab.push(c); save('colab'); p.status = 'concluida'; p.colabId = c.id; save('admis'); if (p.candId) { const cd = S.data.cands.find(y => y.id === p.candId); if (cd) { cd.admitido = true; save('cands'); } }
             audit(`Concluiu a admissão de ${p.nome}`); closeModal(); toast('Colaborador cadastrado. Complete os dados restantes.'); formColab(c.id); };
@@ -4182,7 +4585,7 @@ function alertasGerais() {
 }
 function decidirSolic(s, depois) {
   const c = colabById(s.colabId);
-  const efeito = { lgpd: 'Responda em até 15 dias (LGPD, art. 19, II), pelo campo de resposta. Dados exigidos por lei (folha, ponto, FGTS, INSS) ficam guardados pelo prazo legal.', vaga_interna: 'Ao aprovar, o funcionário entra na triagem da vaga no Recrutamento.', indicacao: 'Ao aprovar, o indicado entra na triagem da vaga, com a origem "Indicação".', cadastro: 'Ao aprovar, os dados informados substituem os do cadastro; o número de dependentes para o IR passa a valer na próxima folha.', justificativa: s.dados.marc ? 'Ao aprovar, os horários informados entram no ponto do dia.' : s.dados.problema === 'Falta' ? 'Ao aprovar, a falta fica abonada e não é descontada na folha.' : 'Ao aprovar, a justificativa fica registrada no histórico do funcionário.', ferias: 'Ao aprovar, as férias entram programadas no módulo Férias.', ajuste_ponto: 'Ao aprovar, as marcações do dia são substituídas pelas informadas.', he: s.dados.destino === 'banco' ? 'Ao aprovar, as horas entram como crédito no banco de horas.' : 'Ao aprovar, o valor da HE é somado aos adicionais da folha aberta do mês.', atestado: 'Ao aprovar, o atestado vira uma ocorrência no histórico.', dados: 'Ao aprovar, o cadastro é atualizado.', declaracao: 'Ao aprovar, a declaração é gerada e enviada ao portal.', adiantamento: 'Ao aprovar, o valor entra em Adiantamentos & Vales e é descontado na folha do mês.', folga: 'Ao aprovar, o dia vira folga na escala do funcionário.', troca: 'Ao aprovar, a troca entra na escala dos dois funcionários.' }[s.tipo] || 'Responda o colaborador com as orientações necessárias.';
+  const efeito = { desbloqueio: 'Ao aprovar, o portal abre só para este funcionário por 1 hora, mesmo com o bloqueio geral.', aso: 'Ao aprovar, o exame é registrado em Saúde e segurança com o arquivo do ASO.', admissao: 'Ao aprovar, os dados e a foto entram no cadastro e o checklist da admissão é atualizado.', lgpd: 'Responda em até 15 dias (LGPD, art. 19, II), pelo campo de resposta. Dados exigidos por lei (folha, ponto, FGTS, INSS) ficam guardados pelo prazo legal.', vaga_interna: 'Ao aprovar, o funcionário entra na triagem da vaga no Recrutamento.', indicacao: 'Ao aprovar, o indicado entra na triagem da vaga, com a origem "Indicação".', cadastro: 'Ao aprovar, os dados informados substituem os do cadastro; o número de dependentes para o IR passa a valer na próxima folha.', justificativa: s.dados.marc ? 'Ao aprovar, os horários informados entram no ponto do dia.' : s.dados.problema === 'Falta' ? 'Ao aprovar, a falta fica abonada e não é descontada na folha.' : 'Ao aprovar, a justificativa fica registrada no histórico do funcionário.', ferias: 'Ao aprovar, as férias entram programadas no módulo Férias.', ajuste_ponto: 'Ao aprovar, as marcações do dia são substituídas pelas informadas.', he: s.dados.destino === 'banco' ? 'Ao aprovar, as horas entram como crédito no banco de horas.' : 'Ao aprovar, o valor da HE é somado aos adicionais da folha aberta do mês.', atestado: 'Ao aprovar, o atestado vira uma ocorrência no histórico.', dados: 'Ao aprovar, o cadastro é atualizado.', declaracao: 'Ao aprovar, a declaração é gerada e enviada ao portal.', adiantamento: 'Ao aprovar, o valor entra em Adiantamentos & Vales e é descontado na folha do mês.', folga: 'Ao aprovar, o dia vira folga na escala do funcionário.', troca: 'Ao aprovar, a troca entra na escala dos dois funcionários.' }[s.tipo] || 'Responda o colaborador com as orientações necessárias.';
   modal(`${TIPOS_SOLIC[s.tipo]} — ${c ? c.nome : ''}`, `<div class="res" style="margin-bottom:14px"><div><span class="hint">Pedido</span><span style="text-align:right">${esc(resumoSolic(s))}</span></div><div><span class="hint">Enviado em</span><span>${new Date(s.criadoEm).toLocaleString('pt-BR')}</span></div></div>
     ${s.dados && s.dados.anexo ? (s.dados.anexo.tipo === 'application/pdf' ? `<p><a href="${s.dados.anexo.data}" download="${esc(s.dados.anexo.nome || 'anexo.pdf')}">Baixar anexo em PDF</a></p>` : `<img src="${s.dados.anexo.data}" alt="Anexo" style="width:100%;border-radius:8px;margin-bottom:12px">`) : ''}
     <p class="hint" style="margin-top:0">${efeito}</p>${extraDecisao(s)}<div class="fld"><label for="dc-r">Resposta ao colaborador</label><textarea class="inp" id="dc-r" placeholder="Opcional ao aprovar; recomendado ao recusar"></textarea></div>`, {
@@ -4211,7 +4614,7 @@ function montarTopo() {
   const bi = $('#b-inst'); if (bi) { bi.onclick = instalarApp; if (!_instalar && !ehIOS()) bi.classList.add('hidden'); }
   montarFiltroLoja();
   const tm = $('#b-tema'); if (tm) tm.onclick = () => { const n = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = n; localStorage.setItem('nexum:tema', n); };
-  const pb = $('#b-portal'); if (pb) pb.onclick = () => { const p = S.data.config.portal || {}; S.data.config.portal = { ...p, bloqueado: !p.bloqueado }; save('config'); audit(`${p.bloqueado ? 'Liberou' : 'Bloqueou'} o portal do colaborador`); atualizarTopo(); toast(p.bloqueado ? 'Portal liberado para os colaboradores.' : 'Portal bloqueado. Só o registro de ponto continua disponível.'); };
+  const pb = $('#b-portal'); if (pb) pb.onclick = modalPortalBloq;
   atualizarTopo();
   if (can('admin') && S.data.colab.length && !sessionStorage.getItem('nexum:bkvisto')) { const u = S.data.config.ultimoBackup, d = u ? diffD(pd(u), hoje()) : 99;
     if (d >= 7 && S.data.config.backupAuto !== false) { fazerBackup(); toast('Backup da semana baixado automaticamente (pasta Downloads).'); }
@@ -4228,7 +4631,7 @@ function montarFiltroLoja() {
 function atualizarTopo() {
   montarFiltroLoja();
   const n = alertasGerais().filter(a => a.cls !== 'mut').length, b = $('#bdg-aten'); if (b) b.textContent = n || '';
-  const pb = $('#b-portal'); if (pb) { const bl = (S.data.config.portal || {}).bloqueado; pb.className = 'tb ' + (bl ? 'tb-bad' : 'tb-ok'); pb.textContent = bl ? 'Portal: bloqueado' : 'Portal: liberado'; }
+  const pb = $('#b-portal'); if (pb) { try { verificarFimPortal(); } catch (e) { } const bl = !estadoPortal().aberto; pb.className = 'tb ' + (bl ? 'tb-bad' : 'tb-ok'); pb.textContent = rotuloPortal(); }
   const sy = $('#t-sync'); if (sy) sy.textContent = 'Sincronizado ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 }
 function fazerBackup() {
