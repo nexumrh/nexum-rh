@@ -278,7 +278,7 @@ const FIREBASE_CONFIG = {
 const FB_ON = !!FIREBASE_CONFIG.apiKey && typeof firebase !== 'undefined' && location.protocol !== 'file:';
 const FB = {
   tid: null, cache: {}, unsubs: [], criando: false, aux: null, escopo: null,
-  PROPRIOS: ['ponto', 'ferias', 'solic', 'docs', 'metas', 'chat', 'bh', 'assin', 'holerites', 'acessos', 'faces', 'bioFalhas', 'dispositivos', 'externos', 'logins', 'ocorr', 'comissoes'],
+  PROPRIOS: ['ponto', 'ferias', 'solic', 'docs', 'metas', 'chat', 'bh', 'assin', 'holerites', 'acessos', 'faces', 'bioFalhas', 'dispositivos', 'externos', 'logins', 'ocorr', 'comissoes', 'reunioes'],
   LIVRES: ['avisos', 'pesq', 'diretorio'],
   init() { if (!FB_ON) return; /* app com nome próprio: o login do Portal não se mistura com o do RH nem com o do Painel do Dono (mesmo endereço) */ FB.app = firebase.initializeApp(FIREBASE_CONFIG, 'nexum-portal'); FB.auth = FB.app.auth(); FB.db = FB.app.firestore(); FB.auth.languageCode = 'pt-BR'; },
   col(c) { return FB.db.collection('tenants').doc(FB.tid).collection(c); },
@@ -471,12 +471,15 @@ function extratoBH(cid, ponto, lanc, c, cfg) {
   ev.sort((a, b) => a.data.localeCompare(b.data)); let s = 0; ev.forEach(e => e.saldo = (s += e.min));
   return { ev, saldo: s };
 }
-const TIPOS_SOLIC = { lgpd: 'Pedido sobre dados pessoais (LGPD)', vaga_interna: 'Candidatura a vaga interna', indicacao: 'Indicação de candidato', cadastro: 'Atualização cadastral', justificativa: 'Justificativa de ponto', ferias: 'Férias', ajuste_ponto: 'Ajuste de ponto', he: 'Hora extra', atestado: 'Atestado / comprovante', segunda_via: '2ª via de documento', declaracao: 'Declaração', adiantamento: 'Adiantamento salarial', folga: 'Folga', troca: 'Troca de turno', dados: 'Alteração de dados', outro: 'Outros assuntos' };
+const TIPOS_SOLIC = { desbloqueio: 'Pedido de desbloqueio do portal', aso: 'Envio do ASO', admissao: 'Ficha de admissão', lgpd: 'Pedido sobre dados pessoais (LGPD)', vaga_interna: 'Candidatura a vaga interna', indicacao: 'Indicação de candidato', cadastro: 'Atualização cadastral', justificativa: 'Justificativa de ponto', ferias: 'Férias', ajuste_ponto: 'Ajuste de ponto', he: 'Hora extra', atestado: 'Atestado / comprovante', segunda_via: '2ª via de documento', declaracao: 'Declaração', adiantamento: 'Adiantamento salarial', folga: 'Folga', troca: 'Troca de turno', dados: 'Alteração de dados', outro: 'Outros assuntos' };
 const CAMPOS_DADOS = { telefone: 'Telefone', email: 'E-mail', cep: 'CEP', endereco: 'Endereço', cidade: 'Cidade/UF', banco: 'Banco / Chave PIX' };
 function resumoSolic(s) {
   const d = s.dados || {};
   switch (s.tipo) {
     case 'ferias': return `${d.dias} dias a partir de ${fd(d.inicio)}${d.abono ? ' + abono' : ''}${d.adiant13 ? ' + 1ª parcela 13º' : ''}`;
+    case 'desbloqueio': return d.motivo || '';
+    case 'aso': return `Exame em ${fd(d.data)} · ${d.resultado === 'inapto' ? 'inapto' : 'apto'}`;
+    case 'admissao': return 'Dados pessoais e foto para o cadastro';
     case 'lgpd': return `${d.pedidoTxt}: ${d.texto}`;
     case 'vaga_interna': return `${d.titulo}: ${d.motivo || ''}`;
     case 'indicacao': return `${d.nome} (${d.telefone}) para ${d.titulo}${d.relacao ? ' · ' + d.relacao : ''}`;
@@ -533,7 +536,7 @@ function printDoc(titulo, html) {
     footer{margin-top:30px;font-size:10px;color:#777;font-family:Arial,sans-serif}@media print{body{margin:14mm}}</style></head><body>
     <header><div><b>${esc(e.nome || P.t.nome)}</b><br>CNPJ ${esc(e.cnpj || '—')}</div><div style="text-align:right">${esc(e.cidade || '')}</div></header>
     ${html}<footer>Emitido pelo Portal do Colaborador NEXUM em ${new Date().toLocaleString('pt-BR')}</footer><script>window.onload=()=>setTimeout(()=>window.print(),250)<\/script></body></html>`);
-  w.document.close();
+  if (html.includes('class="rp"')) w.document.querySelectorAll('body > header, body > footer').forEach(x => x.remove()); w.document.close();
 }
 
 /* ---------- ícones ---------- */
@@ -555,6 +558,7 @@ const ICO = {
   ocorr: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1Z"/><path d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M12 11v4M12 18h.01"/>',
   regimento: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14Z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5M9 7h7M9 11h5"/>',
   meusdados: '<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3Z"/><path d="M12 8v5M12 16h.01"/>',
+  reuniao: '<path d="M15 10l5-3v10l-5-3M3 7h12v10H3z"/>',
   carreira: '<path d="M3 17l6-6 4 4 8-8M15 7h6v6"/>',
   declar: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M9 13h6M9 17h4"/>',
   vagas: '<path d="M4 7h16v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7ZM9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>',
@@ -571,8 +575,8 @@ const ICO = {
 };
 const PNAV = [
   ['inicio', 'Início'], ['ponto', 'Meu ponto'], ['escala', 'Minha escala'], ['espelho', 'Espelho de ponto'], ['bh', 'Banco de horas'], ['holerites', 'Holerites'],
-  ['ferias', 'Férias'], ['docs', 'Documentos'], ['contratos', 'Meus contratos'], ['ocorr', 'Atestados e ocorrências'], ['regimento', 'Regimento interno'], ['trein', 'Treinamentos'], ['simular', 'Simular férias e 13º'], ['carreira', 'Minha carreira'], ['declar', 'Declarações'], ['vagas', 'Vagas internas'], ['inss', 'Afastamento INSS'], ['solic', 'Solicitações'],
-  ['he', 'Horas extras'], ['comprov', 'Comprovantes'], ['chat', 'Chat com o RH'], ['etica', 'Canal de ética'], ['meusdados', 'Meus dados (LGPD)'], ['perfil', 'Meu perfil']
+  ['ferias', 'Férias'], ['docs', 'Documentos'], ['contratos', 'Meus contratos'], ['ocorr', 'Atestados e ocorrências'], ['regimento', 'Regimento interno'], ['simular', 'Simular férias e 13º'], ['carreira', 'Minha carreira'], ['declar', 'Declarações'], ['inss', 'Afastamento INSS'], ['solic', 'Solicitações'],
+  ['he', 'Horas extras'], ['comprov', 'Comprovantes'], ['chat', 'Chat com o RH'], ['reuniao', 'Reuniões'], ['etica', 'Canal de ética'], ['meusdados', 'Meus dados (LGPD)'], ['perfil', 'Meu perfil']
 ];
 
 /* ---------- pendências (badges) ---------- */
@@ -643,7 +647,7 @@ function renderLogin() {
     if (diffD(hoje(), pd(t.expira)) < 0) return toast('Portal indisponível no momento. Procure o RH da empresa.', true);
     const dig = d.cpf.replace(/\D/g, '');
     const c = Store.get(t.id, 'colab', []).find(x => (x.cpf || '').replace(/\D/g, '') === dig);
-    if (!c || !c.portal || !c.portal.ativo || c.status === 'desligado') return toast('Este CPF não tem acesso liberado. Procure o RH.', true);
+    if (!c || !c.portal || !c.portal.ativo || !acessoDesligOk(c)) return toast('Este CPF não tem acesso liberado. Procure o RH.', true);
     if (c.portal.hash !== await sha(`${t.id}:colab:${dig}:${d.senha}`)) return toast('CPF ou senha incorretos.', true);
     localStorage.setItem('nexum:plembrar', d.lembrar ? JSON.stringify({ cod: d.cod, cpf: d.cpf }) : '{}');
     entrar(t, c);
@@ -669,7 +673,7 @@ async function fbEntrarPortal(user) {
     if (diffD(hoje(), pd(t.expira)) < 0) { await FB.auth.signOut(); return toast('Portal indisponível no momento. Procure o RH da empresa.', true); }
     await FB.abrir(t.id, ['colab', 'config', ...FB.LIVRES, ...FB.PROPRIOS, 'convites', 'vagas'], { colabId: u.colabId });
     const c = FB.get('colab', [])[0];
-    if (!c || c.status === 'desligado' || !c.portal || !c.portal.ativo) { FB.fechar(); await FB.auth.signOut(); return toast('Seu acesso ao portal foi encerrado. Procure o RH.', true); }
+    if (!c || !acessoDesligOk(c) || !c.portal || !c.portal.ativo) { FB.fechar(); await FB.auth.signOut(); return toast('Seu acesso ao portal foi encerrado. Procure o RH.', true); }
     entrar(t, c);
   } catch (err) { FB.falhou(err); await FB.auth.signOut(); }
 }
@@ -732,9 +736,10 @@ function go(v) {
   $$('.bnav button').forEach(b => b.classList.toggle('on', b.dataset.b === bn));
   $('#t-view').textContent = (PNAV.find(n => n[0] === v) || [])[1] || { integracao: 'Bem-vindo(a)' }[v] || '';
   const el = $('#view'); el.innerHTML = '';
-  const bl = v !== 'ponto' && portalBloqueado();
-  if (bl) { el.innerHTML = `<section class="panel bloq">${ic('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>')}<h2 style="margin:12px 0 6px">Portal indisponível agora</h2><p class="hint" style="margin:0 0 16px">${esc(bl)} O registro de ponto continua liberado.</p><button class="btn" id="bl-p">Ir para Meu ponto</button></section>`; $('#bl-p').onclick = () => go('ponto'); $('.content').scrollTop = 0; badges(); return; }
-  ({ inicio: el2 => { vInicio(el2); ligarCiencia(el2); verNovidades(); }, ponto: el2 => { vPonto(el2); painelJustificar(el2); painelComprovantes(el2); }, trein: vTreinP, simular: el2 => vSimular(el2), etica: vEticaP, carreira: vCarreira, declar: vDeclar, meusdados: vMeusDados, vagas: vVagasP, inss: vInssP, ocorr: vOcorrP, regimento: vRegimento, escala: vEscala, integracao: vIntegracao, espelho: vEspelho, bh: vBH, holerites: vHolerites, ferias: vFerias, docs: el2 => vDocs(el2, 'documento'), contratos: el2 => vDocs(el2, 'contrato'), metas: el2 => { vMetas(el2); painelComissoes(el2); }, solic: vSolic, he: vHE, comprov: vComprov, pesq: vPesq, chat: vChat, perfil: el2 => { vPerfil(el2); painelPerfilExtra(el2); } })[v](el);
+  const bl = portalBloqueado(v);
+  if (bl) { telaBloqueio(el, bl); $('.content').scrollTop = 0; badges(); return; }
+  ({ inicio: el2 => { if (P.c && P.c.status === 'admissao') return vAdmissaoP(el2); vInicio(el2); ligarCiencia(el2); verNovidades(); }, admissao: vAdmissaoP, reuniao: vReunioesP, ponto: el2 => { vPonto(el2); painelJustificar(el2); painelComprovantes(el2); }, trein: vTreinP, simular: el2 => vSimular(el2), etica: vEticaP, carreira: vCarreira, declar: vDeclar, meusdados: vMeusDados, vagas: vVagasP, inss: vInssP, ocorr: vOcorrP, regimento: vRegimento, escala: vEscala, integracao: vIntegracao, espelho: vEspelho, bh: vBH, holerites: vHoleritesV3, ferias: vFerias, docs: el2 => vDocs(el2, 'documento'), contratos: el2 => vDocs(el2, 'contrato'), metas: el2 => { vMetas(el2); painelComissoes(el2); }, solic: vSolic, he: vHE, comprov: el2 => { vComprov(el2); painelComprovantesRH(el2); }, pesq: vPesq, chat: vChat, perfil: el2 => { vPerfil(el2); painelPerfilExtra(el2); } })[v](el);
+  avisoDeslig(el);
   $('.content').scrollTop = 0; badges();
 }
 
@@ -940,12 +945,6 @@ async function registrarPonto() {
   });
   if (!ok) return toast('Você acabou de registrar. Aguarde 2 minutos para a próxima marcação.', true);
   toast(`Ponto registrado às ${h}.${revisao.length ? ' Ele vai passar pela revisão do RH.' : ''}`); if (P.view === 'ponto') go('ponto');
-}
-function portalBloqueado() {
-  const p = P.cfg.portal || {};
-  if (p.bloqueado) return 'O RH bloqueou o acesso ao portal no momento.';
-  const h = p.horario; if (h && h.ativo) { const n = hhmm(new Date()); if (n < h.ini || n > h.fim) return `O portal funciona das ${h.ini} às ${h.fim}.`; }
-  return '';
 }
 
 /* =====================================================================
@@ -1576,7 +1575,222 @@ function vMeusDados(el) {
     { foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="md-ok">Enviar</button>', onMount: m => $('#md-ok', m).onclick = () => { const x = $('#md-x', m).value.trim(); if (x.length < 5) return toast('Explique o pedido.', true); const t = $('#md-t', m); novaSolic('lgpd', { pedido: t.value, pedidoTxt: t.options[t.selectedIndex].text, texto: x }); closeModal(true); toast('Pedido enviado ao RH.'); vMeusDados(el); } });
 }
 /* ---------- Menu "Mais" por seções ---------- */
-const PGRUPOS = [['Ponto e jornada', ['ponto', 'escala', 'espelho', 'bh', 'he', 'ocorr']], ['Pagamentos', ['holerites', 'ferias', 'simular', 'metas']], ['Documentos', ['docs', 'contratos', 'regimento', 'declar', 'comprov']], ['Carreira', ['carreira', 'trein', 'vagas', 'integracao']], ['Pedidos e ajuda', ['solic', 'chat', 'inss', 'etica', 'pesq', 'meusdados', 'perfil']]];
+const PGRUPOS = [['Ponto e jornada', ['ponto', 'escala', 'espelho', 'bh', 'he', 'ocorr']], ['Pagamentos', ['holerites', 'ferias', 'simular', 'metas']], ['Documentos', ['docs', 'contratos', 'regimento', 'declar', 'comprov']], ['Carreira', ['carreira', 'integracao']], ['Pedidos e ajuda', ['solic', 'chat', 'reuniao', 'inss', 'etica', 'pesq', 'meusdados', 'perfil']]];
+
+/* =====================================================================
+   MODELOS PROFISSIONAIS (iguais no RH e no portal): holerite e TRCT
+   ===================================================================== */
+const CSS_DOC_PRO = `<style>.dp{font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#111}.dp table{width:100%;border-collapse:collapse}.dp td,.dp th{border:1px solid #444;padding:4px 6px;vertical-align:top;text-align:left}.dp th{background:#E9ECF2;font-size:10px;text-transform:uppercase;letter-spacing:.03em}
+.dp .cab td{border:0;padding:0}.dp .tit{font-size:14px;font-weight:700;text-align:center;letter-spacing:.04em}.dp .n{text-align:right;white-space:nowrap}.dp .q{background:#14203D;color:#fff;font-weight:700;font-size:10.5px;letter-spacing:.05em;padding:4px 6px;margin-top:8px}
+.dp .lb{display:block;font-size:8.5px;color:#555;text-transform:uppercase}.dp .vl{font-size:11.5px;font-weight:600}.dp .tot td{font-weight:700;background:#F4F6FA}.dp .liq{font-size:14px;font-weight:800}.dp .ass{display:flex;gap:40px;margin-top:34px}.dp .ass div{flex:1;border-top:1px solid #111;text-align:center;padding-top:4px;font-size:10.5px}.dp .min{font-size:9.5px;color:#444;margin-top:8px}</style>`;
+const celP = (lb, vl, span = 1) => `<td colspan="${span}"><span class="lb">${lb}</span><span class="vl">${vl == null || vl === '' ? '&nbsp;' : vl}</span></td>`;
+const brlP = v => (+v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function linhasHolerite(i, k) {
+  const p = i.ponto || {}, L = [], prov = (c, d, ref, v) => +v ? L.push([c, d, ref, +v, 0]) : 0, desc = (c, d, ref, v) => +v ? L.push([c, d, ref, 0, +v]) : 0;
+  prov('101', 'Salário', `${30 - (num((i.ponto || {}).faltasN) || 0)} d`, i.sal); prov('010', 'Adicionais e comissões', '', i.adic);
+  (i.adicDet || []).forEach((a, x) => prov(String(20 + x).padStart(3, '0'), a[0] || a.t || 'Adicional', '', a[1] ?? a.v)); if (!(i.adicDet || []).length) prov('020', 'Adicionais fixos', '', i.adicFix);
+  prov('050', 'Horas extras 50%', p.he50h ? String(p.he50h).replace('.', ',') : '', p.he50); prov('051', 'Horas extras 100%', p.he100h ? String(p.he100h).replace('.', ',') : '', p.he100);
+  prov('052', 'Adicional noturno', '', p.not); prov('053', 'DSR sobre horas extras e adicionais', '', p.dsr); prov('650', 'Salário-família', '', i.salFam);
+  desc('201', 'Faltas', p.faltasN ? String(p.faltasN) : '', p.faltas); desc('202', 'DSR sobre faltas', '', p.dsrFalta); desc('203', 'Atrasos', '', p.atraso); desc('204', 'Dias de afastamento (INSS)', '', i.afastV);
+  desc('973', 'INSS', k.base ? (k.inss / k.base * 100).toFixed(2).replace('.', ',') + '%' : '', k.inss); desc('987', 'IRRF s/ salário', (() => { const t = T(), b = Math.max(0, k.base - num(i.pensao) - Math.max(k.inss + (i.dep || 0) * t.dep, t.simplificado)), f = t.irrf.find(x => b <= x[0]); return k.irrf && f ? (f[1] * 100).toFixed(2).replace('.', ',') + '%' : ''; })(), k.irrf); desc('310', 'Pensão alimentícia', '', i.pensao);
+  desc('320', 'Benefícios (VR, VA, plano de saúde)', '', i.benDesc); desc('330', 'Contribuição assistencial', '', i.contrib); desc('390', 'Outros descontos e adiantamentos', '', i.desc);
+  return L;
+}
+function holeriteProf(c, e, comp, i, k, extra = {}) {
+  const L = linhasHolerite(i, k), tv = r2(L.reduce((s, x) => s + x[3], 0)), td = r2(L.reduce((s, x) => s + x[4], 0)), [a, m] = comp.split('-');
+  const mes = `${new Date(+a, +m - 1, 1).toLocaleDateString('pt-BR', { month: 'long' })}/${a}`, t = T();
+  const baseIR = Math.max(0, r2(k.base - num(i.pensao) - Math.max(k.inss + (i.dep || 0) * t.dep, t.simplificado))), fx = Math.max(1, t.irrf.findIndex(f => baseIR <= f[0]) + 1);
+  const v = x => x ? brlP(x) : '', cod = esc(c.matricula || String(c.id || '').replace(/\D/g, '').slice(-4) || String(c.id || '').slice(-4).toUpperCase());
+  const vazias = Math.max(0, 14 - L.length);
+  return `<style>.rp-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}.rp{font-family:Arial,Helvetica,sans-serif;color:#111;border:1px dashed #999;padding:8px;margin:0 auto 14px;max-width:920px;min-width:760px;page-break-inside:avoid}@media print{.rp{min-width:0}}
+.rp .fr{display:flex;gap:8px;align-items:stretch}.rp .main{flex:1;min-width:0}.rp table{width:100%;border-collapse:collapse}
+.rp .mono{font-family:"Courier New",Courier,monospace}.rp .lb{font-size:9px;color:#555}.rp .bx{border:1px solid #333}
+.rp .cab td{padding:3px 6px;vertical-align:top}.rp .tit{font-size:15px;font-weight:700;color:#555;text-align:right;white-space:nowrap}
+.rp .mesref{display:inline-block;border-bottom:1px solid #333;padding:0 14px;font-size:12.5px}
+.rp .id td{padding:1px 6px;font-size:12px}.rp .id .lb{display:block}
+.rp .it{margin-top:4px}.rp .it th{font-size:9.5px;font-weight:400;color:#444;border:1px solid #333;padding:2px 5px;text-align:center}
+.rp .it td{border-top:0!important;border-bottom:0!important;border-left:1px solid #333;border-right:1px solid #333;padding:0 6px;font-family:"Courier New",Courier,monospace;font-size:12px;line-height:16px;white-space:nowrap}
+.rp .it td.n{text-align:right}.rp .it td.ds{white-space:normal}.rp .it tbody tr:first-child td{padding-top:4px}.rp .it tbody tr:last-child td{border-bottom:1px solid #333!important;padding-bottom:6px}
+.rp .tt td{padding:2px 6px;vertical-align:top}.rp .tt .lb{display:block;text-align:center}.rp .tt .vl{font-family:"Courier New",Courier,monospace;font-size:13px;font-weight:700;text-align:center;display:block}
+.rp .liq{display:flex;align-items:center;gap:8px;font-size:9.5px;color:#444}.rp .seta{font-size:22px;line-height:1;color:#333}
+.rp .rod td{border:1px solid #333;text-align:center;padding:2px 4px}.rp .rod .lb{display:block}.rp .rod .mono{font-size:12px;font-weight:700}
+.rp .lat{width:64px;border:1px solid #333;display:flex}.rp .lat>div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:8px 0}.rp .lat>div+div{border-left:1px solid #ccc}
+.rp .vt{writing-mode:vertical-rl;transform:rotate(180deg);font-size:8.5px;letter-spacing:.03em;text-transform:uppercase;color:#333;white-space:nowrap}.rp .linha{width:1px;background:#333;flex:1;margin:6px 0;max-height:160px}</style>
+<div class="rp-wrap"><div class="rp"><div class="fr"><div class="main">
+<table class="bx cab"><tr><td class="mono" style="font-size:12.5px">${esc(e.nome || '')}<br>CNPJ:&nbsp;&nbsp;&nbsp;${esc(e.cnpj || '—')}</td><td class="tit">Recibo de Pagamento de Salário<br><span class="mesref mono" style="color:#111;font-weight:400">${esc(mes)}</span></td></tr></table>
+<table class="bx id" style="margin-top:4px"><tr><td style="width:62px"><span class="lb">Código</span><span class="mono">${cod}</span></td><td><span class="lb">Nome do Funcionário</span><span class="mono">${esc(String(c.nome || '').toUpperCase())}</span></td>
+<td style="width:44%"><span class="lb">CBO${c.cbo ? ` ${esc(c.cbo)}` : ''}&nbsp;&nbsp; Emp.&nbsp; Local&nbsp; Depto.&nbsp; Setor&nbsp; Seção&nbsp; Fl.</span><span class="mono">${esc(String(c.cargo || '').toUpperCase())}${c.depto || c.departamento ? ` · ${esc(String(c.depto || c.departamento).toUpperCase())}` : ''}</span></td></tr></table>
+<table class="it"><thead><tr><th style="width:48px">Cód.</th><th>Descrição</th><th style="width:84px">Referência</th><th style="width:104px">Vencimentos</th><th style="width:104px">Descontos</th></tr></thead><tbody>
+${L.map(x => `<tr><td>${x[0]}</td><td class="ds">${esc(String(x[1]).toUpperCase())}</td><td class="n">${esc(x[2] || '')}</td><td class="n">${v(x[3])}</td><td class="n">${v(x[4])}</td></tr>`).join('')}
+${vazias ? `<tr><td style="height:${vazias * 16}px"></td><td></td><td></td><td></td><td></td></tr>` : ''}</tbody></table>
+<table class="tt"><tr><td class="bx" rowspan="2" style="width:56%;font-size:10.5px;color:#444">${extra.pago ? `Pagamento registrado em ${fdP(extra.pago)}.` : ''}${extra.obs ? `<br>${esc(extra.obs)}` : ''}</td>
+<td class="bx"><span class="lb">Total de Vencimentos</span><span class="vl">${brlP(tv)}</span></td><td class="bx"><span class="lb">Total de Descontos</span><span class="vl">${brlP(td)}</span></td></tr>
+<tr><td colspan="2" class="bx"><div class="liq"><span>Valor Líquido</span><span class="seta" aria-hidden="true">⇨</span><span class="vl" style="flex:1;border:1px solid #333;padding:2px 6px">${brlP(r2(tv - td))}</span></div></td></tr></table>
+<table class="rod" style="margin-top:4px"><tr><td><span class="lb">Salário Base</span><span class="mono">${brlP(i.sal)}</span></td><td><span class="lb">Sal. Contr. INSS</span><span class="mono">${brlP(k.base)}</span></td><td><span class="lb">Base Cálc. FGTS</span><span class="mono">${brlP(k.base)}</span></td>
+<td><span class="lb">FGTS do Mês</span><span class="mono">${brlP(k.fgts)}</span></td><td><span class="lb">Base Cálc. IRRF</span><span class="mono">${brlP(baseIR)}</span></td><td><span class="lb">Faixa IRRF</span><span class="mono">${String(fx).padStart(2, '0')}</span></td></tr></table>
+</div><div class="lat" aria-label="Declaração de recebimento"><div><span class="vt">Declaro ter recebido a importância líquida discriminada neste recibo</span><span class="vt">____/____/______&nbsp;&nbsp;Data</span></div><div><span class="linha"></span><span class="vt">Assinatura do funcionário</span></div></div></div></div></div>${extra.assinatura || ''}`;
+}
+const fdP = s => s ? new Date(String(s).length > 10 ? s : s + 'T12:00').toLocaleDateString('pt-BR') : '';
+const COD_AFAST = { sjc: ['02', 'Rescisão sem justa causa por iniciativa do empregador'], pd: ['07', 'Rescisão por iniciativa do empregado'], jc: ['01', 'Rescisão com justa causa por iniciativa do empregador'], acordo: ['33', 'Rescisão por acordo entre as partes (art. 484-A)'], fimexp: ['06', 'Término do contrato a termo (experiência)'], antexp_emp: ['03', 'Rescisão antecipada do contrato a termo pelo empregador (art. 479)'], antexp_col: ['04', 'Rescisão antecipada do contrato a termo pelo empregado (art. 480)'] };
+function trctProf(c, e, p, r, extra = {}) {
+  const ca = COD_AFAST[p.motivo] || ['', ''], prov = r.prov || [], desc = r.desc || [], mx = Math.max(prov.length, desc.length, 8);
+  return `${CSS_DOC_PRO}<div class="dp"><div class="tit" style="margin-bottom:2px">TERMO DE RESCISÃO DO CONTRATO DE TRABALHO</div><div style="text-align:center;font-size:9.5px;margin-bottom:6px">Nos moldes do Anexo I da Portaria MTE nº 1.621/2010 · Código do motivo conforme a Tabela 19 do eSocial</div>
+    <div class="q">IDENTIFICAÇÃO DO EMPREGADOR</div><table><tr>${celP('01 CNPJ/CEI', esc(e.cnpj || ''))}${celP('02 Razão social / nome', esc(e.nome || ''), 3)}</tr><tr>${celP('03 Endereço', esc(e.endereco || ''), 2)}${celP('04 Município/UF', esc(e.cidade || ''))}${celP('05 Responsável', esc(e.responsavel || ''))}</tr></table>
+    <div class="q">IDENTIFICAÇÃO DO TRABALHADOR</div><table><tr>${celP('10 PIS/PASEP', esc(c.pis || ''))}${celP('11 Nome', esc(c.nome), 3)}</tr><tr>${celP('12 Endereço', esc(c.endereco || ''), 2)}${celP('13 Município/UF', esc(c.cidade || ''))}${celP('14 CEP', esc(c.cep || ''))}</tr><tr>${celP('15 CPF', esc(c.cpf || ''))}${celP('16 Data de nascimento', c.nascimento ? fdP(c.nascimento) : '')}${celP('17 Nome da mãe', esc(c.mae || ''), 2)}</tr></table>
+    <div class="q">DADOS DO CONTRATO</div><table><tr>${celP('21 Tipo de contrato', esc(p.tipoContrato || 'Prazo indeterminado'))}${celP('22 Causa do afastamento', esc(ca[1]), 2)}${celP('23 Remuneração p/ fins rescisórios', brlP(p.sal))}</tr>
+    <tr>${celP('24 Data de admissão', fdP(p.adm))}${celP('25 Data do aviso prévio', p.dataAviso ? fdP(p.dataAviso) : '')}${celP('26 Data do afastamento', fdP(p.dem))}${celP('27 Cód. afastamento (eSocial)', ca[0])}</tr>
+    <tr>${celP('28 Pensão alimentícia (%)', p.pensao || '')}${celP('29 Categoria do trabalhador', '101 · Empregado geral')}${celP('30 Cargo', esc(c.cargo || ''))}${celP('31 CBO', esc(c.cbo || ''))}</tr></table>
+    <div class="q">DISCRIMINAÇÃO DAS VERBAS RESCISÓRIAS</div><table><tr><th style="width:50%">Verbas rescisórias (proventos)</th><th class="n" style="width:14%">Valor</th><th style="width:22%">Deduções</th><th class="n" style="width:14%">Valor</th></tr>
+    ${[...Array(mx)].map((_, x) => `<tr><td>${prov[x] ? esc(prov[x][0]) : '&nbsp;'}</td><td class="n">${prov[x] ? brlP(prov[x][1]) : ''}</td><td>${desc[x] ? esc(desc[x][0]) : ''}</td><td class="n">${desc[x] ? brlP(desc[x][1]) : ''}</td></tr>`).join('')}
+    <tr class="tot"><td>Total bruto</td><td class="n">${brlP(r.tp)}</td><td>Total de deduções</td><td class="n">${brlP(r.td)}</td></tr><tr class="tot"><td colspan="2"></td><td>Valor líquido</td><td class="n liq">R$ ${brlP(r.liq)}</td></tr></table>
+    ${(r.info || []).length ? `<table style="margin-top:6px"><tr>${r.info.slice(0, 4).map(x => celP(esc(x[0]), esc(x[1]))).join('')}</tr></table>` : ''}
+    <div class="q">QUITAÇÃO</div><p style="margin:6px 0">Foi realizada a rescisão do contrato de trabalho do trabalhador acima qualificado, nos termos do art. 477 da CLT, com o pagamento dos valores discriminados neste termo no prazo de 10 (dez) dias contados do término do contrato (art. 477, § 6º). A quitação refere-se exclusivamente aos valores e às parcelas aqui discriminados (Súmula 330 do TST).</p>
+    <p style="margin:6px 0">${esc(e.cidade || '')}, ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}.</p>
+    ${extra.assinatura || `<div class="ass"><div>${esc(e.nome || 'Empregador')}<br>Empregador ou preposto</div><div>${esc(c.nome)}<br>Trabalhador</div></div>`}
+    <p class="min">Documento gerado pelo NEXUM RH. Os depósitos do FGTS e a multa rescisória são recolhidos pela guia do FGTS Digital; as guias do seguro-desemprego, quando cabíveis, são comunicadas pelo Empregador Web.</p></div>`;
+}
+/* ---------- Sala de reunião por vídeo (WebRTC). Sinalização: Firestore, ou localStorage sem Firebase ---------- */
+const ICE_R = { iceServers: [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }] };
+function sinal(tid, rid) {
+  if (FB_ON && FB.db) { const ref = FB.db.doc(`tenants/${tid}/reunioes/${rid}`);
+    return { get: async () => (await ref.get()).data() || {}, upd: d => ref.set(d, { merge: true }), ouvir: cb => ref.onSnapshot(s => cb(s.data() || {})), add: (c, d) => ref.collection(c).add({ ...d, em: new Date().toISOString() }), lista: (c, cb) => ref.collection(c).onSnapshot(q => cb(q.docs.map(x => ({ id: x.id, ...x.data() })))), limpa: async c => { const q = await ref.collection(c).get(); await Promise.all(q.docs.map(d => d.ref.delete())); } }; }
+  const K = `nexum:sala:${tid}:${rid}`, rd = () => JSON.parse(localStorage.getItem(K) || '{"doc":{},"c":{}}'), wr = v => { localStorage.setItem(K, JSON.stringify(v)); window.dispatchEvent(new StorageEvent('storage', { key: K })); };
+  const sub = (f) => { const h = e => { if (!e.key || e.key === K) f(); }; window.addEventListener('storage', h); setTimeout(f, 0); return () => window.removeEventListener('storage', h); };
+  return { get: async () => rd().doc, upd: async d => { const v = rd(); v.doc = { ...v.doc, ...d }; wr(v); }, ouvir: cb => { let u = ''; return sub(() => { const j = JSON.stringify(rd().doc); if (j !== u) { u = j; cb(rd().doc); } }); },
+    add: async (c, d) => { const v = rd(); (v.c[c] = v.c[c] || []).push({ id: Math.random().toString(36).slice(2), ...d, em: new Date().toISOString() }); wr(v); }, lista: (c, cb) => { let n = -1; return sub(() => { const l = rd().c[c] || []; if (l.length !== n) { n = l.length; cb(l); } }); }, limpa: async c => { const v = rd(); v.c[c] = []; wr(v); } };
+}
+async function conectarReuniao(sg, papel, vLocal, vRemoto, estado) {
+  let stream; try { stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: { echoCancellation: true, noiseSuppression: true } }); } catch (e) { estado('midia'); throw new Error('Libere a câmera e o microfone no navegador.'); }
+  vLocal.srcObject = stream; vLocal.muted = true; let pc = null, rev = null; const unsubs = [], meu = papel === 'host' ? 'iceHost' : 'iceGuest', deles = papel === 'host' ? 'iceGuest' : 'iceHost', vistos = new Set();
+  const montar = () => { if (pc) pc.close(); pc = new RTCPeerConnection(ICE_R); stream.getTracks().forEach(t => pc.addTrack(t, stream)); const rem = new MediaStream(); vRemoto.srcObject = rem;
+    pc.ontrack = e => e.streams[0].getTracks().forEach(t => rem.addTrack(t)); pc.onconnectionstatechange = () => estado(pc.connectionState); pc.onicecandidate = e => { if (e.candidate && rev) sg.add(meu, { ...e.candidate.toJSON(), rev }); }; };
+  unsubs.push(sg.lista(deles, l => l.forEach(d => { if (vistos.has(d.id) || d.rev !== rev || !pc) return; vistos.add(d.id); pc.addIceCandidate(new RTCIceCandidate({ candidate: d.candidate, sdpMid: d.sdpMid, sdpMLineIndex: d.sdpMLineIndex })).catch(() => {}); })));
+  if (papel === 'host') { await sg.limpa('iceHost'); await sg.limpa('iceGuest'); rev = String(Date.now()); montar(); const of = await pc.createOffer(); await pc.setLocalDescription(of); await sg.upd({ offer: { type: of.type, sdp: of.sdp }, answer: null, rev, hostEm: new Date().toISOString() });
+    unsubs.push(sg.ouvir(d => { if (d.answer && d.ansRev === rev && pc && !pc.currentRemoteDescription) pc.setRemoteDescription(new RTCSessionDescription(d.answer)).catch(() => {}); })); }
+  else { estado('aguardando'); unsubs.push(sg.ouvir(async d => { if (!d.offer || d.rev === rev) return; rev = d.rev; vistos.clear(); montar(); await pc.setRemoteDescription(new RTCSessionDescription(d.offer)); const an = await pc.createAnswer(); await pc.setLocalDescription(an); await sg.upd({ answer: { type: an.type, sdp: an.sdp }, ansRev: rev, guestEm: new Date().toISOString() }); })); }
+  return { sair() { unsubs.forEach(u => u && u()); stream.getTracks().forEach(t => t.stop()); if (pc) pc.close(); }, mic(on) { stream.getAudioTracks().forEach(t => t.enabled = on); }, cam(on) { stream.getVideoTracks().forEach(t => t.enabled = on); } };
+}
+const EST_REU = { aguardando: 'Aguardando a outra pessoa entrar…', new: 'Preparando…', connecting: 'Conectando…', connected: 'Conectado', disconnected: 'Conexão instável, reconectando…', failed: 'Não foi possível conectar. Use o link alternativo.', closed: 'Reunião encerrada', midia: 'Câmera ou microfone bloqueados' };
+function abrirReuniao({ tid, rid, papel, titulo, meuNome, lerArq }) {
+  const sg = sinal(tid, rid), el = document.createElement('div'); el.className = 'reu'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', titulo);
+  el.innerHTML = `<style>.reu{position:fixed;inset:0;background:#0E1630;z-index:90;display:grid;grid-template-columns:1fr 340px;color:#fff}.reu .pal{display:flex;flex-direction:column;min-width:0}.reu .vids{flex:1;position:relative;background:#0A1024}.reu #r-rem{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}.reu #r-loc{position:absolute;right:14px;bottom:14px;width:min(26%,200px);aspect-ratio:4/3;object-fit:cover;border-radius:10px;border:2px solid rgba(255,255,255,.6)}.reu .est{position:absolute;left:14px;top:12px;background:rgba(0,0,0,.45);padding:5px 12px;border-radius:999px;font-size:13px}.reu .ctl{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:12px}.reu .ctl button,.reu .ctl a{border:0;border-radius:8px;padding:9px 14px;font-weight:600;background:#26304F;color:#fff;cursor:pointer;text-decoration:none;font-size:14px}.reu .ctl .sai{background:#C23A2B}.reu .lat{background:#F3F5FA;color:#14203D;display:flex;flex-direction:column;min-height:0}.reu .lat h3{margin:0;padding:12px 14px;border-bottom:1px solid #DCE1EC;font-size:15px}.reu .msgs{flex:1;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:8px}.reu .m{background:#fff;border:1px solid #DCE1EC;border-radius:10px;padding:7px 10px;font-size:14px;max-width:90%;align-self:flex-start;white-space:pre-wrap;word-break:break-word}.reu .m.eu{align-self:flex-end;background:#E6EBFF}.reu .m small{display:block;color:#5F6B85;font-size:11.5px;margin-top:3px}.reu .env{display:flex;gap:6px;padding:10px;border-top:1px solid #DCE1EC}.reu .env input[type=text]{flex:1;border:1px solid #DCE1EC;border-radius:8px;padding:8px 10px;font:inherit}.reu .env button,.reu .env label{border:1px solid #DCE1EC;background:#fff;border-radius:8px;padding:0 10px;font:inherit;cursor:pointer;display:flex;align-items:center}@media(max-width:820px){.reu{grid-template-columns:1fr;grid-template-rows:1fr 42vh}}</style>
+    <div class="pal"><div class="vids"><video id="r-rem" autoplay playsinline></video><video id="r-loc" autoplay playsinline muted></video><div class="est" id="r-est" aria-live="polite">Preparando…</div></div>
+    <div class="ctl"><button id="r-mic" aria-pressed="true">Microfone ligado</button><button id="r-cam" aria-pressed="true">Câmera ligada</button><a href="https://meet.jit.si/nexum-${esc(tid)}-${esc(rid)}" target="_blank" rel="noopener">Link alternativo</a><button class="sai" id="r-sair">Sair da reunião</button></div></div>
+    <aside class="lat"><h3>Bate-papo</h3><div class="msgs" id="r-msgs" aria-live="polite"></div><form class="env" id="r-f"><input type="text" id="r-t" placeholder="Escreva uma mensagem" aria-label="Mensagem" maxlength="1000"><label title="Anexar arquivo">📎<input type="file" id="r-a" hidden></label><button type="submit">Enviar</button></form></aside>`;
+  document.body.appendChild(el); let ses = null, mic = true, cam = true;
+  const est = s => { $('#r-est', el).textContent = EST_REU[s] || s; el.dataset.estado = s; };
+  conectarReuniao(sg, papel, $('#r-loc', el), $('#r-rem', el), est).then(s => ses = s).catch(e => { est('midia'); toast(e.message, true); });
+  const unM = sg.lista('msgs', l => { const b = $('#r-msgs', el); if (!b) return; b.innerHTML = l.sort((a, b2) => a.em.localeCompare(b2.em)).map(m => `<div class="m ${m.papel === papel ? 'eu' : ''}">${m.t ? esc(m.t) : ''}${m.arq ? `<a href="${m.arq.data}" download="${esc(m.arq.nome)}">📎 ${esc(m.arq.nome)}</a>` : ''}<small>${esc(m.nome)} · ${new Date(m.em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</small></div>`).join('') || '<p style="color:#5F6B85;font-size:13px">As mensagens e os arquivos ficam guardados nesta reunião.</p>'; b.scrollTop = b.scrollHeight; });
+  $('#r-f', el).onsubmit = async ev => { ev.preventDefault(); const t = $('#r-t', el).value.trim(); if (!t) return; $('#r-t', el).value = ''; await sg.add('msgs', { t, nome: meuNome, papel }); };
+  $('#r-a', el).onchange = async ev => { const f = ev.target.files[0]; if (!f) return; try { const d = await lerArq(f); await sg.add('msgs', { arq: { nome: f.name, data: d }, nome: meuNome, papel }); } catch (e) { toast(String(e.message || e), true); } ev.target.value = ''; };
+  $('#r-mic', el).onclick = e => { mic = !mic; ses && ses.mic(mic); e.target.textContent = mic ? 'Microfone ligado' : 'Microfone desligado'; e.target.setAttribute('aria-pressed', mic); };
+  $('#r-cam', el).onclick = e => { cam = !cam; ses && ses.cam(cam); e.target.textContent = cam ? 'Câmera ligada' : 'Câmera desligada'; e.target.setAttribute('aria-pressed', cam); };
+  $('#r-sair', el).onclick = () => { ses && ses.sair(); unM && unM(); el.remove(); };
+  return el;
+}
+
+/* =====================================================================
+   PORTAL — pacote v3: bloqueio e desbloqueio, 72 horas após a demissão, recusa de documentos,
+   holerite com biometria facial, ASO, comprovantes do RH, ficha de admissão e reuniões
+   ===================================================================== */
+const acessoDesligOk = c => !c || c.status !== 'desligado' || !!(c.portal && c.portal.fimEm && Date.now() < Date.parse(c.portal.fimEm));
+const restanteP = iso => { const ms = Date.parse(iso) - Date.now(); if (ms <= 0) return '0h00'; const h = Math.floor(ms / 3600000), m = Math.floor(ms % 3600000 / 60000); return `${h}h${String(m).padStart(2, '0')}`; };
+function portalBloqueado(v) {
+  const p = P.cfg.portal || {}, c = P.c || {}, t = Date.now(), cp = c.portal || {};
+  if (cp.emergenciaAte && t < Date.parse(cp.emergenciaAte)) return '';
+  if (p.emergenciaAte && t < Date.parse(p.emergenciaAte)) return '';
+  if (p.bloqueado && !(p.reabreEm && t >= Date.parse(p.reabreEm))) { if (v === 'ponto' && p.pontoLivre !== false) return ''; return `${p.msg ? p.msg + '. ' : ''}O portal está bloqueado pelo RH${p.reabreEm ? ` até ${new Date(p.reabreEm).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}` : ''}.`; }
+  const h = p.horario; if (v !== 'ponto' && h && h.ativo) { const n = hhmm(new Date()); if (n < h.ini || n > h.fim) return `O portal funciona das ${h.ini} às ${h.fim}.`; }
+  return '';
+}
+function telaBloqueio(el, msg) {
+  const p = P.cfg.portal || {}, pend = G('solic').find(s => s.colabId === me() && s.tipo === 'desbloqueio' && s.status === 'pendente');
+  el.innerHTML = `<section class="panel bloq"><h2 style="margin:12px 0 6px">Portal indisponível</h2><p class="hint" style="margin:0 0 16px">${esc(msg)}${p.pontoLivre !== false && p.bloqueado ? ' O registro de ponto continua liberado.' : ''}</p>
+    <div class="row" style="justify-content:center">${p.pontoLivre !== false && p.bloqueado ? '<button class="btn sec" id="bl-p">Ir para Meu ponto</button>' : ''}${pend ? `<span class="pill warn">Pedido de desbloqueio enviado em ${fdt(pend.criadoEm)}</span>` : '<button class="btn" id="bl-s">Pedir desbloqueio ao RH</button>'}</div></section>`;
+  const bp = $('#bl-p', el); if (bp) bp.onclick = () => go('ponto');
+  const bs = $('#bl-s', el); if (bs) bs.onclick = () => modal('Pedir desbloqueio', `<p class="hint" style="margin-top:0">Se o RH aprovar, o portal abre para você por 1 hora.</p><div class="fld"><label for="ds-m">Por que você precisa acessar agora?</label><textarea class="inp" id="ds-m" placeholder="Ex.: preciso do holerite para o banco hoje"></textarea></div>`,
+    { size: 'sm', foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="ds-ok">Enviar pedido</button>', onMount: m => $('#ds-ok', m).onclick = () => { const t = $('#ds-m', m).value.trim(); if (t.length < 5) return toast('Explique o motivo.', true); novaSolic('desbloqueio', { motivo: t }); closeModal(true); toast('Pedido enviado ao RH.'); telaBloqueio(el, msg); } });
+}
+function avisoDeslig(el) {
+  const c = P.c || {}; if (c.status !== 'desligado' || !c.portal || !c.portal.fimEm || $('#av72', el)) return;
+  el.insertAdjacentHTML('afterbegin', `<section class="panel" id="av72" style="border-color:var(--warn);background:var(--warn-s)"><div class="row"><div style="flex:1"><b>Seu acesso ao portal termina em <span data-cr72="${c.portal.fimEm}">${restanteP(c.portal.fimEm)}</span></b><div class="hint">Baixe seus holerites e documentos e assine a rescisão antes do prazo.</div></div></div></section>`);
+}
+setInterval(() => { $$('[data-cr72]').forEach(s => { s.textContent = restanteP(s.dataset.cr72); if (Date.parse(s.dataset.cr72) <= Date.now() && typeof sair === 'function') { toast('O prazo de acesso ao portal terminou.', true); sair(); } }); }, 20000);
+/* ---------- Confirmação por biometria facial (com selfie como alternativa) ---------- */
+async function confirmarComRosto(titulo) {
+  const face = G('faces').find(f => f.colabId === me() && f.status === 'aprovado');
+  if (!face) { const img = await assinar(titulo, 'Você ainda não tem a biometria facial aprovada, então a confirmação será por assinatura e selfie.'); return img ? { metodo: 'assinatura e selfie', img, foto: (assinar.ultima || {}).selfie || null } : null; }
+  for (let t = 1; t <= 3; t++) {
+    const r = await BIO.capturar({ titulo, desafios: 2, amostras: 2 }); if (!r) return null;
+    if (r.erro === 'camera' || r.erro === 'modelo') { toast(r.erro === 'camera' ? 'Libere a câmera para confirmar com o rosto.' : 'O reconhecimento facial não carregou. Verifique a internet.', true); return null; }
+    const av = BIO.avaliar(r.descs, face.descs); if (r.vivo && !r.erro && av.ok) return { metodo: 'facial', foto: r.foto, dist: +av.d.toFixed(3) };
+    toast(`Não confirmamos que é você. Tentativa ${t} de 3.`, true);
+  }
+  return null;
+}
+/* ---------- Holerite: biometria facial, aceite ou recusa ---------- */
+function vHoleritesV3(el) {
+  const hs = G('holerites').filter(h => h.colabId === me()).sort((a, b) => b.comp.localeCompare(a.comp)), as = G('assin').filter(a => a.colabId === me() && a.tipo === 'holerite');
+  const da = h => as.filter(a => a.ref === h.comp && (a.versao || 1) === (h.versao || 1)).sort((a, b) => b.em.localeCompare(a.em))[0];
+  el.innerHTML = hs.length ? `<section class="panel"><ul class="list">${hs.map(h => { const a = da(h), k = folhaItem(h.item); return `<li class="link" data-hc="${h.id}"><div class="t"><div style="text-transform:capitalize">${mesNome(h.comp)}</div><div>Líquido ${brl(k.liq)}${h.pagoEm ? ` · pago em ${fd(h.pagoEm)}` : ''}${h.motivoRepub ? ` · republicado: ${esc(h.motivoRepub)}` : ''}</div></div>${!a ? '<span class="pill warn">Assinar</span>' : a.aceito === false ? '<span class="pill bad">Recusado</span>' : '<span class="pill ok">Aceito</span>'}</li>`; }).join('')}</ul></section>`
+    : '<div class="panel empty"><b>Nenhum holerite ainda</b>Quando o RH publicar, ele aparece aqui para você conferir e assinar.</div>';
+  $$('[data-hc]', el).forEach(li => li.onclick = () => { const h = hs.find(x => x.id === li.dataset.hc), a = da(h), k = folhaItem(h.item), e = P.cfg.empresa || {};
+    const ass = a ? `<div style="margin-top:14px;border:1px solid #bbb;border-radius:6px;padding:10px 12px;font-family:Arial;font-size:11px;display:flex;gap:12px;align-items:center">${a.foto ? `<img src="${a.foto}" alt="Foto da confirmação" style="width:60px;height:60px;object-fit:cover;border-radius:6px">` : ''}<div><b>${a.aceito === false ? 'Recusado' : 'Recebido e aceito'} eletronicamente por ${esc(P.c.nome)}</b><br>${new Date(a.em).toLocaleString('pt-BR')} · ${esc(a.metodo || '')}${a.aceito === false ? `<br>Motivo: ${esc(a.motivo)}` : ''}<br>Código SHA-256: ${esc(a.hash)}</div></div>` : '';
+    const html = holeriteProf(P.c, e, h.comp, h.item, k, { pago: h.pagoEm, assinatura: ass || undefined });
+    modal(`Holerite de ${mesNome(h.comp)}`, `<div class="doc-prev">${html}</div>`, { size: 'lg', foot: `<button class="btn sec" id="hl-pr">Baixar PDF</button>${a ? '' : '<button class="btn sec" id="hl-rc">Não concordo</button><button class="btn" id="hl-ok">Conferi e aceito</button>'}`, onMount: m => {
+      $('#hl-pr', m).onclick = () => printDoc(`Holerite ${h.comp}`, html);
+      const grava = async (aceito, motivo) => { closeModal(true); const r = await confirmarComRosto(aceito ? 'Confirme que é você para aceitar o holerite' : 'Confirme que é você para registrar a recusa'); if (!r) return;
+        const em = new Date().toISOString(), hash = await sha(me() + h.comp + JSON.stringify(h.item) + em + (aceito ? 'aceito' : 'recusado'));
+        mut('assin', l => l.push({ id: uid(), colabId: me(), tipo: 'holerite', ref: h.comp, versao: h.versao || 1, aceito, motivo: motivo || '', metodo: r.metodo, foto: r.foto || null, dist: r.dist || null, em, hash }));
+        toast(aceito ? 'Holerite aceito e assinado.' : 'Recusa registrada. O RH vai analisar.'); vHoleritesV3(el); badges(); };
+      const ok = $('#hl-ok', m); if (ok) ok.onclick = () => grava(true);
+      const rc = $('#hl-rc', m); if (rc) rc.onclick = () => { const mt = prompt('O que está errado no holerite?'); if (mt && mt.trim().length >= 5) grava(false, mt.trim()); else if (mt !== null) toast('Explique o motivo da recusa.', true); }; } }); });
+}
+/* ---------- Documentos: recusa com motivo e envio do ASO ---------- */
+function extrasDocModal(m, d) {
+  const foot = $('.modal-f', m) || m; if (!foot) return;
+  if (d.status === 'pendente' && d.requer !== false && !$('#dc-rc', m)) { const as = $('#dc-as', m); if (as) { as.textContent = d.aceite ? 'Aceito os valores e assino' : 'Li e quero assinar'; as.insertAdjacentHTML('beforebegin', `<button class="btn sec" id="dc-rc">${d.aceite ? 'Não aceito os valores' : 'Recusar'}</button>`); }
+    $('#dc-rc', m).onclick = () => { const mt = prompt(d.aceite ? 'Explique por que você não aceita os valores:' : 'Por que você recusa este documento?'); if (mt === null) return; if (mt.trim().length < 5) return toast('Explique o motivo.', true);
+      mut('docs', arr => { const x = arr.find(y => y.id === d.id); x.status = 'recusado'; x.recusa = { motivo: mt.trim(), em: new Date().toISOString() }; }); closeModal(true); toast('Recusa enviada ao RH.'); go(P.view); }; }
+  if (d.categoria === 'exame' && !G('solic').some(s => s.tipo === 'aso' && (s.dados || {}).docId === d.id && s.status !== 'recusada')) { foot.insertAdjacentHTML('afterbegin', '<button class="btn" id="dc-aso">Enviar foto do ASO</button>');
+    $('#dc-aso', m).onclick = () => { closeModal(true); modal('Enviar o ASO', `<p class="hint" style="margin-top:0">Depois do exame, tire uma foto nítida do Atestado de Saúde Ocupacional.</p><div class="fld"><label for="as-d">Data do exame</label><input class="inp" type="date" id="as-d" value="${iso(hoje())}"></div><div class="fld"><label for="as-r">Resultado no ASO</label><select class="inp" id="as-r">${opts([['apto', 'Apto'], ['inapto', 'Inapto']], 'apto')}</select></div><div class="fld"><label for="as-f">Foto ou PDF do ASO</label><input class="inp" type="file" id="as-f" accept="image/*,application/pdf" capture="environment"></div>`,
+      { size: 'sm', foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="as-ok">Enviar ao RH</button>', onMount: mm => $('#as-ok', mm).onclick = async () => { const f = $('#as-f', mm).files[0]; if (!f) return toast('Anexe a foto do ASO.', true); let data; try { data = await lerArquivo(f); } catch (e) { return toast(e, true); }
+        novaSolic('aso', { docId: d.id, tipo: (d.exame || {}).tipo || 'periodico', data: $('#as-d', mm).value, resultado: $('#as-r', mm).value, anexo: { nome: f.name, tipo: f.type.startsWith('image/') ? 'image/jpeg' : f.type, data } }); closeModal(true); toast('ASO enviado ao RH para aprovação.'); } }); }; }
+}
+/* ---------- Comprovantes enviados pelo RH ---------- */
+function painelComprovantesRH(el) {
+  const l = G('docs').filter(d => d.colabId === me() && d.categoria === 'comprovante').sort((a, b) => b.enviadoEm.localeCompare(a.enviadoEm)); if (!l.length || $('#cp-rh', el)) return;
+  el.insertAdjacentHTML('afterbegin', `<section class="panel" id="cp-rh"><h2>Comprovantes enviados pelo RH</h2><ul class="list">${l.map(d => `<li><div class="t"><div>${esc(d.titulo.replace(/^Comprovante: /, ''))}</div><div>${fdt(d.enviadoEm)}</div></div>${d.anexo ? `<a class="btn sec sm" href="${d.anexo.data}" download="${esc(d.anexo.nome || 'comprovante')}">Baixar</a>` : ''}</li>`).join('')}</ul></section>`);
+}
+/* ---------- Ficha de admissão pelo portal ---------- */
+function vAdmissaoP(el) {
+  const c = P.c, pend = G('solic').find(s => s.colabId === me() && s.tipo === 'admissao' && s.status === 'pendente'), enc = G('docs').filter(d => d.colabId === me() && d.categoria === 'exame');
+  if (pend) { el.innerHTML = `<section class="panel"><h2>Ficha enviada</h2><p>Recebemos seus dados em ${fdt(pend.criadoEm)}. O RH vai conferir e concluir a sua admissão.</p>${enc.length ? '<button class="btn sec" id="ad-enc">Ver o encaminhamento do exame admissional</button>' : ''}</section>`; const b = $('#ad-enc', el); if (b) b.onclick = () => go('docs'); return; }
+  const dl = [];
+  el.innerHTML = `<section class="panel"><h2>Bem-vindo(a), ${esc(c.nome.split(' ')[0])}!</h2><p class="hint" style="margin-top:0">Complete sua ficha de admissão. Os dados vão direto para o seu cadastro, depois da conferência do RH.${enc.length ? ' O encaminhamento para o exame admissional está em Documentos.' : ''}</p>
+    <div class="grid"><div class="fld"><label for="fa-rg">RG</label><input class="inp" id="fa-rg" value="${esc(c.rg || '')}"></div><div class="fld"><label for="fa-pis">PIS/NIT (se tiver)</label><input class="inp" id="fa-pis" value="${esc(c.pis || '')}"></div><div class="fld"><label for="fa-n">Data de nascimento</label><input class="inp" type="date" id="fa-n" value="${c.nascimento || ''}"></div><div class="fld"><label for="fa-m">Nome da mãe</label><input class="inp" id="fa-m" value="${esc(c.mae || '')}"></div>
+    <div class="fld"><label for="fa-ec">Estado civil</label><select class="inp" id="fa-ec">${opts([['', 'Escolha'], ['solteiro', 'Solteiro(a)'], ['casado', 'Casado(a)'], ['uniao', 'União estável'], ['divorciado', 'Divorciado(a)'], ['viuvo', 'Viúvo(a)']], c.estadoCivil || '')}</select></div><div class="fld"><label for="fa-es">Escolaridade</label><select class="inp" id="fa-es">${opts([['', 'Escolha'], ['fund', 'Fundamental'], ['medio_inc', 'Médio incompleto'], ['medio', 'Médio completo'], ['sup_inc', 'Superior incompleto'], ['sup', 'Superior completo']], c.escolaridade || '')}</select></div>
+    <div class="fld"><label for="fa-cep">CEP</label><input class="inp" id="fa-cep" inputmode="numeric" value="${esc(c.cep || '')}"></div><div class="fld"><label for="fa-ci">Cidade/UF</label><input class="inp" id="fa-ci" value="${esc(c.cidade || '')}"></div><div class="fld full"><label for="fa-en">Endereço completo</label><input class="inp" id="fa-en" value="${esc(c.endereco || '')}"></div>
+    <div class="fld"><label for="fa-em">E-mail</label><input class="inp" type="email" id="fa-em" value="${esc(c.email || '')}"></div><div class="fld"><label for="fa-b">Banco, agência e conta ou chave PIX</label><input class="inp" id="fa-b" value="${esc(c.banco || '')}"></div>
+    <div class="fld full"><label for="fa-f">Sua foto para o cadastro (rosto de frente, fundo claro)</label><input class="inp" type="file" id="fa-f" accept="image/*" capture="user"></div></div>
+    <h3 style="margin:8px 0">Dependentes</h3><div id="fa-dl"></div><button type="button" class="btn sec sm" id="fa-dn">Adicionar dependente</button>
+    <div class="row end" style="margin-top:16px"><button class="btn" id="fa-ok">Enviar ficha ao RH</button></div></section>`;
+  const des = () => { $('#fa-dl', el).innerHTML = dl.map((d, i) => `<div class="grid" data-fd="${i}" style="border-top:1px solid var(--line);padding-top:8px"><div class="fld"><label>Nome</label><input class="inp" data-k="nome"></div><div class="fld"><label>Nascimento</label><input class="inp" type="date" data-k="nasc"></div><div class="fld"><label>Parentesco</label><select class="inp" data-k="par">${opts([['filho', 'Filho(a)'], ['conjuge', 'Cônjuge'], ['outro', 'Outro']], 'filho')}</select></div></div>`).join(''); };
+  $('#fa-dn', el).onclick = () => { dl.push({}); des(); };
+  $('#fa-cep', el).addEventListener('blur', async e => { const cep = e.target.value.replace(/\D/g, ''); if (cep.length !== 8) return; try { const j = await (await fetch(`https://viacep.com.br/ws/${cep}/json/`)).json(); if (!j.erro) { $('#fa-en', el).value = [j.logradouro, j.bairro].filter(Boolean).join(', ') + ', nº '; $('#fa-ci', el).value = `${j.localidade}/${j.uf}`; $('#fa-en', el).focus(); } } catch (er) { } });
+  $('#fa-ok', el).onclick = async () => { const g = id => $(id, el).value.trim(), d = { rg: g('#fa-rg'), pis: g('#fa-pis'), nascimento: g('#fa-n'), mae: g('#fa-m'), estadoCivil: g('#fa-ec'), escolaridade: g('#fa-es'), cep: g('#fa-cep'), cidade: g('#fa-ci'), endereco: g('#fa-en'), email: g('#fa-em'), banco: g('#fa-b') };
+    if (!d.rg || !d.nascimento || !d.mae || !d.endereco || !d.banco) return toast('Preencha RG, nascimento, nome da mãe, endereço e conta para pagamento.', true);
+    $$('[data-fd]', el).forEach(r => { const x = dl[+r.dataset.fd]; $$('[data-k]', r).forEach(i => x[i.dataset.k] = i.value.trim()); }); d.dependentesLista = dl.filter(x => x.nome).map(x => ({ ...x, ir: true }));
+    const f = $('#fa-f', el).files[0]; if (!f) return toast('Envie sua foto para o cadastro.', true); try { d.foto = await lerArquivo(f); } catch (er) { return toast(er, true); }
+    novaSolic('admissao', d); toast('Ficha enviada ao RH. Obrigado!'); vAdmissaoP(el); };
+}
+/* ---------- Reuniões por vídeo ---------- */
+function vReunioesP(el) {
+  const l = G('reunioes').filter(r => r.colabId === me()).sort((a, b) => b.inicio.localeCompare(a.inicio));
+  el.innerHTML = l.length ? `<section class="panel"><ul class="list">${l.map(r => { const ab = r.status !== 'encerrada' && Date.parse(r.inicio) - Date.now() < 15 * 60000; return `<li><div class="t"><div><b>${esc(r.titulo)}</b></div><div>${fdt(r.inicio)}${r.status === 'encerrada' ? ' · encerrada' : ''}</div></div>${r.status !== 'encerrada' ? `<button class="btn sm" data-re="${r.id}" ${ab ? '' : 'disabled title="A sala abre 15 minutos antes"'}>Entrar</button>` : ''}</li>`; }).join('')}</ul></section>`
+    : '<div class="panel empty"><b>Nenhuma reunião marcada</b>Quando o RH marcar uma conversa por vídeo com você, ela aparece aqui.</div>';
+  $$('[data-re]', el).forEach(b => b.onclick = () => { const r = l.find(x => x.id === b.dataset.re); abrirReuniao({ tid: P.t.id, rid: r.id, papel: 'guest', titulo: r.titulo, meuNome: P.c.nome, lerArq: lerArquivo }); });
+}
 
 /* ---------- Justificar o ponto ---------- */
 const MOTIVOS_JUST = [['esqueci', 'Esqueci de bater o ponto'], ['atestado', 'Atestado ou consulta médica'], ['transporte', 'Problema no transporte'], ['familia', 'Motivo familiar ou pessoal'], ['legal', 'Falta legal (doação de sangue, alistamento, etc.)'], ['outro', 'Outro motivo']];
@@ -1715,14 +1929,14 @@ function assinar(titulo, texto) {
   });
 }
 function vDocs(el, cat) {
-  const l = G('docs').filter(d => d.colabId === me() && (cat === 'contrato' ? d.categoria === 'contrato' : d.categoria !== 'contrato')).sort((a, b) => (a.status === 'pendente' ? -1 : 1) - (b.status === 'pendente' ? -1 : 1) || b.enviadoEm.localeCompare(a.enviadoEm));
-  el.innerHTML = l.length ? `<section class="panel"><ul class="list">${l.map(d => `<li class="link" data-d="${d.id}"><div class="t"><div>${esc(d.titulo)}</div><div>Enviado em ${fdt(d.enviadoEm)}${d.assinatura ? ' · assinado em ' + fdt(d.assinatura.em) : ''}</div></div>${d.status === 'pendente' ? '<span class="pill warn">Assinar</span>' : d.status === 'assinado' ? '<span class="pill ok">Assinado</span>' : '<span class="pill mut">Disponível</span>'}<span aria-hidden="true">›</span></li>`).join('')}</ul></section>`
+  const l = G('docs').filter(d => d.colabId === me() && (cat === 'contrato' ? d.categoria === 'contrato' : !['contrato', 'comprovante'].includes(d.categoria))).sort((a, b) => (a.status === 'pendente' ? -1 : 1) - (b.status === 'pendente' ? -1 : 1) || b.enviadoEm.localeCompare(a.enviadoEm));
+  el.innerHTML = l.length ? `<section class="panel"><ul class="list">${l.map(d => `<li class="link" data-d="${d.id}"><div class="t"><div>${esc(d.titulo)}</div><div>Enviado em ${fdt(d.enviadoEm)}${d.assinatura ? ' · assinado em ' + fdt(d.assinatura.em) : ''}</div></div>${d.status === 'recusado' ? '<span class="pill bad">Recusado</span>' : d.status === 'pendente' && d.requer !== false ? '<span class="pill warn">Assinar</span>' : d.status === 'assinado' ? '<span class="pill ok">Assinado</span>' : '<span class="pill mut">Disponível</span>'}<span aria-hidden="true">›</span></li>`).join('')}</ul></section>`
     : `<div class="panel empty"><b>Nenhum ${cat === 'contrato' ? 'contrato' : 'documento'} por aqui</b>Quando o RH enviar ${cat === 'contrato' ? 'um contrato' : 'um documento'} para você, ele aparece nesta tela.</div>`;
   $$('[data-d]', el).forEach(li => li.onclick = () => {
     const d = G('docs').find(x => x.id === li.dataset.d);
     modal(d.titulo, `<div class="doc-prev">${d.html}${blocoAssin(d)}</div>`, {
       foot: `<button class="btn sec" id="dc-pr">Baixar PDF</button>${d.status === 'pendente' ? '<button class="btn" id="dc-as">Li e quero assinar</button>' : ''}`,
-      onMount: m => {
+      onMount: m => { extrasDocModal(m, d);
         $('#dc-pr', m).onclick = () => printDoc(d.titulo, d.html + blocoAssin(d));
         const b = $('#dc-as', m); if (b) b.onclick = async () => {
           closeModal(true);
@@ -1916,7 +2130,7 @@ function vPerfil(el) {
 window.addEventListener('storage', e => {
   if (!P.t || !e.key || !e.key.startsWith(`nexum:${P.t.id}:`)) return;
   const col = e.key.split(':')[2];
-  if (col === 'colab') { const c = G('colab').find(x => x.id === me()); if (!c || !c.portal || !c.portal.ativo || c.status === 'desligado') { sair(); return toast('Seu acesso ao portal foi encerrado. Procure o RH.', true); } P.c = c; }
+  if (col === 'colab') { const c = G('colab').find(x => x.id === me()); if (!c || !c.portal || !c.portal.ativo || !acessoDesligOk(c)) { sair(); return toast('Seu acesso ao portal foi encerrado. Procure o RH.', true); } P.c = c; }
   if (col === 'config') P.cfg = G('config');
   badges(); try { verNovidades(); } catch (er) { }
   if (P.view === 'chat' && col === 'chat') return renderThread();
@@ -1929,7 +2143,7 @@ window.addEventListener('storage', e => {
   if (FB_ON) { renderLogin(); FB.auth.onAuthStateChanged(u => { if (u && !P.c) fbEntrarPortal(u); else if (!u && P.c) { P.t = P.c = null; FB.fechar(); renderLogin(); } }); return; }
   try {
     const s = JSON.parse(sessionStorage.getItem('nexum:psess') || 'null');
-    if (s) { const t = Store.tenants().find(x => x.id === s.t); const c = t && Store.get(t.id, 'colab', []).find(x => x.id === s.c && x.portal && x.portal.ativo && x.status !== 'desligado'); if (c) return entrar(t, c); }
+    if (s) { const t = Store.tenants().find(x => x.id === s.t); const c = t && Store.get(t.id, 'colab', []).find(x => x.id === s.c && x.portal && x.portal.ativo && acessoDesligOk(x)); if (c) return entrar(t, c); }
   } catch (e) { }
   renderLogin();
 })();
