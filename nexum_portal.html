@@ -504,8 +504,8 @@ function blocoAssin(d) {
   return `<div style="page-break-before:always;font-family:Arial,sans-serif;font-size:11.5px;line-height:1.55;margin-top:28px"><h2 style="font-size:15px;text-align:center;margin:0 0 12px">Certificado de assinatura eletrônica</h2>
     <table style="width:100%;border-collapse:collapse">${lin('Documento', esc(d.titulo))}${lin('Identificador', esc(d.id || '—'))}${lin('Enviado', `${d.enviadoEm ? new Date(d.enviadoEm).toLocaleString('pt-BR') : '—'}${d.por ? ` por ${esc(d.por)}` : ''}`)}
     ${lin('Assinado por', `${esc(a.nome)} · CPF ${esc(a.cpf || '—')}`)}${lin('Data e hora', `${new Date(a.em).toLocaleString('pt-BR')} (horário do aparelho)`)}${lin('Localização', a.geo ? `${(+a.geo.lat).toFixed(5)}, ${(+a.geo.lng).toFixed(5)}${a.geo.acc ? ` (precisão de ${Math.round(a.geo.acc)} m)` : ''}` : 'não autorizada')}
-    ${lin('Aparelho', esc([a.aparelho, (a.ua || '').slice(0, 120)].filter(Boolean).join(' · ') || '—'))}${lin('Autenticação', `Login individual no Portal do Colaborador${a.selfie ? ' e selfie no momento da assinatura' : ''}`)}${lin('Código de integridade (SHA-256)', `<span style="font-family:monospace;word-break:break-all">${esc(a.hash || '—')}</span>`)}</table>
-    <div style="display:flex;gap:18px;align-items:flex-end;margin-top:12px"><div><div>Assinatura</div><img src="${a.img}" alt="Assinatura" style="height:70px"></div>${a.selfie ? `<div><div>Selfie</div><img src="${a.selfie}" alt="Selfie no momento da assinatura" style="height:90px;border-radius:6px"></div>` : ''}</div>
+    ${lin('Aparelho', esc([a.aparelho, (a.ua || '').slice(0, 120)].filter(Boolean).join(' · ') || '—'))}${lin('Autenticação', `Login individual no Portal do Colaborador${a.modo === 'facial' ? ' e reconhecimento facial no momento do aceite' : a.selfie ? ' e foto no momento do aceite' : ''}`)}${lin('Código de integridade (SHA-256)', `<span style="font-family:monospace;word-break:break-all">${esc(a.hash || '—')}</span>`)}</table>
+    <div style="display:flex;gap:18px;align-items:flex-end;margin-top:12px">${a.img ? `<div><div>Assinatura</div><img src="${a.img}" alt="Assinatura" style="height:70px"></div>` : ''}${a.selfie ? `<div><div>Selfie</div><img src="${a.selfie}" alt="Selfie no momento da assinatura" style="height:90px;border-radius:6px"></div>` : ''}</div>
     <p style="color:#555;margin-top:12px">O código de integridade é calculado sobre o conteúdo do documento, a imagem da assinatura, a data e a identificação do signatário: qualquer alteração posterior gera outro código. Assinatura eletrônica admitida entre as partes (MP 2.200-2/2001, art. 10, § 2º; Lei 14.063/2020).</p></div>`;
 }
 
@@ -575,7 +575,7 @@ const ICO = {
 };
 const PNAV = [
   ['inicio', 'Início'], ['ponto', 'Meu ponto'], ['escala', 'Minha escala'], ['espelho', 'Espelho de ponto'], ['bh', 'Banco de horas'], ['holerites', 'Holerites'],
-  ['ferias', 'Férias'], ['docs', 'Documentos'], ['contratos', 'Meus contratos'], ['ocorr', 'Atestados e ocorrências'], ['regimento', 'Regimento interno'], ['simular', 'Simular férias e 13º'], ['carreira', 'Minha carreira'], ['declar', 'Declarações'], ['inss', 'Afastamento INSS'], ['solic', 'Solicitações'],
+  ['ferias', 'Férias'], ['docs', 'Documentos'], ['contratos', 'Meus contratos'], ['ocorr', 'Atestados e ocorrências'], ['regimento', 'Regimento interno'], ['solic', 'Solicitações'],
   ['he', 'Horas extras'], ['comprov', 'Comprovantes'], ['chat', 'Chat com o RH'], ['reuniao', 'Reuniões'], ['etica', 'Canal de ética'], ['meusdados', 'Meus dados (LGPD)'], ['perfil', 'Meu perfil']
 ];
 
@@ -1449,24 +1449,60 @@ function painelPerfilExtra(el) {
 }
 function ligarCiencia(el) { $$('[data-ci]', el).forEach(b => b.onclick = () => { mut('avisos', l => { const a = l.find(x => x.id === b.dataset.ci); if (a) { a.cientes = a.cientes || []; if (!a.cientes.includes(me())) a.cientes.push(me()); } }); toast('Ciência registrada.'); go('inicio'); }); }
 /* ---------- Canal de ética ---------- */
-const CAT_DEN_P = [['assedio_moral', 'Assédio moral'], ['assedio_sexual', 'Assédio sexual'], ['discriminacao', 'Discriminação'], ['fraude', 'Fraude ou desvio'], ['seguranca', 'Segurança no trabalho'], ['conduta', 'Conduta inadequada'], ['outro', 'Outro']];
+/* ---------- Canal de ética em formato de chat anônimo ---------- */
+const CAT_DEN_P = [['assedio_moral', 'Assédio moral'], ['assedio_sexual', 'Assédio sexual'], ['discriminacao', 'Discriminação'], ['fraude', 'Fraude ou desvio'], ['seguranca', 'Segurança no trabalho'], ['conduta', 'Conduta inadequada'], ['outro', 'Outro assunto']];
+const chaveEtica = () => `nexum:etica:${P.t.id}`;
+const protosLocais = () => { try { return JSON.parse(localStorage.getItem(chaveEtica()) || '[]'); } catch (e) { return []; } };
+const guardarProto = id => { const l = protosLocais().filter(x => x !== id); l.unshift(id); localStorage.setItem(chaveEtica(), JSON.stringify(l.slice(0, 10))); };
+const horaAnonima = () => new Date(Date.now() - Math.floor(Math.random() * 1800000)).toISOString().slice(0, 13) + ':00:00.000Z';
+const msgsRelato = d => d.mensagens && d.mensagens.length ? d.mensagens : [{ de: 'anon', t: d.texto, em: d.em }, ...(d.resposta ? [{ de: 'rh', t: d.resposta, em: d.respostaEm || d.em }] : [])];
 async function buscarRelato(p) { if (FB_ON && FB.tid) { try { const s = await FB.col('denuncias').doc(p).get(); return s.exists ? FB.dec(s.data()) : null; } catch (e) { return null; } } return (G('denuncias') || []).find(d => d.id === p) || null; }
+function ouvirRelato(p, cb) {
+  if (FB_ON && FB.tid) return FB.col('denuncias').doc(p).onSnapshot(s => cb(s.exists ? FB.dec(s.data()) : null), () => cb(null));
+  const f = () => cb((G('denuncias') || []).find(d => d.id === p) || null); f(); window.addEventListener('storage', f); return () => window.removeEventListener('storage', f);
+}
+async function enviarAoRelato(d, t) {
+  const m = { de: 'anon', t: t.slice(0, 2900), em: horaAnonima() }, novo = [...msgsRelato(d), m];
+  if (FB_ON && FB.tid) return FB.col('denuncias').doc(d.id).update({ mensagens: novo, atualizadoEm: m.em });
+  mut('denuncias', l => { const x = l.find(y => y.id === d.id); if (x) { x.mensagens = novo; x.atualizadoEm = m.em; } });
+}
+let _eticaUn = null;
 function vEticaP(el) {
-  el.innerHTML = `<section class="panel"><h2>Canal de ética</h2><p class="hint" style="margin-top:0">Relate assédio, discriminação, fraude ou qualquer conduta errada. <b>O relato não leva o seu nome nem o seu CPF</b> e só o RH e a direção leem; gerentes de loja não têm acesso. Guarde o número de protocolo para acompanhar a resposta.</p>
-    <div class="fld"><label for="et-c">Assunto</label><select class="inp" id="et-c">${opts(CAT_DEN_P, 'assedio_moral')}</select></div><div class="fld"><label for="et-t">O que aconteceu</label><textarea class="inp" id="et-t" style="min-height:120px" placeholder="Descreva os fatos. Não precisa se identificar."></textarea></div>
-    <div class="grid"><div class="fld"><label for="et-q">Quando (opcional)</label><input class="inp" id="et-q" placeholder="Ex.: semana passada, sábado"></div><div class="fld"><label for="et-o">Onde (opcional)</label><input class="inp" id="et-o"></div></div>
-    <div class="fld"><label for="et-e">Pessoas envolvidas (opcional)</label><input class="inp" id="et-e"></div><div class="fld"><label for="et-a">Foto ou documento (opcional)</label><input class="inp" type="file" id="et-a" accept="image/*,application/pdf"></div>
-    <div class="row end"><button class="btn" id="et-ok">Enviar relato</button></div></section>
-    <section class="panel"><h2>Acompanhar um relato</h2><div class="row" style="flex-wrap:nowrap"><input class="inp" id="et-p" placeholder="Número do protocolo" autocomplete="off"><button class="btn sec" id="et-b">Ver</button></div><div id="et-r"></div></section>`;
-  $('#et-ok', el).onclick = async () => { const t = $('#et-t', el).value.trim(); if (t.length < 20) return toast('Descreva os fatos com um pouco mais de detalhe.', true);
-    const f = $('#et-a', el).files[0]; let anexo = null; if (f) { try { anexo = { nome: 'anexo' + (f.type === 'application/pdf' ? '.pdf' : '.jpg'), tipo: f.type.startsWith('image/') ? 'image/jpeg' : f.type, data: await lerArquivo(f) }; } catch (e) { return toast(e, true); } }
-    const id = Array.from(crypto.getRandomValues(new Uint8Array(8)), b => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[b % 32]).join('');
-    const d = { id, categoria: $('#et-c', el).value, texto: t.slice(0, 4900), status: 'recebida', em: new Date(Date.now() - Math.floor(Math.random() * 3600000)).toISOString().slice(0, 13) + ':00:00.000Z' };
-    ['quando:#et-q', 'onde:#et-o', 'envolvidos:#et-e'].forEach(x => { const [k, q] = x.split(':'), v = $(q, el).value.trim(); if (v) d[k] = v.slice(0, 300); }); if (anexo) d.anexo = anexo;
-    mut('denuncias', l => l.push(d));
-    modal('Relato enviado', `<p style="margin-top:0">Guarde este número para acompanhar a resposta:</p><p style="font-size:26px;font-weight:800;letter-spacing:2px;text-align:center;font-family:monospace">${id}</p><p class="hint">Ele não fica salvo no seu aparelho nem ligado ao seu nome.</p>`, { foot: '<button class="btn" data-close>Anotei</button>' }); vEticaP(el); };
-  $('#et-b', el).onclick = async () => { const p = $('#et-p', el).value.trim().toUpperCase(); if (!p) return; const d = await buscarRelato(p);
-    $('#et-r', el).innerHTML = d ? `<p><b>Situação:</b> ${d.status === 'concluida' ? 'Concluída' : d.status === 'em análise' ? 'Em análise' : 'Recebida'}</p>${d.resposta ? `<p style="white-space:pre-wrap"><b>Resposta:</b> ${esc(d.resposta)}</p>` : '<p class="hint">Ainda sem resposta.</p>'}` : '<p class="hint">Protocolo não encontrado.</p>'; };
+  if (_eticaUn) { _eticaUn(); _eticaUn = null; }
+  if (P.eticaChat !== undefined) return chatEtica(el, P.eticaChat);
+  const l = protosLocais();
+  el.innerHTML = `<section class="panel"><h2>Canal de ética</h2><p class="hint" style="margin-top:0">Converse com o RH <b>sem se identificar</b>. Seu nome, CPF e login não aparecem na conversa, e o horário é arredondado. Só o RH e a direção leem; gerentes de loja não têm acesso.</p>
+    <button class="btn" id="et-nova">Nova conversa anônima</button></section>
+    <section class="panel"><h2>Continuar uma conversa</h2>${l.length ? `<ul class="list" id="et-l">${l.map(p => `<li class="link" data-et="${p}"><div class="t"><div>Protocolo ${p}</div><div data-etp="${p}">Carregando…</div></div></li>`).join('')}</ul>` : '<p class="hint" style="margin-top:0">As conversas que você abrir neste aparelho aparecem aqui.</p>'}
+    <div class="row" style="flex-wrap:nowrap;margin-top:10px"><input class="inp" id="et-p" placeholder="Ou digite o protocolo" autocomplete="off" maxlength="8"><button class="btn sec" id="et-ab">Abrir</button></div>${l.length ? '<button class="btn ghost sm" id="et-limpa" style="margin-top:8px">Apagar a lista deste aparelho</button>' : ''}</section>`;
+  $('#et-nova', el).onclick = () => { P.eticaChat = null; vEticaP(el); };
+  $$('[data-et]', el).forEach(li => li.onclick = () => { P.eticaChat = li.dataset.et; vEticaP(el); });
+  l.forEach(async p => { const d = await buscarRelato(p), x = $(`[data-etp="${p}"]`, el); if (!x) return; if (!d) { x.textContent = 'Conversa não encontrada'; return; } const ms = msgsRelato(d), u = ms[ms.length - 1];
+    x.innerHTML = `${u.de === 'rh' ? '<b style="color:var(--pri)">Nova resposta do RH</b> · ' : ''}${esc(String(u.t).slice(0, 60))}${String(u.t).length > 60 ? '…' : ''}`; });
+  $('#et-ab', el).onclick = async () => { const p = $('#et-p', el).value.trim().toUpperCase(); if (!p) return; const d = await buscarRelato(p); if (!d) return toast('Protocolo não encontrado.', true); guardarProto(p); P.eticaChat = p; vEticaP(el); };
+  const lp = $('#et-limpa', el); if (lp) lp.onclick = () => { localStorage.removeItem(chaveEtica()); toast('Lista apagada deste aparelho. Guarde os protocolos se quiser voltar às conversas.'); vEticaP(el); };
+}
+function chatEtica(el, p) {
+  let d = null, cat = null;
+  el.innerHTML = `<section class="panel" style="display:flex;flex-direction:column;min-height:calc(100vh - 200px)"><div class="row" style="margin-bottom:8px"><button class="btn ghost sm" id="ec-v">‹ Voltar</button><span class="sp"></span><span class="hint" id="ec-pr">${p ? `Protocolo <b>${p}</b>` : 'Conversa anônima'}</span></div>
+    <div class="msgs" id="ec-m" style="flex:1;max-height:none;overflow-y:auto;padding:4px 0"></div><div id="ec-cat" class="row" style="gap:6px;margin:8px 0"></div>
+    <div class="row" style="flex-wrap:nowrap;margin-top:8px"><textarea class="inp" id="ec-t" rows="2" placeholder="Escreva aqui. Não precisa se identificar." style="min-height:44px;resize:none" maxlength="2900"></textarea><button class="btn" id="ec-e">Enviar</button></div></section>`;
+  const box = $('#ec-m', el), bolha = (de, t, em) => `<div class="msg ${de === 'anon' ? 'eu' : ''}" style="white-space:pre-wrap">${esc(t)}<small>${de === 'anon' ? 'Você (anônimo)' : de === 'rh' ? 'RH · Canal de ética' : 'Canal de ética'}${em ? ' · ' + new Date(em).toLocaleDateString('pt-BR') : ''}</small></div>`;
+  const desenhar = () => { const ms = d ? msgsRelato(d) : [];
+    box.innerHTML = bolha('bot', 'Olá. Esta conversa é anônima: o RH não vê seu nome nem seu CPF. Conte o que aconteceu com o máximo de detalhes (quando, onde, quem estava envolvido). Você pode voltar aqui pelo protocolo para ver as respostas.') + (d ? '' : cat ? bolha('bot', `Assunto: ${CAT_DEN_P.find(x => x[0] === cat)[1]}. Agora escreva o que aconteceu.`) : bolha('bot', 'Sobre o que você quer falar?')) + ms.map(m => bolha(m.de, m.t, m.em)).join('')
+      + (d && d.status === 'concluida' ? bolha('bot', 'O RH marcou esta conversa como concluída. Se precisar, você ainda pode escrever.') : '');
+    $('#ec-cat', el).innerHTML = !d && !cat ? CAT_DEN_P.map(([k, t]) => `<button class="btn sec sm" data-ec="${k}">${t}</button>`).join('') : '';
+    $$('[data-ec]', el).forEach(b => b.onclick = () => { cat = b.dataset.ec; desenhar(); $('#ec-t', el).focus(); }); box.scrollTop = box.scrollHeight; };
+  $('#ec-v', el).onclick = () => { P.eticaChat = undefined; vEticaP(el); };
+  if (p) _eticaUn = ouvirRelato(p, x => { if (!x) { box.innerHTML = bolha('bot', 'Conversa não encontrada. Confira o protocolo.'); return; } d = x; desenhar(); }); else desenhar();
+  $('#ec-e', el).onclick = async () => { const t = $('#ec-t', el).value.trim(); if (!t) return;
+    if (!d) { if (!cat) return toast('Escolha o assunto primeiro.', true); if (t.length < 15) return toast('Conte com um pouco mais de detalhe.', true);
+      const id = Array.from(crypto.getRandomValues(new Uint8Array(8)), b => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[b % 32]).join(''), em = horaAnonima();
+      mut('denuncias', l => l.push({ id, categoria: cat, texto: t.slice(0, 4900), status: 'recebida', em, atualizadoEm: em, mensagens: [{ de: 'anon', t: t.slice(0, 2900), em }] }));
+      guardarProto(id); $('#ec-t', el).value = ''; P.eticaChat = id;
+      modal('Conversa enviada', `<p style="margin-top:0">Guarde este protocolo para voltar à conversa de outro aparelho:</p><p style="font-size:26px;font-weight:800;letter-spacing:2px;text-align:center;font-family:monospace">${id}</p><p class="hint">Neste aparelho ele já fica na lista. Se alguém usa o seu celular, apague a lista depois.</p>`, { foot: '<button class="btn" data-close>Entendi</button>' });
+      return vEticaP(el); }
+    try { await enviarAoRelato(d, t); $('#ec-t', el).value = ''; } catch (er) { toast('Não foi possível enviar. Verifique a internet.', true); } };
 }
 
 /* ---------- Treinamentos ---------- */
@@ -1574,7 +1610,7 @@ function vMeusDados(el) {
     { foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="md-ok">Enviar</button>', onMount: m => $('#md-ok', m).onclick = () => { const x = $('#md-x', m).value.trim(); if (x.length < 5) return toast('Explique o pedido.', true); const t = $('#md-t', m); novaSolic('lgpd', { pedido: t.value, pedidoTxt: t.options[t.selectedIndex].text, texto: x }); closeModal(true); toast('Pedido enviado ao RH.'); vMeusDados(el); } });
 }
 /* ---------- Menu "Mais" por seções ---------- */
-const PGRUPOS = [['Ponto e jornada', ['ponto', 'escala', 'espelho', 'bh', 'he', 'ocorr']], ['Pagamentos', ['holerites', 'ferias', 'simular', 'metas']], ['Documentos', ['docs', 'contratos', 'regimento', 'declar', 'comprov']], ['Carreira', ['carreira', 'integracao']], ['Pedidos e ajuda', ['solic', 'chat', 'reuniao', 'inss', 'etica', 'pesq', 'meusdados', 'perfil']]];
+const PGRUPOS = [['Ponto e jornada', ['ponto', 'escala', 'espelho', 'bh', 'he', 'ocorr']], ['Pagamentos', ['holerites', 'ferias', 'metas']], ['Documentos', ['docs', 'contratos', 'regimento', 'comprov']], ['Integração', ['integracao']], ['Pedidos e ajuda', ['solic', 'chat', 'reuniao', 'etica', 'pesq', 'meusdados', 'perfil']]];
 
 /* =====================================================================
    MODELOS PROFISSIONAIS (iguais no RH e no portal): holerite e TRCT
@@ -1791,6 +1827,70 @@ function vReunioesP(el) {
   $$('[data-re]', el).forEach(b => b.onclick = () => { const r = l.find(x => x.id === b.dataset.re); abrirReuniao({ tid: P.t.id, rid: r.id, papel: 'guest', titulo: r.titulo, meuNome: P.c.nome, lerArq: lerArquivo }); });
 }
 
+/* =====================================================================
+   ACEITE COM FOTO: botões Aceito / Recuso direto nas listas de documentos, contratos,
+   holerites, advertências e suspensões. Aceitar abre a câmera.
+   ===================================================================== */
+function capturarFotoAceite(titulo, texto) {
+  return new Promise(async ok => {
+    let st; try { st = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 } }, audio: false }); }
+    catch (e) { toast('Libere a câmera do navegador para registrar o aceite com foto.', true); return ok(null); }
+    let feito = false; const parar = () => st.getTracks().forEach(t => t.stop());
+    modal(titulo, `${texto ? `<p class="hint" style="margin-top:0">${esc(texto)}</p>` : ''}<video id="cf-v" autoplay playsinline muted style="width:100%;border-radius:10px;background:#000;transform:scaleX(-1)"></video><p class="hint" style="margin-bottom:0">Enquadre o rosto, com luz de frente, e toque em Tirar foto.</p>`,
+      { size: 'sm', foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="cf-t">Tirar foto e aceitar</button>', onMount: m => {
+        const v = $('#cf-v', m); v.srcObject = st;
+        const vigia = setInterval(() => { if (!document.contains(v)) { clearInterval(vigia); if (!feito) { parar(); ok(null); } } }, 300);
+        $('#cf-t', m).onclick = () => { if (!v.videoWidth) return toast('Aguarde a câmera abrir.', true); const w = Math.min(480, v.videoWidth), h = Math.round(w * v.videoHeight / v.videoWidth), c = document.createElement('canvas'); c.width = w; c.height = h;
+          const x = c.getContext('2d'); x.translate(w, 0); x.scale(-1, 1); x.drawImage(v, 0, 0, w, h); feito = true; clearInterval(vigia); parar(); closeModal(true); ok({ metodo: 'foto', foto: c.toDataURL('image/jpeg', 0.72) }); }; } });
+  });
+}
+async function fotoAceite(titulo) {
+  const face = G('faces').find(f => f.colabId === me() && f.status === 'aprovado');
+  if (face) { const r = await confirmarComRosto(titulo); return r && r.foto ? r : r ? { ...r, foto: r.foto || null } : null; }
+  return capturarFotoAceite(titulo, 'Seu aceite fica registrado com esta foto, a data e a hora.');
+}
+function pedirMotivo(titulo, pergunta) {
+  return new Promise(ok => { let resp = null; modal(titulo, `<div class="fld"><label for="rc-m">${esc(pergunta)}</label><textarea class="inp" id="rc-m" maxlength="600"></textarea></div>`,
+    { size: 'sm', foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn bad" id="rc-ok">Enviar recusa</button>', onMount: m => {
+      const t = $('#rc-m', m), vigia = setInterval(() => { if (!document.contains(t)) { clearInterval(vigia); ok(resp); } }, 300);
+      $('#rc-ok', m).onclick = () => { const v = t.value.trim(); if (v.length < 5) return toast('Explique o motivo em poucas palavras.', true); resp = v; closeModal(true); }; } }); });
+}
+async function aceitarDoc(d) {
+  const r = await fotoAceite(`Aceitar: ${d.titulo}`); if (!r) return;
+  const em = new Date().toISOString(), hash = await sha((d.html || d.titulo) + (r.foto || '') + em + me());
+  mut('docs', arr => { const x = arr.find(y => y.id === d.id); if (!x) return; x.status = 'assinado'; x.assinatura = { img: null, selfie: r.foto || null, em, hash, geo: null, nome: P.c.nome, cpf: P.c.cpf, ua: navigator.userAgent.slice(0, 160), aparelho: null, modo: r.metodo || 'foto', ...(r.dist ? { dist: r.dist } : {}) }; });
+  toast('Aceite registrado com foto.'); go(P.view);
+}
+async function recusarDoc(d) { const mt = await pedirMotivo(`Recusar: ${d.titulo}`, 'Por que você recusa este documento?'); if (!mt) return; mut('docs', arr => { const x = arr.find(y => y.id === d.id); if (!x) return; x.status = 'recusado'; x.recusa = { motivo: mt, em: new Date().toISOString() }; }); toast('Recusa enviada ao RH.'); go(P.view); }
+async function respHolerite(h, aceito) {
+  let r = null, motivo = ''; if (aceito) { r = await fotoAceite(`Aceitar o holerite de ${mesNome(h.comp)}`); if (!r) return; } else { motivo = await pedirMotivo(`Holerite de ${mesNome(h.comp)}`, 'O que está errado no holerite?'); if (!motivo) return; }
+  const em = new Date().toISOString(), hash = await sha(me() + h.comp + JSON.stringify(h.item) + em + (aceito ? 'aceito' : 'recusado'));
+  mut('assin', l => l.push({ id: uid(), colabId: me(), tipo: 'holerite', ref: h.comp, versao: h.versao || 1, aceito, motivo, metodo: r ? r.metodo : 'recusa', foto: r ? r.foto || null : null, dist: r && r.dist || null, em, hash }));
+  toast(aceito ? 'Holerite aceito com foto.' : 'Recusa registrada. O RH vai analisar.'); go(P.view); badges();
+}
+async function respOcorr(o, aceito) {
+  const rot = o.tipo === 'suspensao' ? 'suspensão' : 'advertência'; let r = null, motivo = '';
+  if (aceito) { r = await fotoAceite(`Ciência da ${rot} de ${fd(o.data)}`); if (!r) return; } else { motivo = await pedirMotivo(`Recusar a ${rot}`, 'Explique por que você não concorda. O RH recebe a sua versão dos fatos.'); if (!motivo) return; }
+  const em = new Date().toISOString(), hash = await sha(me() + o.id + (o.desc || '') + em + (aceito ? 'aceito' : 'recusado'));
+  mut('assin', l => l.push({ id: uid(), colabId: me(), tipo: 'ocorr', ref: o.id, aceito, motivo, metodo: r ? r.metodo : 'recusa', foto: r ? r.foto || null : null, em, hash }));
+  toast(aceito ? 'Ciência registrada com foto.' : 'Sua recusa e a sua versão foram enviadas ao RH.'); go(P.view);
+}
+const respDe = (tipo, ref, versao) => G('assin').filter(a => a.colabId === me() && a.tipo === tipo && a.ref === ref && (versao == null || (a.versao || 1) === versao)).sort((a, b) => b.em.localeCompare(a.em))[0];
+function botoesAceite(root) {
+  if (!root || !P || !P.c) return; const barra = (k, id) => `<div class="ac-bt row" style="gap:8px;margin-top:8px;flex-basis:100%"><button class="btn ok sm" data-ac="${k}|${id}">Aceito</button><button class="btn sec sm" data-rc="${k}|${id}">Recuso</button></div>`;
+  const por = (li, html) => { li.dataset.acok = '1'; li.style.flexWrap = 'wrap'; li.insertAdjacentHTML('beforeend', html); };
+  $$('[data-d]:not([data-acok])', root).forEach(li => { const d = G('docs').find(x => x.id === li.dataset.d); if (d && d.status === 'pendente' && d.requer !== false) por(li, barra('doc', d.id)); else li.dataset.acok = '1'; });
+  $$('[data-hc]:not([data-acok])', root).forEach(li => { const h = G('holerites').find(x => x.id === li.dataset.hc); if (h && !respDe('holerite', h.comp, h.versao || 1)) por(li, barra('hol', h.id)); else li.dataset.acok = '1'; });
+  $$('[data-oc]:not([data-acok])', root).forEach(li => { const o = G('ocorr').find(x => x.id === li.dataset.oc); if (!o) return; const d = o.docId && G('docs').find(x => x.id === o.docId);
+    if (d) { if (d.status === 'pendente') por(li, barra('doc', d.id)); else li.dataset.acok = '1'; return; }
+    const r = respDe('ocorr', o.id); if (r) { li.dataset.acok = '1'; li.insertAdjacentHTML('beforeend', `<span class="pill ${r.aceito ? 'ok' : 'bad'}">${r.aceito ? 'Ciente' : 'Recusada'}</span>`); } else por(li, barra('oc', o.id)); });
+  $$('[data-ac],[data-rc]', root).forEach(b => { if (b._lig) return; b._lig = 1; b.onclick = e => { e.stopPropagation(); e.preventDefault(); const aceito = !!b.dataset.ac, [k, id] = (b.dataset.ac || b.dataset.rc).split('|');
+    if (k === 'doc') { const d = G('docs').find(x => x.id === id); if (d) aceito ? aceitarDoc(d) : recusarDoc(d); }
+    else if (k === 'hol') { const h = G('holerites').find(x => x.id === id); if (h) respHolerite(h, aceito); }
+    else { const o = G('ocorr').find(x => x.id === id); if (o) respOcorr(o, aceito); } }; });
+}
+new MutationObserver(() => { const v = $('#view'); if (v) requestAnimationFrame(() => botoesAceite(v)); }).observe(document.documentElement, { childList: true, subtree: true });
+
 /* ---------- Justificar o ponto ---------- */
 const MOTIVOS_JUST = [['esqueci', 'Esqueci de bater o ponto'], ['atestado', 'Atestado ou consulta médica'], ['transporte', 'Problema no transporte'], ['familia', 'Motivo familiar ou pessoal'], ['legal', 'Falta legal (doação de sangue, alistamento, etc.)'], ['outro', 'Outro motivo']];
 function diasParaJustificar() {
@@ -1839,7 +1939,7 @@ function vOcorrP(el) {
   el.innerHTML = `<section class="panel"><div class="panel-head"><h2>Atestados</h2><button class="btn sm" id="oc-at">Enviar atestado</button></div>
     ${pend.length ? `<p class="pill warn">${pend.length} atestado${pend.length > 1 ? 's' : ''} aguardando o RH</p>` : ''}
     ${at.length ? `<ul class="list">${at.map(o => `<li><div class="t"><div>${fd(o.data)} · ${o.dias} dia${o.dias === 1 ? '' : 's'}</div><div>${esc(o.desc)}</div></div><span class="pill ok">Registrado</span></li>`).join('')}</ul>` : '<p class="hint" style="margin:0">Nenhum atestado registrado.</p>'}</section>
-    <section class="panel"><h2>Advertências e suspensões</h2>${disc.length ? `<ul class="list">${disc.map(o => { const d = docDe(o); return `<li ${d ? `class="link" data-doc="${d.id}"` : ''} style="align-items:flex-start"><div class="t"><div><b>${TIPOS_OCORR_P[o.tipo]}</b> · ${fd(o.data)}${o.tipo === 'suspensao' ? ` · ${o.dias} dia${o.dias === 1 ? '' : 's'}${o.inicio ? ` a partir de ${fd(o.inicio)}` : ''}` : ''}</div><div>${esc(o.desc.length > 180 ? o.desc.slice(0, 180) + '…' : o.desc)}</div></div>${d ? (d.status === 'pendente' ? '<span class="pill warn">Assinar</span>' : '<span class="pill ok">Ciente</span>') : ''}</li>`; }).join('')}</ul>
+    <section class="panel"><h2>Advertências e suspensões</h2>${disc.length ? `<ul class="list">${disc.map(o => { const d = docDe(o); return `<li data-oc="${o.id}" ${d ? `class="link" data-doc="${d.id}"` : ''} style="align-items:flex-start"><div class="t"><div><b>${TIPOS_OCORR_P[o.tipo]}</b> · ${fd(o.data)}${o.tipo === 'suspensao' ? ` · ${o.dias} dia${o.dias === 1 ? '' : 's'}${o.inicio ? ` a partir de ${fd(o.inicio)}` : ''}` : ''}</div><div>${esc(o.desc.length > 180 ? o.desc.slice(0, 180) + '…' : o.desc)}</div></div>${d ? (d.status === 'pendente' ? '<span class="pill warn">Assinar</span>' : '<span class="pill ok">Ciente</span>') : ''}</li>`; }).join('')}</ul>
       <p class="hint" style="margin:10px 0 0">Assinar confirma só que você recebeu o comunicado, não que concorda. Se quiser, registre a sua versão dos fatos pelo chat com o RH.</p>` : '<p class="hint" style="margin:0">Nenhuma advertência ou suspensão. Continue assim!</p>'}</section>
     ${out.length ? `<section class="panel"><h2>Outros registros</h2><ul class="list">${out.map(o => `<li><div class="t"><div>${TIPOS_OCORR_P[o.tipo] || 'Registro'} · ${fd(o.data)}</div><div>${esc(o.desc)}</div></div>${o.tipo === 'elogio' ? '<span class="pill ok">Elogio</span>' : o.tipo === 'abono' ? '<span class="pill ok">Abonada</span>' : ''}</li>`).join('')}</ul></section>` : ''}`;
   $('#oc-at', el).onclick = () => go('comprov');
