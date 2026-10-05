@@ -1064,6 +1064,7 @@ function formColab(id) {
       ${f('mae', 'Nome da mãe', '', 'full')}
       ${f('telefone', 'Telefone', 'data-mask="tel" inputmode="tel"')}
       ${f('email', 'E-mail', 'type="email"')}
+      <div class="fld"><label for="f-psenha">${id && c.portal && c.portal.ativo ? 'Nova senha do portal (em branco mantém a atual)' : 'Senha do portal do colaborador'}</label><div class="row" style="flex-wrap:nowrap"><input class="inp" id="f-psenha" autocomplete="new-password" maxlength="30" value="${id && c.portal && c.portal.ativo ? '' : senhaSugerida()}"><button type="button" class="btn ghost sm" id="f-pger">Gerar</button></div><span class="hint">Mínimo de 6 caracteres. Fica fixa até o RH trocar.</span></div>
       ${f('cep', 'CEP', 'data-mask="cep" inputmode="numeric"')}
       ${f('endereco', 'Endereço', '', 'full')}
       ${f('cidade', 'Cidade/UF')}
@@ -1083,7 +1084,7 @@ function formColab(id) {
     </form>`, {
     foot: `<button class="btn sec" data-close>Cancelar</button><button class="btn" id="f-salvar">${id ? 'Salvar alterações' : 'Cadastrar'}</button>`,
     onMount: m => {
-      masks(m); const lerX = ligarCadastroExtra(m, c);
+      masks(m); const lerX = ligarCadastroExtra(m, c); $('#f-pger', m).onclick = () => { $('#f-psenha', m).value = senhaSugerida(); };
       $('#f-cep', m).addEventListener('blur', async e => {
         const cep = e.target.value.replace(/\D/g, ''); if (cep.length !== 8) return;
         try {
@@ -1094,7 +1095,7 @@ function formColab(id) {
         } catch (err) { toast('Não foi possível consultar o CEP agora. Preencha o endereço manualmente.', true); }
       });
       $('#f-salvar', m).onclick = () => {
-        const d = formData($('#f-colab', m));
+        const d = formData($('#f-colab', m)), ps = $('#f-psenha', m).value.trim(); if (ps && ps.length < 6) return toast('A senha do portal precisa ter pelo menos 6 caracteres.', true);
         $$('.inp', m).forEach(i => i.classList.remove('err'));
         const erros = [];
         if (!d.nome) erros.push('nome'); if (!d.cargo) erros.push('cargo'); if (!d.admissao) erros.push('admissao');
@@ -1105,7 +1106,8 @@ function formColab(id) {
         d.salario = num(d.salario); d.dependentes = parseInt(d.dependentes) || 0; const xx = lerX(); if (!xx) return; Object.assign(d, xx);
         if (id) { const nomeEsc = x => (listaEscalas(S.data.config).find(e => e.id === x) || {}).nome; registrarHist(c, 'salario', num(c.salario), d.salario); registrarHist(c, 'cargo', c.cargo, d.cargo); registrarHist(c, 'escala', nomeEsc(escalaDe(c, S.data.config).id), nomeEsc(d.escalaId)); registrarHist(c, 'status', c.status, d.status); Object.assign(c, d); audit(`Editou o cadastro de ${d.nome}`); }
         else { S.data.colab.push({ id: uid(), ...d, criadoEm: new Date().toISOString() }); audit(`Cadastrou ${d.nome}`); }
-        aplicarHorario(id ? colabById(id) : S.data.colab[S.data.colab.length - 1]); save('colab'); closeModal(); toast(id ? 'Alterações salvas.' : 'Colaborador cadastrado.'); go('colab');
+        const cc = id ? colabById(id) : S.data.colab[S.data.colab.length - 1]; aplicarHorario(cc); save('colab'); closeModal(); toast(id ? 'Alterações salvas.' : 'Colaborador cadastrado.'); go('colab');
+        if (ps) { if (cc.status === 'desligado') toast('Funcionário desligado: o acesso ao portal não foi criado.', true); else setTimeout(() => gerarAcesso(cc, null, ps), 250); }
       };
     }
   });
@@ -2693,7 +2695,7 @@ async function iniciarAdmissaoDigital(p) {
   S.data.config.encSeq = (S.data.config.encSeq || 0) + 1; save('config'); const d = S.data.docs.find(x => x.id === id); if (d) { d.exame = { tipo: 'admissional', ate: iso(addD(pd(p.inicio), -1)) }; save('docs'); }
   audit(`Iniciou a admissão digital de ${c.nome}`);
   if (!c.cpf) return toast('Informe o CPF para liberar o portal ao candidato.', true);
-  await gerarAcesso(c, 'admissao');
+  await gerarAcesso(c, 'admissao', senhaSugerida());
 }
 function aplicarFichaAdmissao(s, c) {
   const d = s.dados || {}; ['rg', 'pis', 'nascimento', 'mae', 'cep', 'endereco', 'cidade', 'email', 'telefone', 'banco', 'escolaridade', 'estadoCivil'].forEach(k => { if (d[k]) c[k] = d[k]; });
@@ -3274,10 +3276,16 @@ function enviarLinkBio(c) {
       const wa = $('#lb-wa', m); if (wa) wa.onclick = () => { window.open(`https://wa.me/55${tel}?text=${encodeURIComponent($('#lb-m', m).value)}`, '_blank', 'noopener'); audit(`Enviou link de biometria para ${c.nome}`); closeModal(); };
     } });
 }
-async function criarAcessoPortal(c, acao) {
+const senhaSugerida = () => String(Math.floor(100000 + Math.random() * 900000));
+function pedirSenhaPortal(c, ok) {
+  modal(`Senha do portal · ${c.nome}`, `<p class="hint" style="margin-top:0">A senha fica fixa até o RH trocar. Se o funcionário esquecer, é só definir uma nova aqui: a anterior deixa de funcionar na hora.</p><div class="fld"><label for="ps-s">Senha</label><div class="row" style="flex-wrap:nowrap"><input class="inp" id="ps-s" value="${senhaSugerida()}" autocomplete="new-password" maxlength="30"><button type="button" class="btn ghost sm" id="ps-g">Gerar outra</button></div><span class="hint">Mínimo de 6 caracteres.</span></div>`,
+    { size: 'sm', foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="ps-ok">Salvar senha</button>', onMount: m => { $('#ps-g', m).onclick = () => { $('#ps-s', m).value = senhaSugerida(); };
+      $('#ps-ok', m).onclick = () => { const s = $('#ps-s', m).value.trim(); if (s.length < 6) return toast('A senha precisa ter pelo menos 6 caracteres.', true); closeModal(); ok(s); }; } });
+}
+async function criarAcessoPortal(c, acao, senhaDef) {
   const dig = (c.cpf || '').replace(/\D/g, '');
   if (!cpfValido(dig)) { toast(`${c.nome.split(' ')[0]}: cadastre um CPF válido para liberar o portal.`, true); return null; }
-  const senha = String(Math.floor(100000 + Math.random() * 900000));
+  const senha = senhaDef ? String(senhaDef) : senhaSugerida();
   if (FB_ON) {
     const v = ((c.portal && c.portal.v) || 0) + 1; let novo;
     try {
@@ -3290,19 +3298,20 @@ async function criarAcessoPortal(c, acao) {
     } catch (err) { FB.falhou(err); return null; }
     c.portal = { ativo: true, uid: novo, v, em: new Date().toISOString() };
     const ac = S.data.acessos.find(a => a.colabId === c.id);
-    if (ac) ac.trocar = true; else S.data.acessos.push({ id: c.id, colabId: c.id, trocar: true });
+    if (ac) ac.trocar = false; else S.data.acessos.push({ id: c.id, colabId: c.id, trocar: false });
     save('acessos');
-  } else c.portal = { ...(c.portal || {}), hash: await sha(`${S.tenant.id}:colab:${dig}:${senha}`), ativo: true, trocar: true, em: new Date().toISOString() };
+  } else c.portal = { ...(c.portal || {}), hash: await sha(`${S.tenant.id}:colab:${dig}:${senha}`), ativo: true, trocar: false, em: new Date().toISOString() };
   save('colab'); audit(`Liberou/renovou acesso ao portal de ${c.nome}`);
   const link = linkPortal(acao);
-  const msg = `Olá, ${c.nome.split(' ')[0]}! Seu acesso ao Portal do Colaborador da ${(S.data.config.empresa || {}).nome || S.tenant.nome}:\n\nLink: ${link}\nCódigo da empresa: ${S.tenant.id}\nCPF: ${c.cpf}\nSenha provisória: ${senha}\n\nNo primeiro acesso você vai criar sua própria senha.${acao === 'biometria' ? '\nEm seguida, o portal pede o cadastro do seu rosto para o ponto: encaixe o rosto no oval e siga as instruções da tela (virar o rosto, abrir a boca ou piscar).' : ''}`;
+  const msg = `Olá, ${c.nome.split(' ')[0]}! Seu acesso ao Portal do Colaborador da ${(S.data.config.empresa || {}).nome || S.tenant.nome}:\n\nLink: ${link}\nCódigo da empresa: ${S.tenant.id}\nCPF: ${c.cpf}\nSenha: ${senha}\n\nGuarde sua senha. Se esquecer, peça uma nova ao RH.${acao === 'biometria' ? '\nEm seguida, o portal pede o cadastro do seu rosto para o ponto: encaixe o rosto no oval e siga as instruções da tela (virar o rosto, abrir a boca ou piscar).' : ''}`;
   const tel = (c.telefone || '').replace(/\D/g, '');
   return { senha, msg, tel };
 }
-async function gerarAcesso(c, acao) {
-  const r = await criarAcessoPortal(c, acao); if (!r) return;
+async function gerarAcesso(c, acao, senhaDef) {
+  if (!senhaDef) return pedirSenhaPortal(c, s => gerarAcesso(c, acao, s));
+  const r = await criarAcessoPortal(c, acao, senhaDef); if (!r) return;
   const { senha, msg, tel } = r;
-  modal('Acesso ao portal liberado', `<div class="res"><div><span class="hint">Código da empresa</span><b>${esc(S.tenant.id)}</b></div><div><span class="hint">CPF</span><b>${esc(c.cpf)}</b></div><div><span class="hint">Senha provisória</span><b>${senha}</b></div></div><p class="note">A senha aparece só agora. No primeiro acesso, ${esc(c.nome.split(' ')[0])} cria a própria senha.</p>`, {
+  modal('Acesso ao portal liberado', `<div class="res"><div><span class="hint">Código da empresa</span><b>${esc(S.tenant.id)}</b></div><div><span class="hint">CPF</span><b>${esc(c.cpf)}</b></div><div><span class="hint">Senha</span><b>${senha}</b></div></div><p class="note">Envie agora: por segurança, a senha não fica salva no sistema. Ela vale até o RH definir outra. Se ${esc(c.nome.split(' ')[0])} esquecer, use Nova senha do portal.</p>`, {
     size: 'sm', foot: `<button class="btn sec" id="ga-cp">Copiar mensagem</button>${tel.length >= 10 ? `<a class="btn" href="https://wa.me/55${tel}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">Enviar no WhatsApp</a>` : ''}`,
     onMount: m => $('#ga-cp', m).onclick = () => navigator.clipboard.writeText(msg).then(() => toast('Mensagem copiada.'), () => toast('Não foi possível copiar. Anote os dados acima.', true))
   });
@@ -4942,7 +4951,7 @@ async function lotePortal(ls, depois) {
       const b = $('#lp-ok', m); b.disabled = true; const res = [];
       for (const c of alvo) { $('#lp-r', m).innerHTML = `<p class="hint">Liberando ${res.length + 1} de ${alvo.length}…</p>`; const r = await criarAcessoPortal(c); if (r) res.push({ c, ...r }); }
       b.remove(); depois();
-      $('#lp-r', m).innerHTML = `<ul class="list">${res.map(x => `<li><div class="t"><div>${esc(x.c.nome)}</div><div>Senha provisória: <b>${x.senha}</b></div></div>${x.tel.length >= 10 ? `<a class="btn sm" href="https://wa.me/55${x.tel}?text=${encodeURIComponent(x.msg)}" target="_blank" rel="noopener">WhatsApp</a>` : ''}</li>`).join('')}</ul><button class="btn sec sm" id="lp-cp">Copiar todas as mensagens</button>`;
+      $('#lp-r', m).innerHTML = `<ul class="list">${res.map(x => `<li><div class="t"><div>${esc(x.c.nome)}</div><div>Senha: <b>${x.senha}</b></div></div>${x.tel.length >= 10 ? `<a class="btn sm" href="https://wa.me/55${x.tel}?text=${encodeURIComponent(x.msg)}" target="_blank" rel="noopener">WhatsApp</a>` : ''}</li>`).join('')}</ul><button class="btn sec sm" id="lp-cp">Copiar todas as mensagens</button>`;
       $('#lp-cp', m).onclick = () => navigator.clipboard.writeText(res.map(x => x.msg).join('\n\n———\n\n')).then(() => toast('Mensagens copiadas.'));
     } });
 }
