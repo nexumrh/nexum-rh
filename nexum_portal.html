@@ -363,6 +363,7 @@ const diffD = (a, b) => Math.round((b - a) / 864e5);
 const anosEntre = (a, b) => { let y = b.getFullYear() - a.getFullYear(); if (b.getMonth() < a.getMonth() || (b.getMonth() === a.getMonth() && b.getDate() < a.getDate())) y--; return Math.max(0, y); };
 const mesNome = c => { const [a, m] = c.split('-'); return new Date(+a, +m - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }); };
 const hhmm = d => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+const hhmmss = d => `${hhmm(d)}:${String(d.getSeconds()).padStart(2, '0')}`;
 const minutos = h => { const [a, b] = h.split(':').map(Number); return a * 60 + b; };
 const hm = min => { const a = Math.abs(Math.round(min)); return (min < 0 ? '−' : '') + Math.floor(a / 60) + 'h' + String(a % 60).padStart(2, '0'); };
 const cpfFmt = v => v.replace(/\D/g, '').slice(0, 11).replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2');
@@ -576,7 +577,7 @@ const ICO = {
 const PNAV = [
   ['inicio', 'Início'], ['ponto', 'Meu ponto'], ['escala', 'Minha escala'], ['espelho', 'Espelho de ponto'], ['bh', 'Banco de horas'], ['holerites', 'Holerites'],
   ['ferias', 'Férias'], ['docs', 'Documentos'], ['contratos', 'Meus contratos'], ['ocorr', 'Atestados e ocorrências'], ['regimento', 'Regimento interno'], ['solic', 'Solicitações'],
-  ['he', 'Horas extras'], ['comprov', 'Comprovantes'], ['chat', 'Chat com o RH'], ['reuniao', 'Reuniões'], ['etica', 'Canal de ética'], ['meusdados', 'Meus dados (LGPD)'], ['perfil', 'Meu perfil']
+  ['he', 'Horas extras'], ['comprov', 'Comprovantes'], ['chat', 'Chat com o RH'], ['reuniao', 'Reuniões'], ['etica', 'Canal de ética'], ['perfil', 'Meu perfil']
 ];
 
 /* ---------- pendências (badges) ---------- */
@@ -625,7 +626,7 @@ function renderLogin() {
       <div class="fld"><label for="lg-s">Senha</label><input class="inp" id="lg-s" name="senha" type="password" autocomplete="current-password"></div>
       <label class="check"><input type="checkbox" name="lembrar" ${lembr.cod ? 'checked' : ''}> Lembrar empresa e CPF neste aparelho</label>
       <button class="btn block" type="submit">Entrar</button>
-      <p class="hint" style="text-align:center;margin-top:18px">Primeiro acesso ou esqueceu a senha? Peça ao RH para gerar uma nova.<br><a href="termos.html" target="_blank" rel="noopener">Termos de uso</a> · <a href="privacidade.html" target="_blank" rel="noopener">Política de privacidade</a></p>
+      <p class="hint" style="text-align:center;margin-top:18px"><a href="#" id="lg-esq">Esqueci minha senha</a> · Primeiro acesso? Peça ao RH.<br><a href="termos.html" target="_blank" rel="noopener">Termos de uso</a> · <a href="privacidade.html" target="_blank" rel="noopener">Política de privacidade</a></p>
     </form></div></div>`;
   const cpf = $('#lg-cpf'); cpf.oninput = () => cpf.value = cpfFmt(cpf.value);
   $('#lg').onsubmit = async e => {
@@ -781,7 +782,7 @@ function vPonto(el) {
   const reg = G('ponto').find(x => x.colabId === me() && x.data === iso(hoje()));
   const m = reg ? reg.marc.slice().sort() : [], ev = (reg && reg.ev) || {};
   const prox = ROTULOS[m.length] || 'Marcação extra';
-  el.innerHTML = `<section class="panel clock"><div class="hora" id="pc-h">${hhmm(new Date())}</div>
+  el.innerHTML = `<section class="panel clock"><div class="hora" id="pc-h">${hhmmss(new Date())}</div>
       <div class="data">${new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}</div>
       <div class="prox">Próxima marcação: <b>${prox}</b></div>
       <button class="btn" id="pc-reg">Registrar ${prox.toLowerCase()}</button>
@@ -790,7 +791,7 @@ function vPonto(el) {
       ${[0, 1, 2, 3].map(i => m[i] ? `<div class="marc"><b>${m[i]}</b><span>${ROTULOS[i]}${ev[m[i]] && ev[m[i]].origem === 'portal' ? '' : ' · ajuste RH'}</span></div>` : `<div class="marc vazia"><b>--:--</b><span>${ROTULOS[i]}</span></div>`).join('')}
       ${m.slice(4).map(x => `<div class="marc"><b>${x}</b><span>Marcação extra</span></div>`).join('')}
     </div>${m.length >= 2 ? `<p class="note">Trabalhado até agora: <b>${hm(horasTrab(m))}</b></p>` : ''}</section>`;
-  relogio = setInterval(() => { const h = $('#pc-h'); if (!h) return clearInterval(relogio); h.textContent = hhmm(new Date()); }, 5000);
+  relogio = setInterval(() => { const h = $('#pc-h'); if (!h) return clearInterval(relogio); h.textContent = hhmmss(new Date()); }, 1000);
   $('#pc-reg', el).onclick = registrarPonto;
 }
 function pegarGeo() {
@@ -829,7 +830,7 @@ function perguntarP(msg, sim = 'Sim', nao = 'Não') {
 }
 const motivoFalha = (r, av) => r.erro === 'troca' ? 'O rosto mudou durante a verificação. Só você pode aparecer na câmera.' : (!r.vivo || r.erro === 'vivo') ? 'Não concluímos os movimentos pedidos. Siga as instruções da tela.' : r.erro === 'rosto' ? 'Não encontramos seu rosto. Centralize e melhore a luz.' : r.erro === 'amostras' ? 'Não conseguimos ler seu rosto com nitidez. Melhore a luz.' : 'O rosto não confere com o cadastro.';
 async function cadastrarRosto(noPonto, antigo) {
-  const ok = await perguntarP(`${antigo ? 'Seu cadastro facial antigo foi feito sem a verificação ao vivo e precisa ser refeito. ' : noPonto ? 'Para bater o ponto por reconhecimento facial, cadastre seu rosto primeiro. ' : ''}Fique em um lugar bem iluminado, sozinho na frente da câmera, sem boné nem óculos escuros. A tela vai pedir movimentos, como virar o rosto, abrir a boca ou piscar, para provar que é você ao vivo.`, 'Começar', 'Agora não');
+  const ok = await perguntarP(`${antigo ? 'Seu cadastro facial antigo foi feito sem a verificação ao vivo e precisa ser refeito. ' : noPonto ? 'Para bater o ponto por reconhecimento facial, cadastre seu rosto primeiro. ' : ''}Fique em um lugar bem iluminado, sozinho na frente da câmera, sem boné nem óculos escuros. A tela vai pedir movimentos, como virar o rosto ou abrir a boca, para provar que é você ao vivo.`, 'Começar', 'Agora não');
   if (!ok) return { res: 'cancel' };
   const r = await BIO.capturar({ titulo: 'Cadastro facial', desafios: 2, amostras: 4 });
   if (!r) return { res: 'cancel' };
@@ -1024,7 +1025,7 @@ const BIO = {
     return c.toDataURL('image/jpeg', 0.62); },
   ler: v => faceapi.detectAllFaces(v, BIO.opts(320)).withFaceLandmarks(),
   descrever: v => faceapi.detectSingleFace(v, BIO.opts(416)).withFaceLandmarks().withFaceDescriptor(),
-  sorteio(n) { const a = ['piscar', 'esq', 'dir', 'boca']; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, n); },
+  sorteio(n) { const a = ['esq', 'dir', 'boca']; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, n); },
   /* Sessão de verificação ao vivo:
        1) captura o rosto de frente; 2) pede movimentos SORTEADOS (uma foto ou vídeo gravado não sabe qual vem);
        3) captura de novo, de frente; 4) exige que todas as capturas sejam da mesma pessoa (impede trocar de rosto no meio). */
@@ -1488,11 +1489,13 @@ function chatEtica(el, p) {
     <div class="msgs" id="ec-m" style="flex:1;max-height:none;overflow-y:auto;padding:4px 0"></div><div id="ec-cat" class="row" style="gap:6px;margin:8px 0"></div>
     <div class="row" style="flex-wrap:nowrap;margin-top:8px"><textarea class="inp" id="ec-t" rows="2" placeholder="Escreva aqui. Não precisa se identificar." style="min-height:44px;resize:none" maxlength="2900"></textarea><button class="btn" id="ec-e">Enviar</button></div></section>`;
   const box = $('#ec-m', el), bolha = (de, t, em) => `<div class="msg ${de === 'anon' ? 'eu' : ''}" style="white-space:pre-wrap">${esc(t)}<small>${de === 'anon' ? 'Você (anônimo)' : de === 'rh' ? 'RH · Canal de ética' : 'Canal de ética'}${em ? ' · ' + new Date(em).toLocaleDateString('pt-BR') : ''}</small></div>`;
-  const desenhar = () => { const ms = d ? msgsRelato(d) : [];
+  const desenhar = () => { if (!box.isConnected) { if (_eticaUn) { _eticaUn(); _eticaUn = null; } return; } const ms = d ? msgsRelato(d) : [];
     box.innerHTML = bolha('bot', 'Olá. Esta conversa é anônima: o RH não vê seu nome nem seu CPF. Conte o que aconteceu com o máximo de detalhes (quando, onde, quem estava envolvido). Você pode voltar aqui pelo protocolo para ver as respostas.') + (d ? '' : cat ? bolha('bot', `Assunto: ${CAT_DEN_P.find(x => x[0] === cat)[1]}. Agora escreva o que aconteceu.`) : bolha('bot', 'Sobre o que você quer falar?')) + ms.map(m => bolha(m.de, m.t, m.em)).join('')
-      + (d && d.status === 'concluida' ? bolha('bot', 'O RH marcou esta conversa como concluída. Se precisar, você ainda pode escrever.') : '');
+      + (d && d.status === 'concluida' ? bolha('bot', 'O RH concluiu esta conversa. Ela fica só para leitura. Para outro assunto, abra uma nova conversa.') : '');
     $('#ec-cat', el).innerHTML = !d && !cat ? CAT_DEN_P.map(([k, t]) => `<button class="btn sec sm" data-ec="${k}">${t}</button>`).join('') : '';
-    $$('[data-ec]', el).forEach(b => b.onclick = () => { cat = b.dataset.ec; desenhar(); $('#ec-t', el).focus(); }); box.scrollTop = box.scrollHeight; };
+    $$('[data-ec]', el).forEach(b => b.onclick = () => { cat = b.dataset.ec; desenhar(); $('#ec-t', el).focus(); }); box.scrollTop = box.scrollHeight;
+    const fim = !!(d && d.status === 'concluida'), rw = $('#ec-t', el).parentElement, nv = $('#ec-nova', el); rw.style.display = fim ? 'none' : '';
+    if (fim && !nv) { rw.insertAdjacentHTML('afterend', '<div id="ec-nova" class="row" style="margin-top:8px;justify-content:center"><button class="btn">Abrir nova conversa</button></div>'); $('#ec-nova button', el).onclick = () => { P.eticaChat = null; vEticaP(el); }; } else if (!fim && nv) nv.remove(); };
   $('#ec-v', el).onclick = () => { P.eticaChat = undefined; vEticaP(el); };
   if (p) _eticaUn = ouvirRelato(p, x => { if (!x) { box.innerHTML = bolha('bot', 'Conversa não encontrada. Confira o protocolo.'); return; } d = x; desenhar(); }); else desenhar();
   $('#ec-e', el).onclick = async () => { const t = $('#ec-t', el).value.trim(); if (!t) return;
@@ -1610,7 +1613,7 @@ function vMeusDados(el) {
     { foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="md-ok">Enviar</button>', onMount: m => $('#md-ok', m).onclick = () => { const x = $('#md-x', m).value.trim(); if (x.length < 5) return toast('Explique o pedido.', true); const t = $('#md-t', m); novaSolic('lgpd', { pedido: t.value, pedidoTxt: t.options[t.selectedIndex].text, texto: x }); closeModal(true); toast('Pedido enviado ao RH.'); vMeusDados(el); } });
 }
 /* ---------- Menu "Mais" por seções ---------- */
-const PGRUPOS = [['Ponto e jornada', ['ponto', 'escala', 'espelho', 'bh', 'he', 'ocorr']], ['Pagamentos', ['holerites', 'ferias', 'metas']], ['Documentos', ['docs', 'contratos', 'regimento', 'comprov']], ['Integração', ['integracao']], ['Pedidos e ajuda', ['solic', 'chat', 'reuniao', 'etica', 'pesq', 'meusdados', 'perfil']]];
+const PGRUPOS = [['Ponto e jornada', ['ponto', 'escala', 'espelho', 'bh', 'he', 'ocorr']], ['Pagamentos', ['holerites', 'ferias', 'metas']], ['Documentos', ['docs', 'contratos', 'regimento', 'comprov']], ['Integração', ['integracao']], ['Pedidos e ajuda', ['solic', 'chat', 'reuniao', 'etica', 'pesq', 'perfil']]];
 
 /* =====================================================================
    MODELOS PROFISSIONAIS (iguais no RH e no portal): holerite e TRCT
@@ -1890,6 +1893,43 @@ function botoesAceite(root) {
     else { const o = G('ocorr').find(x => x.id === id); if (o) respOcorr(o, aceito); } }; });
 }
 new MutationObserver(() => { const v = $('#view'); if (v) requestAnimationFrame(() => botoesAceite(v)); }).observe(document.documentElement, { childList: true, subtree: true });
+
+/* ---------- Esqueci minha senha: o funcionário escolhe a nova senha e o RH aprova ---------- */
+function esqueciSenha() {
+  const lb = (() => { try { return JSON.parse(localStorage.getItem('nexum:portal:lembrar') || '{}'); } catch (e) { return {}; } })();
+  modal('Criar uma nova senha', `<p class="hint" style="margin-top:0">Escolha a nova senha. O pedido vai para o RH, que confere e libera. Depois disso, você entra com a senha que criou.</p>
+    <div class="fld"><label for="es-c">Código da empresa</label><input class="inp" id="es-c" autocomplete="organization" value="${esc(($('#lg [name=cod]') || {}).value || lb.cod || '')}"></div>
+    <div class="fld"><label for="es-p">CPF</label><input class="inp" id="es-p" inputmode="numeric" value="${esc(($('#lg [name=cpf]') || {}).value || lb.cpf || '')}"></div>
+    <div class="fld"><label for="es-s">Nova senha (mínimo de 6 caracteres)</label><input class="inp" id="es-s" type="password" autocomplete="new-password" maxlength="30"></div>
+    <div class="fld"><label for="es-s2">Repita a nova senha</label><input class="inp" id="es-s2" type="password" autocomplete="new-password" maxlength="30"></div>`,
+    { size: 'sm', foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="es-ok">Enviar ao RH</button>', onMount: m => $('#es-ok', m).onclick = async () => {
+      const cod = $('#es-c', m).value.trim().toLowerCase(), cpf = $('#es-p', m).value.replace(/\D/g, ''), s = $('#es-s', m).value;
+      if (!cod) return toast('Informe o código da empresa.', true); if (cpf.length !== 11) return toast('Informe o CPF completo.', true);
+      if (s.length < 6) return toast('A senha precisa ter pelo menos 6 caracteres.', true); if (s !== $('#es-s2', m).value) return toast('As duas senhas não são iguais.', true);
+      const ped = { tid: cod, cpf, senha: s, em: new Date().toISOString() };
+      try { if (FB_ON) await FB.db.collection('pedidosSenha').add(ped); else { const l = Store.get(cod, 'pedidosSenha', []); l.push({ id: uid(), ...ped }); Store.set(cod, 'pedidosSenha', l); }
+        closeModal(true); modal('Pedido enviado', '<p style="margin-top:0">O RH recebeu o seu pedido de nova senha. Assim que ele liberar, entre com o CPF e a senha que você criou.</p>', { size: 'sm', foot: '<button class="btn" data-close>Entendi</button>' });
+      } catch (er) { toast('Não foi possível enviar. Confira o código da empresa e a internet.', true); } } });
+}
+/* ---------- PDF da advertência ou suspensão depois da ciência ---------- */
+function pdfOcorr(o) {
+  const d = o.docId && G('docs').find(x => x.id === o.docId);
+  if (d && d.status === 'assinado') return printDoc(d.titulo, d.html + blocoAssin(d));
+  const r = respDe('ocorr', o.id), rot = o.tipo === 'suspensao' ? 'Suspensão disciplinar' : 'Advertência disciplinar'; if (!r) return;
+  printDoc(`${rot} ${fd(o.data)}`, `<h2>${rot}</h2><p><b>${esc(P.c.nome)}</b>${P.c.cpf ? `, CPF ${esc(P.c.cpf)}` : ''}${P.c.cargo ? `, ${esc(P.c.cargo)}` : ''}.</p><p><b>Data:</b> ${fd(o.data)}${o.dias ? ` · <b>Dias de suspensão:</b> ${o.dias}` : ''}</p><p style="white-space:pre-wrap">${esc(o.desc || '')}</p>
+    <h3>Ciência do(a) colaborador(a)</h3><p>${r.aceito ? `Ciência registrada pelo Portal do Colaborador em ${fdt(r.em)}${r.metodo === 'facial' ? ', com reconhecimento facial' : ', com foto'}.` : `Recusa registrada em ${fdt(r.em)}. Versão do(a) colaborador(a): ${esc(r.motivo || '')}`}</p>${r.foto ? `<img src="${r.foto}" alt="Foto no momento da ciência" style="width:160px;border-radius:8px">` : ''}<p style="font-size:11px;color:#5F6B85;word-break:break-all">Código de integridade: ${esc(r.hash)}</p>`);
+}
+/* ---------- Ajustes de tela: PDF, meus dados no perfil e chat de quem foi desligado ---------- */
+function ajustesTela() {
+  const v = $('#view'); if (!v || !P || !P.c) return;
+  $$('[data-oc]:not([data-pdf])', v).forEach(li => { const o = G('ocorr').find(x => x.id === li.dataset.oc); if (!o) return; const d = o.docId && G('docs').find(x => x.id === o.docId);
+    if ((d && d.status === 'assinado') || (!d && respDe('ocorr', o.id))) { li.dataset.pdf = '1'; li.style.flexWrap = 'wrap'; li.insertAdjacentHTML('beforeend', `<div style="flex-basis:100%;margin-top:6px"><button class="btn sec sm" data-opdf="${o.id}">Baixar PDF</button></div>`); $(`[data-opdf="${o.id}"]`, li).onclick = e => { e.stopPropagation(); pdfOcorr(o); }; } });
+  if (P.view === 'perfil' && !$('#pf-lgpd', v)) { const s = v.querySelector('section.panel'); if (s) { s.insertAdjacentHTML('afterend', `<section class="panel" id="pf-lgpd"><h2>Seus dados (LGPD)</h2><p class="hint" style="margin-top:0">Você pode receber uma cópia dos dados que a empresa tem sobre você ou pedir correção.</p><div class="row"><button class="btn sec sm" id="pf-lb">Baixar cópia dos meus dados</button><button class="btn sec sm" id="pf-lp">Pedir correção</button></div></section>`);
+      const usa = id => { const t = document.createElement('div'); vMeusDados(t); const b = $(id, t); if (b) b.click(); }; $('#pf-lb', v).onclick = () => usa('#md-b'); $('#pf-lp', v).onclick = () => usa('#md-p'); } }
+  const ce = $('#ch-e', v); if (ce && P.c.status === 'desligado' && !$('#ch-bloq', v)) { const rw = ce.parentElement; rw.style.display = 'none'; rw.insertAdjacentHTML('afterend', '<p class="hint" id="ch-bloq" style="text-align:center;margin:10px 0 0">Seu contrato foi encerrado. Por aqui, só o RH envia mensagens.</p>'); }
+}
+document.addEventListener('click', e => { if (e.target && e.target.id === 'lg-esq') { e.preventDefault(); esqueciSenha(); } });
+new MutationObserver(() => requestAnimationFrame(ajustesTela)).observe(document.documentElement, { childList: true, subtree: true });
 
 /* ---------- Justificar o ponto ---------- */
 const MOTIVOS_JUST = [['esqueci', 'Esqueci de bater o ponto'], ['atestado', 'Atestado ou consulta médica'], ['transporte', 'Problema no transporte'], ['familia', 'Motivo familiar ou pessoal'], ['legal', 'Falta legal (doação de sangue, alistamento, etc.)'], ['outro', 'Outro motivo']];
