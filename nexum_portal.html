@@ -648,7 +648,7 @@ function renderLogin() {
     if (diffD(hoje(), pd(t.expira)) < 0) return toast('Portal indisponível no momento. Procure o RH da empresa.', true);
     const dig = d.cpf.replace(/\D/g, '');
     const c = Store.get(t.id, 'colab', []).find(x => (x.cpf || '').replace(/\D/g, '') === dig);
-    if (!c || !c.portal || !c.portal.ativo || !acessoDesligOk(c)) return toast('Este CPF não tem acesso liberado. Procure o RH.', true);
+    if (c && c.status === 'desligado' && (!c.portal || !c.portal.ativo || !acessoDesligOk(c))) return telaEncerrado(c); if (!c || !c.portal || !c.portal.ativo || !acessoDesligOk(c)) return toast('Este CPF não tem acesso liberado. Procure o RH.', true);
     if (c.portal.hash !== await sha(`${t.id}:colab:${dig}:${d.senha}`)) return toast('CPF ou senha incorretos.', true);
     localStorage.setItem('nexum:plembrar', d.lembrar ? JSON.stringify({ cod: d.cod, cpf: d.cpf }) : '{}');
     entrar(t, c);
@@ -673,7 +673,7 @@ async function fbEntrarPortal(user) {
     if (diffD(hoje(), pd(t.expira)) < 0) { await FB.auth.signOut(); return toast('Portal indisponível no momento. Procure o RH da empresa.', true); }
     await FB.abrir(t.id, ['colab', 'config', ...FB.LIVRES, ...FB.PROPRIOS, 'convites', 'vagas'], { colabId: u.colabId });
     const c = FB.get('colab', [])[0];
-    if (!c || !acessoDesligOk(c) || !c.portal || !c.portal.ativo) { FB.fechar(); await FB.auth.signOut(); return toast('Seu acesso ao portal foi encerrado. Procure o RH.', true); }
+    if (!c || !acessoDesligOk(c) || !c.portal || !c.portal.ativo) { FB.fechar(); await FB.auth.signOut(); return c && c.status === 'desligado' ? telaEncerrado(c) : toast('Seu acesso ao portal foi encerrado. Procure o RH.', true); }
     entrar(t, c);
   } catch (err) { FB.falhou(err); await FB.auth.signOut(); }
 }
@@ -1880,7 +1880,7 @@ async function respOcorr(o, aceito) {
 }
 const respDe = (tipo, ref, versao) => G('assin').filter(a => a.colabId === me() && a.tipo === tipo && a.ref === ref && (versao == null || (a.versao || 1) === versao)).sort((a, b) => b.em.localeCompare(a.em))[0];
 function botoesAceite(root) {
-  if (!root || !P || !P.c) return; const barra = (k, id) => `<div class="ac-bt row" style="gap:8px;margin-top:8px;flex-basis:100%"><button class="btn ok sm" data-ac="${k}|${id}">Aceito</button><button class="btn sec sm" data-rc="${k}|${id}">Recuso</button></div>`;
+  if (!root || !P || !P.c) return; const barra = (k, id) => `<div class="ac-bt row" style="gap:8px;margin-top:8px;flex-basis:100%;align-items:center">${k === 'hol' ? '<span class="hint">Assinar o holerite:</span>' : ''}<button class="btn ok sm" data-ac="${k}|${id}">Aceito</button><button class="btn sec sm" data-rc="${k}|${id}">Recuso</button></div>`;
   const por = (li, html) => { li.dataset.acok = '1'; li.style.flexWrap = 'wrap'; li.insertAdjacentHTML('beforeend', html); };
   $$('[data-d]:not([data-acok])', root).forEach(li => { const d = G('docs').find(x => x.id === li.dataset.d); if (d && d.status === 'pendente' && d.requer !== false) por(li, barra('doc', d.id)); else li.dataset.acok = '1'; });
   $$('[data-hc]:not([data-acok])', root).forEach(li => { const h = G('holerites').find(x => x.id === li.dataset.hc); if (h && !respDe('holerite', h.comp, h.versao || 1)) por(li, barra('hol', h.id)); else li.dataset.acok = '1'; });
@@ -1926,10 +1926,67 @@ function ajustesTela() {
     if ((d && d.status === 'assinado') || (!d && respDe('ocorr', o.id))) { li.dataset.pdf = '1'; li.style.flexWrap = 'wrap'; li.insertAdjacentHTML('beforeend', `<div style="flex-basis:100%;margin-top:6px"><button class="btn sec sm" data-opdf="${o.id}">Baixar PDF</button></div>`); $(`[data-opdf="${o.id}"]`, li).onclick = e => { e.stopPropagation(); pdfOcorr(o); }; } });
   if (P.view === 'perfil' && !$('#pf-lgpd', v)) { const s = v.querySelector('section.panel'); if (s) { s.insertAdjacentHTML('afterend', `<section class="panel" id="pf-lgpd"><h2>Seus dados (LGPD)</h2><p class="hint" style="margin-top:0">Você pode receber uma cópia dos dados que a empresa tem sobre você ou pedir correção.</p><div class="row"><button class="btn sec sm" id="pf-lb">Baixar cópia dos meus dados</button><button class="btn sec sm" id="pf-lp">Pedir correção</button></div></section>`);
       const usa = id => { const t = document.createElement('div'); vMeusDados(t); const b = $(id, t); if (b) b.click(); }; $('#pf-lb', v).onclick = () => usa('#md-b'); $('#pf-lp', v).onclick = () => usa('#md-p'); } }
-  const ce = $('#ch-e', v); if (ce && P.c.status === 'desligado' && !$('#ch-bloq', v)) { const rw = ce.parentElement; rw.style.display = 'none'; rw.insertAdjacentHTML('afterend', '<p class="hint" id="ch-bloq" style="text-align:center;margin:10px 0 0">Seu contrato foi encerrado. Por aqui, só o RH envia mensagens.</p>'); }
+  const ce = $('#ch-e', v); if (ce && estadoDeslig() === 'leitura' && !$('#ch-bloq', v)) { const rw = ce.parentElement; rw.style.display = 'none'; rw.insertAdjacentHTML('afterend', '<p class="hint" id="ch-bloq" style="text-align:center;margin:10px 0 0">Seu contrato foi encerrado. Por aqui, só o RH envia mensagens.</p>'); }
 }
 document.addEventListener('click', e => { if (e.target && e.target.id === 'lg-esq') { e.preventDefault(); esqueciSenha(); } });
 new MutationObserver(() => requestAnimationFrame(ajustesTela)).observe(document.documentElement, { childList: true, subtree: true });
+
+/* ---------- Portal depois do desligamento: aviso trabalhado, só leitura por 3 dias, depois encerrado ---------- */
+function estadoDeslig(c = P.c) { if (!c || c.status !== 'desligado') return 'ativo'; const p = c.portal || {}; if (!p.fimEm || Date.now() >= Date.parse(p.fimEm)) return 'encerrado'; if (p.leituraMs && Date.now() < p.leituraMs) return 'aviso'; return 'leitura'; }
+function telaEncerrado(c) {
+  const e = (P.cfg && P.cfg.empresa) || {}, nome = String((c && c.nome) || '').split(' ')[0];
+  document.body.innerHTML = `<main style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg,#F3F2F7)"><section class="panel" style="max-width:440px;text-align:center;padding:32px 28px">
+    <div style="width:64px;height:64px;border-radius:50%;background:#EEF0F5;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#5F6B85" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+    <h1 style="font-size:22px;margin:0 0 10px">Contrato de trabalho encerrado</h1><p style="margin:0 0 8px">${nome ? `${esc(nome)}, seu` : 'Seu'} contrato${e.nome ? ` com ${esc(e.nome)}` : ''} foi encerrado${c && c.desligamento ? ` em ${fd(c.desligamento)}` : ''}, e o acesso ao Portal do Colaborador foi fechado.</p>
+    <p class="hint" style="margin:0 0 20px">Precisa de segunda via de holerite, TRCT ou informe de rendimentos? Procure o RH da empresa.</p><button class="btn" onclick="location.reload()">Voltar ao início</button></section></main>`;
+}
+function avisoDeslig(el) {
+  const st = estadoDeslig(); if (st === 'ativo' || st === 'encerrado' || $('#av72', el)) return; const p = P.c.portal || {};
+  el.insertAdjacentHTML('afterbegin', st === 'aviso' ? `<section class="panel" id="av72" style="border-color:var(--pri);background:#EEF2FF"><b>Você está cumprindo aviso prévio até ${fd(P.c.desligamento)}.</b><div class="hint">Até lá, o portal funciona normalmente. Depois, fica 3 dias só para consulta e assinatura da rescisão, e então é encerrado.</div></section>`
+    : `<section class="panel" id="av72" style="border-color:var(--warn);background:var(--warn-s)"><b>Portal só para consulta. Encerra em <span data-cr72="${p.fimEm}">${restanteP(p.fimEm)}</span>.</b><div class="hint">Baixe seus holerites e documentos e assine a rescisão antes do prazo.</div></section>`);
+}
+const RO_OK = /baixar|imprimir|pdf|^ver\b|abrir|voltar|fechar|cancelar|detalhes|entendi|^‹/i, ehRescisao = t => /rescis|trct|desligamento|dispensa|aviso pr[eé]vio|demiss|não prorroga/i.test(t || '');
+function aplicarSoLeitura() {
+  if (estadoDeslig() !== 'leitura') return;
+  $$('#view button, #view .btn, .modal button, .modal .btn').forEach(x => { if (x.dataset.ro) return; x.dataset.ro = '1';
+    if (x.closest('.tabs') || x.closest('#av72') || x.matches('[data-close]')) return; const dk = x.dataset.ac || x.dataset.rc || '';
+    if (dk.startsWith('doc|')) { const d = G('docs').find(y => y.id === dk.slice(4)); if (d && ehRescisao(d.titulo)) return; }
+    const md = x.closest('.modal'); if (md && ehRescisao((md.querySelector('h2,h3') || {}).innerText)) return;
+    if (!RO_OK.test((x.innerText || x.getAttribute('aria-label') || '').trim())) x.style.display = 'none'; });
+  const ch = $('#ch-e'); if (ch && !$('#ch-bloq')) { const rw = ch.parentElement; rw.style.display = 'none'; rw.insertAdjacentHTML('afterend', '<p class="hint" id="ch-bloq" style="text-align:center;margin:10px 0 0">Seu contrato foi encerrado. Por aqui, só o RH envia mensagens.</p>'); }
+  const pc = $('#pc-h'); if (pc && !$('#pc-fim')) pc.parentElement.insertAdjacentHTML('beforeend', '<p class="hint" id="pc-fim" style="text-align:center">O registro de ponto foi encerrado junto com o contrato.</p>');
+}
+new MutationObserver(() => requestAnimationFrame(aplicarSoLeitura)).observe(document.documentElement, { childList: true, subtree: true });
+setInterval(() => { if (window.P && P.c && P.c.status === 'desligado' && estadoDeslig() === 'encerrado') telaEncerrado(P.c); }, 30000);
+
+/* ---------- Holerite pago: o funcionário confere no extrato ou informa divergência ---------- */
+function arqHtml(a) { if (!a || !a.data) return ''; return /^image\//.test(a.tipo || '') ? `<a href="${a.data}" target="_blank" rel="noopener" download="${esc(a.nome || 'foto.jpg')}" style="display:block;margin-top:6px"><img src="${a.data}" alt="${esc(a.nome || 'Foto')}" style="max-width:220px;max-height:220px;border-radius:8px;display:block"></a>` : `<a href="${a.data}" download="${esc(a.nome || 'arquivo')}" style="display:inline-block;margin-top:6px;font-weight:600">Anexo: ${esc(a.nome || 'arquivo')}</a>`; }
+function divergenciaPag(h) {
+  const liq = folhaItem(h.item).liq;
+  modal(`Valor diferente · ${mesNome(h.comp)}`, `<p class="hint" style="margin-top:0">O holerite mostra líquido de <b>${brl(liq)}</b>, pago em ${fd(h.pagoEm)}. Informe o que caiu na sua conta e anexe o comprovante (foto ou PDF do extrato).</p>
+    <div class="fld"><label for="dv-v">Valor que caiu na conta (R$)</label><input class="inp" id="dv-v" inputmode="decimal" placeholder="0,00"></div>
+    <div class="fld"><label for="dv-o">O que está diferente?</label><textarea class="inp" id="dv-o" maxlength="600" placeholder="Ex.: caiu R$ 200,00 a menos"></textarea></div>
+    <div class="fld"><label for="dv-a">Comprovante (foto ou PDF do extrato)</label><input class="inp" type="file" id="dv-a" accept="image/*,application/pdf"></div>`,
+    { size: 'sm', foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="dv-ok">Enviar ao RH</button>', onMount: m => $('#dv-ok', m).onclick = async () => {
+      const v = parseFloat(String($('#dv-v', m).value).replace(/\./g, '').replace(',', '.')), o = $('#dv-o', m).value.trim(), f = $('#dv-a', m).files[0];
+      if (!(v >= 0)) return toast('Informe o valor que caiu na conta.', true); if (o.length < 5) return toast('Explique em poucas palavras o que está diferente.', true); if (!f) return toast('Anexe o comprovante do extrato.', true);
+      let data; try { data = await lerArquivo(f); } catch (er) { return toast(String(er.message || er), true); }
+      mut('solic', l => l.push({ id: uid(), colabId: me(), tipo: 'divergencia_pag', dados: { comp: h.comp, liquido: liq, recebido: v, obs: o, anexo: { nome: f.name, tipo: f.type === 'application/pdf' ? 'application/pdf' : 'image/jpeg', data } }, status: 'pendente', criadoEm: new Date().toISOString() }));
+      closeModal(true); toast('Divergência enviada ao RH com o comprovante.'); go(P.view); } });
+}
+function pagosHolerite() {
+  const v = $('#view'); if (!v || !P || !P.c) return;
+  $$('[data-hc]:not([data-pgk])', v).forEach(li => { const h = G('holerites').find(x => x.id === li.dataset.hc); if (!h || !h.pagoEm) return; li.dataset.pgk = '1'; li.style.flexWrap = 'wrap';
+    const conf = G('assin').find(a => a.colabId === me() && a.tipo === 'pagamento' && a.ref === h.comp), div = G('solic').filter(s => s.colabId === me() && s.tipo === 'divergencia_pag' && (s.dados || {}).comp === h.comp).sort((a, b) => b.criadoEm.localeCompare(a.criadoEm))[0];
+    const liq = folhaItem(h.item).liq; let html;
+    if (div) html = div.status === 'pendente' ? `<span class="pill warn">Divergência enviada ao RH em ${fd(div.criadoEm.slice(0, 10))}, aguardando resposta</span>` : `<div class="aviso" style="margin:0"><b>Resposta do RH sobre o pagamento:</b> ${esc(div.resposta || (div.status === 'aprovado' ? 'O RH reconheceu a diferença e vai corrigir.' : 'O RH conferiu e manteve o valor.'))}</div>`;
+    else if (conf) html = `<span class="pill ok">Pagamento conferido por você em ${fd(conf.em.slice(0, 10))}</span>`;
+    else html = `<div style="flex:1;min-width:200px"><b style="color:var(--ok)">Holerite pago em ${fd(h.pagoEm)}.</b> Confira no seu extrato bancário se caiu ${brl(liq)}.</div><button class="btn ok sm" data-pgc="${h.id}">Conferi, está certo</button><button class="btn sec sm" data-pgd="${h.id}">Valor diferente</button>`;
+    li.insertAdjacentHTML('beforeend', `<div class="row" style="flex-basis:100%;gap:8px;margin-top:8px;align-items:center">${html}</div>`);
+    const c = $(`[data-pgc="${h.id}"]`, li); if (c) c.onclick = e => { e.stopPropagation(); mut('assin', l => l.push({ id: uid(), colabId: me(), tipo: 'pagamento', ref: h.comp, aceito: true, em: new Date().toISOString() })); toast('Obrigado! Pagamento conferido.'); go(P.view); };
+    const d = $(`[data-pgd="${h.id}"]`, li); if (d) d.onclick = e => { e.stopPropagation(); divergenciaPag(h); }; });
+}
+new MutationObserver(() => requestAnimationFrame(pagosHolerite)).observe(document.documentElement, { childList: true, subtree: true });
 
 /* ---------- Justificar o ponto ---------- */
 const MOTIVOS_JUST = [['esqueci', 'Esqueci de bater o ponto'], ['atestado', 'Atestado ou consulta médica'], ['transporte', 'Problema no transporte'], ['familia', 'Motivo familiar ou pessoal'], ['legal', 'Falta legal (doação de sangue, alistamento, etc.)'], ['outro', 'Outro motivo']];
@@ -2228,7 +2285,7 @@ function vChat(el) {
 function renderThread() {
   const box = $('#ch-m'); if (!box) return;
   const l = G('chat').filter(m => m.colabId === me()).sort((a, b) => a.em.localeCompare(b.em));
-  box.innerHTML = l.length ? l.map(m => `<div class="msg ${m.de === 'colab' ? 'eu' : ''}${m.de === 'ia' ? ' ia' : ''}" style="white-space:pre-line">${esc(m.texto)}<small>${m.de === 'rh' ? esc(m.por || 'RH') + ' · ' : m.de === 'ia' ? 'Assistente automático · ' : ''}${fdt(m.em)}</small></div>`).join('')
+  box.innerHTML = l.length ? l.map(m => `<div class="msg ${m.de === 'colab' ? 'eu' : ''}${m.de === 'ia' ? ' ia' : ''}" style="white-space:pre-line">${esc(m.texto || '')}${arqHtml(m.arq)}<small>${m.de === 'rh' ? esc(m.por || 'RH') + ' · ' : m.de === 'ia' ? 'Assistente automático · ' : ''}${fdt(m.em)}</small></div>`).join('')
     : '<div class="empty" style="margin:auto"><b>Fale com o RH</b>Pergunte sobre banco de horas, férias, holerite, escala ou atestados: o assistente responde na hora, e o RH vê tudo.</div>';
   box.scrollTop = box.scrollHeight;
   if (l.some(m => m.de === 'rh' && !m.lido)) { mut('chat', arr => arr.forEach(m => { if (m.colabId === me() && m.de === 'rh') m.lido = true; })); badges(); }
@@ -2269,7 +2326,7 @@ function vPerfil(el) {
 window.addEventListener('storage', e => {
   if (!P.t || !e.key || !e.key.startsWith(`nexum:${P.t.id}:`)) return;
   const col = e.key.split(':')[2];
-  if (col === 'colab') { const c = G('colab').find(x => x.id === me()); if (!c || !c.portal || !c.portal.ativo || !acessoDesligOk(c)) { sair(); return toast('Seu acesso ao portal foi encerrado. Procure o RH.', true); } P.c = c; }
+  if (col === 'colab') { const c = G('colab').find(x => x.id === me()); if (!c || !c.portal || !c.portal.ativo || !acessoDesligOk(c)) { if (c && c.status === 'desligado') { telaEncerrado(c); return; } sair(); return toast('Seu acesso ao portal foi encerrado. Procure o RH.', true); } P.c = c; }
   if (col === 'config') P.cfg = G('config');
   badges(); try { verNovidades(); } catch (er) { }
   if (P.view === 'chat' && col === 'chat') return renderThread();
