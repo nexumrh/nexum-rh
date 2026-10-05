@@ -720,7 +720,7 @@ const NAV = [
   ['resc', 'Demissão', R_RH, 'CONTRATAÇÃO'],
   ['ia', 'Consultor CLT (IA)', R_EQ, 'FERRAMENTAS'],
   ['agenda', 'Agenda de RH', R_EQ, 'FERRAMENTAS'],
-  ['docs', 'Templates de Documentos', R_RH, 'FERRAMENTAS'],
+  ['docs', 'Contratos e documentos', R_RH, 'EQUIPE'],
   ['relat', 'Relatórios', R_EQ, 'FERRAMENTAS'],
   ['audit', 'Logs de Auditoria', ['admin'], 'FERRAMENTAS'],
   ['ocorr', 'Ocorrências de Contratados', R_EQ, 'FERRAMENTAS'],
@@ -970,9 +970,9 @@ function go(v) {
   $('#side').classList.remove('open');
   $('#t-view').textContent = (NAV.find(n => n[0] === v) || [])[1] || '';
   const el = $('#view'); el.innerHTML = '';
-  ({ dash: vDash, tempo: vTempo, colab: vColab, ponto: vPonto, bio: vBio, atest: e => vOcorr(e, '', { tipo: 'atestado' }), ferias: e => { vFerias(e); if (podeEditar()) { e.insertAdjacentHTML('afterbegin', '<div class="row end" style="margin-bottom:10px"><button class="btn sec" id="fe-col">Férias coletivas</button></div>'); $('#fe-col', e).onclick = feriasColetivas; } }, bh: e => { vPortal(e, 'bh', true); painelAcoesBH(e); }, abs: vAbs,
+  ({ dash: e => { vDash(e); atalhosDash(e); }, tempo: vTempo, colab: vColab, ponto: vPonto, bio: vBio, atest: e => vOcorr(e, '', { tipo: 'atestado' }), ferias: e => { vFerias(e); if (podeEditar()) { e.insertAdjacentHTML('afterbegin', '<div class="row end" style="margin-bottom:10px"><button class="btn sec" id="fe-col">Férias coletivas</button></div>'); $('#fe-col', e).onclick = feriasColetivas; } }, bh: e => { vPortal(e, 'bh', true); painelAcoesBH(e); }, abs: vAbs,
     adv: e => vOcorr(e, '', { tipo: 'advertencia' }), susp: e => vOcorr(e, '', { tipo: 'suspensao' }), com: e => vPortal(e, 'avisos', true), chat: e => vPortal(e, 'chat', true), portal: vPortal,
-    fin: vFin, adiant: vAdiant, folha: e => vFolha(e), recr: vRecr, adm: vAdm, resc: e => { vDem(e); painelPrazosResc(e); painelPortalDeslig(e); e.insertAdjacentHTML('afterbegin', `<div class="row" style="margin-bottom:12px"><span class="hint">Documentos da rescisão</span><span class="sp"></span><button class="btn sec" id="rs-av">Aviso prévio</button><button class="btn sec" id="rs-np">Não prorrogação da experiência</button></div>`); $('#rs-av', e).onclick = () => modalDocsResc('aviso'); $('#rs-np', e).onclick = () => modalDocsResc('naoprorrog'); }, afast: vAfast, benef: e => vBenef(e), jornada: e => vJornada(e), sst: e => { vSST(e); if ((S.sstAba || 'aso') === 'aso') painelASOs($('#ss-b', e)); }, obrig: e => vObrig(e), ia: vIA, agenda: vAgenda, docs: vTpl, relat: e => { vRelat(e); painelLojas(e); painelSaidas(e); e.insertAdjacentHTML('afterbegin', `<div class="row" style="margin-bottom:14px"><span class="hint">Arquivos e documentos legais</span><span class="sp"></span><button class="btn" id="rl-rs">Resumo do mês</button><button class="btn sec" id="rl-ct">Pacote do contador</button><button class="btn sec" id="rl-ir">Informes de rendimentos</button><button class="btn sec" id="rl-afd">Arquivos fiscais do ponto (AFD/AEJ)</button></div>`); $('#rl-afd', e).onclick = modalFiscal; $('#rl-rs', e).onclick = () => modalResumo(); $('#rl-ct', e).onclick = () => modal('Pacote do contador', `<p class="hint" style="margin-top:0">Uma planilha com folha, admissões, desligamentos, férias, afastamentos, pensões e vale-transporte do mês, pronta para o contador importar ou conferir.</p><input class="inp" type="month" id="pc-c" value="${iso(addM(hoje(), -1)).slice(0, 7)}" style="width:auto">`, { foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="pc-ok">Baixar planilha</button>', onMount: m => $('#pc-ok', m).onclick = async () => { try { await pacoteContador($('#pc-c', m).value); closeModal(); } catch (er) { toast('Não foi possível carregar o gerador de planilhas. Verifique a internet.', true); } } }); $('#rl-ir', e).onclick = modalInformes; }, venc: vVenc, trein: vTrein, loja: vLoja, reuniao: vReunioes, planfer: e => vPlanFer(e), conv: vConv, comis: e => vComis(e), etica: vEtica, audit: vAudit, ocorr: e => vOcorr(e, '', { contratados: true }), config: vConfig })[v](el);
+    fin: vFin, adiant: vAdiant, folha: e => vFolha(e), recr: vRecr, adm: vAdm, resc: e => { vDem(e); painelPrazosResc(e); painelPortalDeslig(e); e.insertAdjacentHTML('afterbegin', `<div class="row" style="margin-bottom:12px"><span class="hint">Documentos da rescisão</span><span class="sp"></span><button class="btn sec" id="rs-av">Aviso prévio</button><button class="btn sec" id="rs-np">Não prorrogação da experiência</button></div>`); $('#rs-av', e).onclick = () => modalDocsResc('aviso'); $('#rs-np', e).onclick = () => modalDocsResc('naoprorrog'); }, afast: vAfast, benef: e => vBenef(e), jornada: e => vJornada(e), sst: e => vSST(e), obrig: e => vObrig(e), ia: vIA, agenda: vAgenda, docs: vTpl, relat: e => { vRelat(e); painelLojas(e); painelSaidas(e); e.insertAdjacentHTML('afterbegin', `<div class="row" style="margin-bottom:14px"><span class="hint">Arquivos e documentos legais</span><span class="sp"></span><button class="btn" id="rl-rs">Resumo do mês</button><button class="btn sec" id="rl-ct">Pacote do contador</button><button class="btn sec" id="rl-ir">Informes de rendimentos</button><button class="btn sec" id="rl-afd">Arquivos fiscais do ponto (AFD/AEJ)</button></div>`); $('#rl-afd', e).onclick = modalFiscal; $('#rl-rs', e).onclick = () => modalResumo(); $('#rl-ct', e).onclick = () => modal('Pacote do contador', `<p class="hint" style="margin-top:0">Uma planilha com folha, admissões, desligamentos, férias, afastamentos, pensões e vale-transporte do mês, pronta para o contador importar ou conferir.</p><input class="inp" type="month" id="pc-c" value="${iso(addM(hoje(), -1)).slice(0, 7)}" style="width:auto">`, { foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="pc-ok">Baixar planilha</button>', onMount: m => $('#pc-ok', m).onclick = async () => { try { await pacoteContador($('#pc-c', m).value); closeModal(); } catch (er) { toast('Não foi possível carregar o gerador de planilhas. Verifique a internet.', true); } } }); $('#rl-ir', e).onclick = modalInformes; }, venc: vVenc, trein: vTrein, loja: vLoja, reuniao: vReunioes, planfer: e => vPlanFer(e), conv: vConv, comis: e => vComis(e), etica: vEtica, audit: vAudit, ocorr: e => vOcorr(e, '', { contratados: true }), config: vConfig })[v](el);
   atualizarBadge();
   $('.content').scrollTop = 0;
 }
@@ -1343,7 +1343,7 @@ function vFolhaMensal(el, comp = S.folhaComp || iso(hoje()).slice(0, 7)) {
   const edit = podeEditar() && !f.fechada;
   const render = () => {
     const tot = { bruto: 0, inss: 0, irrf: 0, desc: 0, liq: 0, fgts: 0 };
-    const rows = f.itens.map((i, idx) => { const k = folhaItem(i); Object.keys(tot).forEach(x => tot[x] += k[x]); return `<tr>
+    const rows = f.itens.map((i, idx) => { const k = folhaItem(i); Object.keys(tot).forEach(x => tot[x] += k[x]); return `<tr data-fc="${i.colabId}">
       <td><b>${esc(i.nome)}</b><div class="hint">${esc(i.cargo || '')}</div></td><td class="n">${brl(i.sal)}</td>
       <td class="n">${edit ? `<input class="inp" data-i="${idx}" data-k="adic" value="${i.adic ? String(i.adic).replace('.', ',') : ''}" placeholder="0,00" aria-label="Adicionais">` : brl(i.adic)}</td>
       <td class="n">${i.ponto ? `<button class="btn ghost sm" data-pt="${idx}">${(() => { const r = rubricasPonto(i), mais = r.filter(x => x[2] === 'p').reduce((s, x) => s + x[1], 0), menos = r.filter(x => x[2] === 'd').reduce((s, x) => s + x[1], 0); return (mais ? '+' + brl(mais) : '') + (mais && menos ? ' ' : '') + (menos ? '−' + brl(menos) : '') || 'sem valores'; })()}</button>` : '<span class="hint">—</span>'}</td>
@@ -1372,6 +1372,7 @@ function vFolhaMensal(el, comp = S.folhaComp || iso(hoje()).slice(0, 7)) {
   const ra = $('#fo-reab', acts); if (ra) ra.onclick = () => { f.fechada = false; save('folhas'); publicarHolerites(f, false); audit(`Reabriu a folha de ${mesNome(comp)}`); vFolhaMensal(el, comp); };
   const ex = $('#fo-exc', acts); if (ex) ex.onclick = () => confirmar('Descartar esta folha? Os adicionais e descontos lançados serão perdidos.', () => { S.data.folhas = S.data.folhas.filter(x => x !== f); save('folhas'); publicarHolerites(f, false); audit(`Descartou a folha de ${mesNome(comp)}`); vFolhaMensal(el, comp); }, 'Descartar', true);
   render();
+  extrasFolha(el, f, comp);
 }
 
 /* holerites vão para uma coleção própria: o colaborador só enxerga o dele, nunca a folha inteira */
@@ -1513,7 +1514,7 @@ function vOcorr(el, filtro = '', fixo = null) {
         if (t === 'suspensao' && (o.dias < 1 || o.dias > 30)) return toast('A suspensão deve ter de 1 a 30 dias. Acima de 30 dias consecutivos, a CLT considera rescisão injusta do contrato (art. 474).', true);
         if (['advertencia', 'suspensao'].includes(t)) { const mo = $('#o-mo', m); if (mo) Object.assign(o, { motivo: mo.value, hora: $('#o-h', m).value, local: $('#o-l', m).value.trim(), testemunhas: $('#o-te', m).value.trim() }); const ini = $('#o-ini', m); if (ini) o.inicio = ini.value || iso(addD(pd(o.data), 1));
           o.num = S.data.ocorr.filter(x => ['advertencia', 'suspensao'].includes(x.tipo) && (x.data || '').slice(0, 4) === o.data.slice(0, 4)).length + 1; }
-        S.data.ocorr.push(o); save('ocorr'); audit(`Registrou ${TIPOS_OCORR[o.tipo]} para ${colabById(o.colabId).nome}`); closeModal(); toast('Registrado.'); vOcorr(el, filtro, fixo);
+        S.data.ocorr.push(o); { const cc = colabById(o.colabId); if (['advertencia', 'suspensao'].includes(o.tipo) && cc && cc.portal && cc.portal.ativo) o.docId = enviarDoc(cc, `${TIPOS_OCORR[o.tipo]} de ${fd(o.data)}`, docOcorr(o), 'documento', true); } save('ocorr'); audit(`Registrou ${TIPOS_OCORR[o.tipo]} para ${colabById(o.colabId).nome}`); closeModal(); toast(o.docId ? 'Registrado e enviado ao portal para ciência.' : 'Registrado.'); vOcorr(el, filtro, fixo);
       };
     } });
   };
@@ -1595,6 +1596,7 @@ function vSST(el, aba = S.sstAba || 'aso') {
         c.epis = [...(c.epis || []), { id: uid(), item: it, ca, entrega: $('#ep-d', m).value, validade: $('#ep-v', m).value }]; save('colab'); audit(`Registrou entrega de EPI (${it}) para ${c.nome}`);
         if ($('#ep-t', m).checked && c.portal && c.portal.ativo) enviarDoc(c, `Entrega de EPI: ${it}`, MODELOS.epi.f(c, S.data.config.empresa || {}, { itens: `${it} (CA ${ca})` }), 'documento', true); closeModal(); vSST(el, 'epi'); } });
   }
+  if (aba === 'aso') painelASOs(w);
 }
 /* ---------- 4 e 5. Agenda de obrigações e prazos do eSocial ---------- */
 const diaUtil = (d, sabado = true) => d.getDay() !== 0 && (sabado || d.getDay() !== 6) && !feriado(iso(d), S.data.config);
@@ -2107,19 +2109,27 @@ function painelLojas(el) {
 /* ---------- Canal de ética (denúncias anônimas) ---------- */
 const fdtR = x => new Date(x).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 const CAT_DEN = { assedio_moral: 'Assédio moral', assedio_sexual: 'Assédio sexual', discriminacao: 'Discriminação', fraude: 'Fraude ou desvio', seguranca: 'Segurança no trabalho', conduta: 'Conduta inadequada', outro: 'Outro' };
+/* ---------- Canal de ética em formato de chat ---------- */
+const msgsRelatoRH = d => d.mensagens && d.mensagens.length ? d.mensagens : [{ de: 'anon', t: d.texto, em: d.em }, ...(d.resposta ? [{ de: 'rh', t: d.resposta, em: d.respostaEm || d.em }] : [])];
+const relatoNaoLido = d => { const ms = msgsRelatoRH(d), u = ms[ms.length - 1]; return u && u.de === 'anon' && (!d.lidoRh || u.em > d.lidoRh); };
 function vEtica(el) {
-  if (!can('admin', 'rh')) { el.innerHTML = '<div class="panel empty"><b>Acesso restrito</b>Só o administrador e o RH veem os relatos do canal de ética.</div>'; return; }
-  const l = (S.data.denuncias || []).slice().sort((a, b) => b.em.localeCompare(a.em)), st = { recebida: 'warn', 'em análise': 'mut', concluida: 'ok' };
-  el.innerHTML = `<p class="hint" style="margin-top:0">Relatos enviados pelo portal sem identificação. Gerentes de loja não têm acesso a esta área. Trate com sigilo e registre as providências; o autor acompanha a resposta pelo número de protocolo.</p>
-    ${l.length ? `<section class="panel"><ul class="list">${l.map(d => `<li class="link" data-dn="${d.id}" style="align-items:flex-start"><div class="t"><div><b>${CAT_DEN[d.categoria] || 'Relato'}</b> · protocolo ${esc(d.id)}</div><div>${esc(d.texto.slice(0, 160))}${d.texto.length > 160 ? '…' : ''}</div><div>${fdtR(d.em)}</div></div><span class="pill ${st[d.status] || 'mut'}">${d.status === 'concluida' ? 'Concluída' : d.status === 'em análise' ? 'Em análise' : 'Nova'}</span></li>`).join('')}</ul></section>`
-      : '<div class="panel empty"><b>Nenhum relato</b>O canal fica no portal, em Canal de ética.</div>'}`;
-  $$('[data-dn]', el).forEach(li => li.onclick = () => { const d = l.find(x => x.id === li.dataset.dn);
-    modal(`${CAT_DEN[d.categoria] || 'Relato'} · ${d.id}`, `<p style="white-space:pre-wrap">${esc(d.texto)}</p><p class="hint">${d.quando ? `Quando: ${esc(d.quando)} · ` : ''}${d.onde ? `Onde: ${esc(d.onde)} · ` : ''}${d.envolvidos ? `Envolvidos: ${esc(d.envolvidos)} · ` : ''}enviado em ${fdtR(d.em)}</p>
-      ${d.anexo ? `<p><a href="${d.anexo.data}" download="${esc(d.anexo.nome || 'anexo')}">Baixar anexo</a></p>` : ''}
-      <div class="grid"><div class="fld"><label for="dn-s">Situação</label><select class="inp" id="dn-s">${opts([['recebida', 'Nova'], ['em análise', 'Em análise'], ['concluida', 'Concluída']], d.status)}</select></div>
-      <div class="fld full"><label for="dn-r">Resposta ao autor (aparece pelo protocolo)</label><textarea class="inp" id="dn-r">${esc(d.resposta || '')}</textarea></div></div>`,
-      { size: 'lg', foot: '<button class="btn sec" data-close>Fechar</button><button class="btn" id="dn-ok">Salvar</button>', onMount: m => $('#dn-ok', m).onclick = () => { d.status = $('#dn-s', m).value; d.resposta = $('#dn-r', m).value.trim(); d.respostaEm = new Date().toISOString();
-        const x = S.data.denuncias.find(y => y.id === d.id); Object.assign(x, d); save('denuncias'); audit(`Atualizou o relato ${d.id} do canal de ética`); closeModal(); vEtica(el); } }); });
+  if (!can('admin', 'rh')) { el.innerHTML = '<div class="panel empty"><b>Acesso restrito</b>Só o administrador e o RH veem o canal de ética.</div>'; return; }
+  const l = (S.data.denuncias || []).slice().sort((a, b) => (b.atualizadoEm || b.em).localeCompare(a.atualizadoEm || a.em)), st = { recebida: ['warn', 'Nova'], 'em análise': ['mut', 'Em análise'], concluida: ['ok', 'Concluída'] };
+  el.innerHTML = `<p class="hint" style="margin-top:0">Conversas anônimas abertas pelo portal. O sistema não guarda quem escreveu. Gerentes de loja não têm acesso a esta área.</p>
+    ${l.length ? `<section class="panel"><ul class="list">${l.map(d => { const ms = msgsRelatoRH(d), u = ms[ms.length - 1], nl = relatoNaoLido(d); return `<li class="link" data-dn="${d.id}"><div class="t"><div>${nl ? '<b>● </b>' : ''}<b>${CAT_DEN[d.categoria] || 'Relato'}</b> · ${esc(d.id)}</div><div>${u.de === 'rh' ? 'Você: ' : ''}${esc(String(u.t).slice(0, 110))}${String(u.t).length > 110 ? '…' : ''}</div></div><span class="pill ${(st[d.status] || st.recebida)[0]}">${(st[d.status] || st.recebida)[1]}</span></li>`; }).join('')}</ul></section>`
+      : '<div class="panel empty"><b>Nenhuma conversa</b>O canal fica no portal do colaborador, em Canal de ética.</div>'}`;
+  $$('[data-dn]', el).forEach(li => li.onclick = () => chatEticaRH(li.dataset.dn, el));
+}
+function chatEticaRH(id, el) {
+  const d = S.data.denuncias.find(x => x.id === id); if (!d) return; d.lidoRh = new Date().toISOString(); save('denuncias');
+  const ms = msgsRelatoRH(d);
+  modal(`${CAT_DEN[d.categoria] || 'Relato'} · ${d.id}`, `<div class="row" style="margin-bottom:10px"><label class="hint" for="dn-s">Situação</label><select class="inp" id="dn-s" style="width:auto">${opts([['recebida', 'Nova'], ['em análise', 'Em análise'], ['concluida', 'Concluída']], d.status)}</select>${d.quando || d.onde || d.envolvidos ? `<span class="hint">${esc([d.quando && 'Quando: ' + d.quando, d.onde && 'Onde: ' + d.onde, d.envolvidos && 'Envolvidos: ' + d.envolvidos].filter(Boolean).join(' · '))}</span>` : ''}</div>
+    <div class="msgs" id="dn-m" style="max-height:48vh;overflow-y:auto">${ms.map(m => `<div class="msg ${m.de === 'rh' ? 'eu' : ''}" style="white-space:pre-wrap">${esc(m.t)}<small>${m.de === 'rh' ? 'RH' : 'Anônimo'} · ${new Date(m.em).toLocaleDateString('pt-BR')}</small></div>`).join('')}</div>
+    ${d.anexo ? `<p><a href="${d.anexo.data}" download="${esc(d.anexo.nome || 'anexo')}">Baixar anexo</a></p>` : ''}<div class="row" style="flex-wrap:nowrap;margin-top:10px"><textarea class="inp" id="dn-t" rows="2" style="min-height:44px;resize:none" placeholder="Responder (a pessoa vê pelo protocolo)"></textarea><button class="btn" id="dn-e">Enviar</button></div>`,
+    { size: 'lg', onMount: m => { const b = $('#dn-m', m); b.scrollTop = b.scrollHeight;
+      $('#dn-s', m).onchange = e => { d.status = e.target.value; save('denuncias'); audit(`Canal de ética ${d.id}: situação ${d.status}`); };
+      $('#dn-e', m).onclick = () => { const t = $('#dn-t', m).value.trim(); if (!t) return; const em = new Date().toISOString();
+        d.mensagens = [...msgsRelatoRH(d), { de: 'rh', t, em }]; d.atualizadoEm = em; d.lidoRh = em; if (d.status === 'recebida') d.status = 'em análise'; save('denuncias'); audit(`Respondeu no canal de ética ${d.id}`); closeModal(); chatEticaRH(id, el); vEtica(el); }; } });
 }
 
 /* ---------- Informe de rendimentos (comprovante anual para o IR) ---------- */
@@ -2305,7 +2315,7 @@ function alertasNovos() {
   const out = [], adm = can('admin', 'rh');
   try { alertasINSS().forEach(x => out.push({ p: -1, t: `Encaminhar ${x.c.nome} ao INSS`, s: `${x.tot} dias de atestado em 60 dias; o INSS paga a partir de ${fd(x.d16)}`, cls: 'bad', v: 'afast' })); } catch (e) { }
   try { itensVencimento().filter(x => x.d <= 7 && !/^Férias|^Experiência|^Fim da experiência/.test(x.tipo)).forEach(x => out.push({ p: x.d, t: `${x.tipo}: ${x.c.nome}`, s: x.d < 0 ? `venceu em ${fd(x.data)}` : `vence em ${fd(x.data)}`, cls: x.d < 0 ? 'bad' : 'warn', v: 'venc' })); } catch (e) { }
-  if (adm) { const n = (S.data.denuncias || []).filter(d => d.status === 'recebida').length; if (n) out.push({ p: -2, t: `${n} relato(s) novo(s) no canal de ética`, s: 'Trate com sigilo e registre as providências', cls: 'bad', v: 'etica' }); }
+  if (adm) { const n = (S.data.denuncias || []).filter(d => d.status === 'recebida' || relatoNaoLido(d)).length; if (n) out.push({ p: -2, t: `${n} conversa(s) com mensagem nova no canal de ética`, s: 'Trate com sigilo e registre as providências', cls: 'bad', v: 'etica' }); }
   (S.data.propostas || []).filter(p => p.status !== 'enviada' && S.data.admis.some(a => a.propostaId === p.id && a.status !== 'concluida')).forEach(p => { const nd = (S.data.admdocs || []).filter(d => d.token === p.id).length; out.push({ p: 0, t: `${p.nome} ${p.status === 'aceita' ? 'aceitou' : 'recusou'} a proposta`, s: p.status === 'aceita' ? `${nd} documento(s) enviado(s) pelo link` : (p.recusaMotivo || 'Sem motivo informado'), cls: p.status === 'aceita' ? 'mut' : 'warn', v: 'adm' }); });
   const cmpA = iso(hoje()).slice(0, 7), cmpP = iso(addM(hoje(), -1)).slice(0, 7);
   [cmpP, cmpA].forEach(cm => { const n = S.data.comissoes.filter(x => x.comp === cm && !x.lancado && num(x.comissao) > 0).length, f = S.data.folhas.find(x => !x.tipo && x.comp === cm); if (n && f && !f.fechada) out.push({ p: 1, t: `Comissões de ${mesNome(cm)} não lançadas na folha`, s: `${n} vendedor(es)`, cls: 'warn', v: 'comis' }); });
@@ -2716,6 +2726,53 @@ function vReunioes(el) {
         S.data.reunioes = [...(S.data.reunioes || []), r]; save('reunioes'); S.data.chat.push({ id: uid(), colabId: r.colabId, de: 'rh', texto: `Reunião por vídeo marcada: "${t}", ${fdh(r.inicio)}. Entre pelo portal, em Reuniões.`, em: agoraIso(), por: S.user.nome, lido: false }); save('chat'); audit(`Marcou reunião com ${nome(r.colabId)}`); closeModal(); go('reuniao'); } }); };
   $$('[data-ru]', el).forEach(b => b.onclick = () => { const r = l.find(x => x.id === b.dataset.ru); abrirReuniao({ tid: S.tenant.id, rid: r.id, papel: 'host', titulo: r.titulo, meuNome: `${S.user.nome} (RH)`, lerArq: lerArqRH }); });
   $$('[data-rx]', el).forEach(b => b.onclick = () => { const r = S.data.reunioes.find(x => x.id === b.dataset.rx); r.status = 'encerrada'; save('reunioes'); go('reuniao'); });
+}
+
+/* ---------- Ciência das advertências e suspensões dada pelo portal (com foto) ---------- */
+function marcarCiencias(root) {
+  $$('[data-pr]:not([data-cz])', root).forEach(b => { b.dataset.cz = '1'; const o = S.data.ocorr.find(x => x.id === b.dataset.pr); if (!o) return;
+    const d = o.docId && S.data.docs.find(x => x.id === o.docId), r = S.data.assin.filter(a => a.tipo === 'ocorr' && a.ref === o.id).sort((x, y) => y.em.localeCompare(x.em))[0];
+    let h = ''; if (d && d.status === 'assinado') h = `<button class="btn ghost sm" data-czv="d|${d.id}" style="color:var(--ok)">Ciente em ${new Date(d.assinatura.em).toLocaleDateString('pt-BR')}</button>`;
+    else if (d && d.status === 'recusado') h = `<button class="btn ghost sm" data-czv="d|${d.id}" style="color:var(--bad)">Recusou</button>`;
+    else if (r) h = `<button class="btn ghost sm" data-czv="a|${r.id}" style="color:${r.aceito ? 'var(--ok)' : 'var(--bad)'}">${r.aceito ? `Ciente em ${new Date(r.em).toLocaleDateString('pt-BR')}` : 'Recusou'}</button>`;
+    else if ((colabById(o.colabId) || {}).portal) h = '<span class="hint" style="margin-right:6px">aguardando ciência</span>';
+    if (h) b.insertAdjacentHTML('beforebegin', h); });
+  $$('[data-czv]:not([data-czl])', root).forEach(b => { b.dataset.czl = '1'; b.onclick = () => { const [k, id] = b.dataset.czv.split('|');
+    if (k === 'd') { const d = S.data.docs.find(x => x.id === id), a = d.assinatura || {}; return modal(d.titulo, d.status === 'recusado' ? `<p style="margin-top:0"><b>Recusado em ${fdtR(d.recusa.em)}.</b></p><p style="white-space:pre-wrap">${esc(d.recusa.motivo)}</p>` : `${a.selfie ? `<img src="${a.selfie}" alt="Foto no momento do aceite" style="width:100%;max-width:320px;border-radius:10px;display:block;margin-bottom:10px">` : ''}<p style="margin:0">Aceito por <b>${esc(a.nome || '')}</b> em ${fdtR(a.em)}${a.modo === 'facial' ? ', com reconhecimento facial' : ', com foto'}.</p><p class="hint" style="word-break:break-all">Código de integridade: ${esc(a.hash || '')}</p>`, { size: 'sm' }); }
+    const r = S.data.assin.find(x => x.id === id), c = colabById(r.colabId) || {};
+    modal(r.aceito ? 'Ciência registrada' : 'Recusa do funcionário', r.aceito ? `${r.foto ? `<img src="${r.foto}" alt="Foto no momento da ciência" style="width:100%;max-width:320px;border-radius:10px;display:block;margin-bottom:10px">` : ''}<p style="margin:0"><b>${esc(c.nome || '')}</b> deu ciência em ${fdtR(r.em)}${r.metodo === 'facial' ? ', com reconhecimento facial' : ', com foto'}.</p><p class="hint" style="word-break:break-all">Código de integridade: ${esc(r.hash)}</p>`
+      : `<p style="margin-top:0"><b>${esc(c.nome || '')}</b> recusou em ${fdtR(r.em)} e registrou a sua versão:</p><p style="white-space:pre-wrap">${esc(r.motivo)}</p><p class="hint">Se o funcionário se recusar a dar ciência, duas testemunhas podem assinar o documento impresso confirmando que ele foi lido e entregue.</p>`, { size: 'sm' }); }; });
+}
+new MutationObserver(() => { const v = $('#view'); if (v && S.data && S.data.ocorr) requestAnimationFrame(() => marcarCiencias(v)); }).observe(document.documentElement, { childList: true, subtree: true });
+
+/* ---------- Folha: incluir quem falta e trabalhar holerite por holerite ---------- */
+function publicarHoleriteUm(f, cid) {
+  const i = f.itens.find(x => x.colabId === cid); if (!i) return; const ant = S.data.holerites.find(h => h.comp === f.comp && h.colabId === cid);
+  S.data.holerites = S.data.holerites.filter(h => !(h.comp === f.comp && h.colabId === cid));
+  S.data.holerites.push({ id: `${f.comp}_${cid}`, colabId: cid, comp: f.comp, item: { ...i }, ...(ant ? { versao: (ant.versao || 1) + 1, motivoRepub: 'Holerite atualizado pelo RH' } : {}) }); save('holerites');
+}
+function extrasFolha(el, f, comp) {
+  if (!f) return; const body = $('#fo-body', el); if (!body) return;
+  const fimMes = iso(new Date(+comp.slice(0, 4), +comp.slice(5), 0)), faltam = ativos().filter(c => c.tipo !== 'pj' && !f.itens.some(i => i.colabId === c.id) && (!c.admissao || c.admissao <= fimMes));
+  if (faltam.length && !f.fechada && podeEditar()) body.insertAdjacentHTML('afterbegin', `<div class="panel" style="border-color:var(--warn);background:var(--warn-s);padding:12px 16px"><div class="row"><span style="flex:1"><b>${faltam.length} funcionário(s) ativo(s) fora desta folha:</b> ${faltam.map(c => esc(c.nome)).join(', ')}. Eles foram cadastrados depois que a folha foi gerada.</span><button class="btn sm" id="fo-inc">Incluir na folha</button></div></div>`);
+  const inc = $('#fo-inc', el); if (inc) inc.onclick = () => { faltam.forEach(c => f.itens.push({ colabId: c.id, nome: c.nome, cargo: c.cargo, sal: num(c.salario), dep: c.dependentes || 0, adic: 0, desc: descAdiant(c.id, comp), adiant: descAdiant(c.id, comp) }));
+    save('folhas'); audit(`Incluiu ${faltam.length} funcionário(s) na folha de ${mesNome(comp)}`); toast('Incluído(s). Importe o ponto de novo para calcular as horas.'); vFolhaMensal(el, comp); };
+  const tb = $('table', body); if (!tb || !f.itens.length) return;
+  tb.closest('.tbl-wrap') ? tb.closest('.tbl-wrap').insertAdjacentHTML('beforebegin', `<div class="row" style="margin:0 0 12px"><label class="hint" for="fo-sel">Colaborador</label><select class="inp" id="fo-sel" style="width:auto;max-width:320px">${opts([['', `Todos (${f.itens.length})`], ...f.itens.slice().sort((a, b) => a.nome.localeCompare(b.nome)).map(i => [i.colabId, i.nome])], S.folhaSel || '')}</select><span id="fo-um" class="row" style="gap:6px"></span></div>`) : null;
+  const sel = $('#fo-sel', el); if (!sel) return;
+  const aplicar = () => { const cid = sel.value; S.folhaSel = cid; $$('tr[data-fc]', tb).forEach(tr => { tr.style.display = !cid || tr.dataset.fc === cid ? '' : 'none'; });
+    const um = $('#fo-um', el); if (!cid) { um.innerHTML = ''; return; } const i = f.itens.find(x => x.colabId === cid), pub = S.data.holerites.find(h => h.comp === comp && h.colabId === cid);
+    um.innerHTML = `<button class="btn sec sm" id="fo-u-pr">Ver e imprimir o holerite</button>${podeEditar() ? `<button class="btn sm" id="fo-u-pub">${pub ? 'Publicar de novo no portal' : 'Publicar no portal'}</button>` : ''}${pub ? '<span class="pill ok">no portal</span>' : ''}`;
+    $('#fo-u-pr', um).onclick = () => { const c = colabById(cid) || { nome: i.nome, cargo: i.cargo }; printDoc(`Holerite ${i.nome} ${comp}`, holeriteProf(c, S.data.config.empresa || {}, comp, i, folhaItem(i))); };
+    const pb = $('#fo-u-pub', um); if (pb) pb.onclick = () => confirmar(`Publicar o holerite de <b>${esc(i.nome)}</b> (${mesNome(comp)}) no portal para assinatura?${f.fechada ? '' : '<br><br>A folha ainda está aberta: se mudar os valores, publique de novo.'}`, () => { publicarHoleriteUm(f, cid); audit(`Publicou o holerite de ${i.nome} (${mesNome(comp)})`); toast('Holerite publicado no portal.'); aplicar(); }, 'Publicar'); };
+  sel.onchange = aplicar; aplicar();
+}
+/* ---------- Painel inicial: atalhos ---------- */
+function atalhosDash(el) {
+  if (!podeEditar()) return; el.insertAdjacentHTML('afterbegin', `<section class="panel" style="padding:14px 18px"><div class="row" style="gap:8px"><b style="margin-right:6px">Atalhos</b>
+    <button class="btn sm" data-at="contratos">Contratos e termos</button><button class="btn sec sm" data-at="docs">Documentos enviados</button><button class="btn sec sm" data-at="exame">Encaminhar exame</button><button class="btn sec sm" data-at="folha">Folha e holerites</button><button class="btn sec sm" data-at="novo">Cadastrar funcionário</button></div></section>`);
+  $$('[data-at]', el).forEach(b => b.onclick = () => { const k = b.dataset.at;
+    if (k === 'contratos') { S.tplAba = 'padrao'; go('docs'); } else if (k === 'docs') modalDocumentos(); else if (k === 'exame') modalEncaminhamento('', 'admissional', () => go('sst')); else if (k === 'folha') go('folha'); else formColab(); });
 }
 
 /* ---------- IA no chat do RH: sugere a resposta com os dados do funcionário ---------- */
@@ -3253,8 +3310,8 @@ function blocoAssin(d) {
   return `<div style="page-break-before:always;font-family:Arial,sans-serif;font-size:11.5px;line-height:1.55;margin-top:28px"><h2 style="font-size:15px;text-align:center;margin:0 0 12px">Certificado de assinatura eletrônica</h2>
     <table style="width:100%;border-collapse:collapse">${lin('Documento', esc(d.titulo))}${lin('Identificador', esc(d.id || '—'))}${lin('Enviado', `${d.enviadoEm ? new Date(d.enviadoEm).toLocaleString('pt-BR') : '—'}${d.por ? ` por ${esc(d.por)}` : ''}`)}
     ${lin('Assinado por', `${esc(a.nome)} · CPF ${esc(a.cpf || '—')}`)}${lin('Data e hora', `${new Date(a.em).toLocaleString('pt-BR')} (horário do aparelho)`)}${lin('Localização', a.geo ? `${(+a.geo.lat).toFixed(5)}, ${(+a.geo.lng).toFixed(5)}${a.geo.acc ? ` (precisão de ${Math.round(a.geo.acc)} m)` : ''}` : 'não autorizada')}
-    ${lin('Aparelho', esc([a.aparelho, (a.ua || '').slice(0, 120)].filter(Boolean).join(' · ') || '—'))}${lin('Autenticação', `Login individual no Portal do Colaborador${a.selfie ? ' e selfie no momento da assinatura' : ''}`)}${lin('Código de integridade (SHA-256)', `<span style="font-family:monospace;word-break:break-all">${esc(a.hash || '—')}</span>`)}</table>
-    <div style="display:flex;gap:18px;align-items:flex-end;margin-top:12px"><div><div>Assinatura</div><img src="${a.img}" alt="Assinatura" style="height:70px"></div>${a.selfie ? `<div><div>Selfie</div><img src="${a.selfie}" alt="Selfie no momento da assinatura" style="height:90px;border-radius:6px"></div>` : ''}</div>
+    ${lin('Aparelho', esc([a.aparelho, (a.ua || '').slice(0, 120)].filter(Boolean).join(' · ') || '—'))}${lin('Autenticação', `Login individual no Portal do Colaborador${a.modo === 'facial' ? ' e reconhecimento facial no momento do aceite' : a.selfie ? ' e foto no momento do aceite' : ''}`)}${lin('Código de integridade (SHA-256)', `<span style="font-family:monospace;word-break:break-all">${esc(a.hash || '—')}</span>`)}</table>
+    <div style="display:flex;gap:18px;align-items:flex-end;margin-top:12px">${a.img ? `<div><div>Assinatura</div><img src="${a.img}" alt="Assinatura" style="height:70px"></div>` : ''}${a.selfie ? `<div><div>Selfie</div><img src="${a.selfie}" alt="Selfie no momento da assinatura" style="height:90px;border-radius:6px"></div>` : ''}</div>
     <p style="color:#555;margin-top:12px">O código de integridade é calculado sobre o conteúdo do documento, a imagem da assinatura, a data e a identificação do signatário: qualquer alteração posterior gera outro código. Assinatura eletrônica admitida entre as partes (MP 2.200-2/2001, art. 10, § 2º; Lei 14.063/2020).</p></div>`;
 }
 function enviarDoc(c, titulo, html, categoria = 'documento', requer = true) {
