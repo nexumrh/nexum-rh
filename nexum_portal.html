@@ -660,7 +660,6 @@ function entrar(t, c) {
   if (FB_ON) mut('acessos', l => { const a = l.find(y => y.colabId === c.id); if (a) { a.ultimoAcesso = new Date().toISOString(); trocar = a.trocar; } });
   else mut('colab', l => { const x = l.find(y => y.id === c.id); if (x) { x.portal.ultimoAcesso = new Date().toISOString(); P.c = x; trocar = x.portal.trocar; } });
   renderApp();
-  if (trocar) trocarSenha(true);
   acaoDoLink(); setTimeout(processarFila, 1200); agendarLembretes(); registrarLoginPortal();
   if (!ACAO_LINK) etapasIntegracao().then(l => { if (!l.some(x => x.ok && ['boasvindas', 'regras', 'privacidade'].includes(x.k))) go('integracao'); });
 }
@@ -2112,7 +2111,7 @@ function vPerfil(el) {
       <p class="hint" style="margin-top:0">O cadastro é feito ao vivo: a tela pede movimentos sorteados (virar o rosto, abrir a boca ou piscar) para provar que é você. O reconhecimento roda no seu celular e guardamos só um código numérico do rosto e uma foto pequena, usados apenas para confirmar o ponto.</p>
       ${(() => { const f = G('faces').find(x => x.colabId === me()); return f && f.vivo === true && f.status === 'aprovado' ? '<p class="hint" style="margin:0">Para refazer, peça ao RH para remover a biometria atual.</p>' : `<button class="btn" id="pf-bio">${f ? 'Refazer cadastro' : 'Cadastrar meu rosto'}</button>`; })()}</section>
     <section class="panel"><h2>Seus dados e a LGPD</h2><p class="hint" style="margin:0">A empresa usa seus dados para cumprir o contrato de trabalho e obrigações legais (eSocial, FGTS, INSS, Receita). Você pode pedir acesso ou correção a qualquer momento pelo chat com o RH.</p></section>`;
-  $('#pf-s', el).onclick = () => trocarSenha(false);
+  { const b = $('#pf-s', el); if (b) b.outerHTML = '<span class="hint">A senha é definida pelo RH. Se esquecer, peça uma nova ao RH.</span>'; }
   situacaoAparelho().then(sa => { const cd = P.cfg.dispositivo || {}, ap = Object.values((sa.d || {}).aparelhos || {}), st = $('#pf-apst', el), tx = $('#pf-ap', el); if (!st) return;
     if (cd.exigir === false) { st.innerHTML = '<span class="pill mut">Livre</span>'; tx.textContent = 'A empresa permite bater ponto de qualquer aparelho.'; return; }
     st.innerHTML = sa.aprovado ? '<span class="pill ok">Este celular está aprovado</span>' : sa.pendente ? '<span class="pill warn">Aguardando o RH</span>' : '<span class="pill mut">Não cadastrado</span>';
