@@ -344,7 +344,9 @@ html[data-theme="dark"] .doc-prev{background:#fff;color:#111}
 .cam-acao{align-self:center}
 @media (prefers-reduced-motion:reduce){.cam-oval{transition:none}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-</style>
+@media(max-width:820px){.top{flex-wrap:wrap;row-gap:8px;column-gap:8px}.top .menu-btn{flex:0 0 40px;width:40px!important;height:40px!important;display:flex;align-items:center;justify-content:center}.top .menu-btn svg{width:24px;height:24px}
+#t-view{flex:1 1 calc(100% - 56px);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:21px;margin:0}.top .sp,.top .sync{display:none}.top .tb{flex:0 0 auto;padding:6px 8px;font-size:12.5px}}@media(max-width:420px){.top{column-gap:5px;padding-left:12px;padding-right:12px}.top .tb{padding:5px 7px;font-size:12px}}
+@media(max-width:560px){.lista-aten li{flex-direction:column;align-items:flex-start;gap:6px}.lista-aten li .t{width:100%}}</style>
 </head>
 <body>
 <div id="root"></div>
@@ -993,7 +995,7 @@ function vDash(el) {
     </div>
     <div class="cols">
       <section class="panel"><h2>Precisa de atenção</h2>
-        ${alertas.length ? `<ul class="list">${alertas.slice(0, 10).map(a => `<li class="link" style="cursor:pointer" data-go="${a.v || ''}|${a.aba || ''}"><span class="pill ${a.cls}">${a.cls === 'bad' ? 'Vencido' : a.cls === 'warn' ? 'Prazo' : 'Cadastro'}</span><div class="t"><div>${esc(a.t)}</div><div>${esc(a.s)}</div></div></li>`).join('')}</ul>`
+        ${alertas.length ? `<ul class="list lista-aten">${alertas.slice(0, 10).map(a => `<li class="link" style="cursor:pointer" data-go="${a.v || ''}|${a.aba || ''}"><span class="pill ${a.cls}">${a.cls === 'bad' ? 'Vencido' : a.cls === 'warn' ? 'Prazo' : 'Cadastro'}</span><div class="t"><div>${esc(a.t)}</div><div>${esc(a.s)}</div></div></li>`).join('')}</ul>`
           : `<div class="empty"><b>Tudo em dia</b>Nenhum prazo de experiência, férias ou cadastro pendente.</div>`}
       </section>
       <div>
@@ -3282,18 +3284,25 @@ function pedirSenhaPortal(c, ok) {
     { size: 'sm', foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="ps-ok">Salvar senha</button>', onMount: m => { $('#ps-g', m).onclick = () => { $('#ps-s', m).value = senhaSugerida(); };
       $('#ps-ok', m).onclick = () => { const s = $('#ps-s', m).value.trim(); if (s.length < 6) return toast('A senha precisa ter pelo menos 6 caracteres.', true); closeModal(); ok(s); }; } });
 }
+/* cria o login do portal na primeira versão livre: se sobrou um login de uma tentativa que falhou no meio, pula para a próxima */
+async function criarLoginLivre(dig, v, senha) {
+  for (let k = 0; k < 15; k++, v++) { try { return { novo: await FB.criarLogin(FB.emailColab(S.tenant.id, dig, v), senha), v }; } catch (er) { if (!er || er.code !== 'auth/email-already-in-use') throw er; } }
+  throw Object.assign(new Error('Não foi possível criar o acesso: muitas versões antigas deste CPF. Fale com o suporte.'), { code: 'nexum/versoes' });
+}
 async function criarAcessoPortal(c, acao, senhaDef) {
   const dig = (c.cpf || '').replace(/\D/g, '');
   if (!cpfValido(dig)) { toast(`${c.nome.split(' ')[0]}: cadastre um CPF válido para liberar o portal.`, true); return null; }
   const senha = senhaDef ? String(senhaDef) : senhaSugerida();
   if (FB_ON) {
-    const v = ((c.portal && c.portal.v) || 0) + 1; let novo;
+    const hashL = await sha(`${String(S.tenant.id).toLowerCase()}:${dig}`); let vIdx = 0;
+    try { const sl = await FB.db.doc(`logins/${hashL}`).get(); if (sl.exists) vIdx = +(sl.data() || {}).v || 0; } catch (e) { }
+    let v = Math.max((c.portal && c.portal.v) || 0, vIdx) + 1, novo;
     try {
-      novo = await FB.criarLogin(FB.emailColab(S.tenant.id, dig, v), senha);
+      ({ novo, v } = await criarLoginLivre(dig, v, senha));
       const b = FB.db.batch();
       b.set(FB.db.doc(`users/${novo}`), { tenantId: S.tenant.id, tipo: 'colab', colabId: c.id, nome: c.nome, ativo: true });
       if (c.portal && c.portal.uid) b.update(FB.db.doc(`users/${c.portal.uid}`), { ativo: false });
-      b.set(FB.db.doc(`logins/${await sha(`${S.tenant.id}:${dig}`)}`), { tid: S.tenant.id, v });
+      b.set(FB.db.doc(`logins/${hashL}`), { tid: S.tenant.id, v });
       await b.commit();
     } catch (err) { FB.falhou(err); return null; }
     c.portal = { ativo: true, uid: novo, v, em: new Date().toISOString() };
