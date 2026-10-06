@@ -1377,7 +1377,7 @@ function vFolhaMensal(el, comp = S.folhaComp || iso(hoje()).slice(0, 7)) {
 /* holerites vão para uma coleção própria: o colaborador só enxerga o dele, nunca a folha inteira */
 function publicarHolerites(f, publicar) {
   S.data.holerites = S.data.holerites.filter(h => h.comp !== f.comp);
-  if (publicar) f.itens.forEach(i => S.data.holerites.push({ id: `${f.comp}_${i.colabId}`, colabId: i.colabId, comp: f.comp, item: { ...i } }));
+  if (publicar) f.itens.forEach(i => S.data.holerites.push({ id: `${f.comp}_${i.colabId}`, colabId: i.colabId, comp: f.comp, item: { ...i }, publicadoEm: new Date().toISOString() }));
   save('holerites');
 }
 
@@ -2749,7 +2749,7 @@ new MutationObserver(() => { const v = $('#view'); if (v && S.data && S.data.oco
 function publicarHoleriteUm(f, cid) {
   const i = f.itens.find(x => x.colabId === cid); if (!i) return; const ant = S.data.holerites.find(h => h.comp === f.comp && h.colabId === cid);
   S.data.holerites = S.data.holerites.filter(h => !(h.comp === f.comp && h.colabId === cid));
-  S.data.holerites.push({ id: `${f.comp}_${cid}`, colabId: cid, comp: f.comp, item: { ...i }, ...(ant ? { versao: (ant.versao || 1) + 1, motivoRepub: 'Holerite atualizado pelo RH' } : {}) }); save('holerites');
+  S.data.holerites.push({ id: `${f.comp}_${cid}`, colabId: cid, comp: f.comp, item: { ...i }, publicadoEm: new Date().toISOString(), ...(ant ? { versao: (ant.versao || 1) + 1, motivoRepub: 'Holerite atualizado pelo RH' } : {}) }); save('holerites');
 }
 function extrasFolha(el, f, comp) {
   if (!f) return; const body = $('#fo-body', el); if (!body) return;
@@ -2839,7 +2839,7 @@ async function painelPedSenha(el) {
 setInterval(() => { if (S.tenant) carregarPedSenha(); }, 60000); setTimeout(() => { if (S.tenant) carregarPedSenha(); }, 3000);
 
 /* ---------- Chat do RH com anexos e conferência do pagamento ---------- */
-function arqHtml(a) { if (!a || !a.data) return ''; return /^image\//.test(a.tipo || '') ? `<a href="${a.data}" target="_blank" rel="noopener" download="${esc(a.nome || 'foto.jpg')}" style="display:block;margin-top:6px"><img src="${a.data}" alt="${esc(a.nome || 'Foto')}" style="max-width:220px;max-height:220px;border-radius:8px;display:block"></a>` : `<a href="${a.data}" download="${esc(a.nome || 'arquivo')}" style="display:inline-block;margin-top:6px;font-weight:600">Anexo: ${esc(a.nome || 'arquivo')}</a>`; }
+function arqHtml(a) { if (!a || !a.data) return ''; return /^image\//.test(a.tipo || '') ? `<a href="${a.data}" target="_blank" rel="noopener" download="${esc(a.nome || 'foto.jpg')}" style="display:block;margin-top:6px"><img src="${a.data}" alt="${esc(a.nome || 'Foto')}" style="max-width:220px;max-height:220px;border-radius:8px;display:block"></a>` : `<a href="${a.data}" download="${esc(a.nome || 'arquivo')}" style="display:inline-block;margin-top:6px;font-weight:600;color:inherit;text-decoration:underline">Anexo: ${esc(a.nome || 'arquivo')}</a>`; }
 function lerAnexoChat(f) {
   return new Promise((ok, err) => {
     if (/^image\//.test(f.type)) { const r = new FileReader(); r.onload = () => { const im = new Image(); im.onload = () => { const k = Math.min(1, 1280 / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); ok({ nome: f.name.replace(/\.\w+$/, '') + '.jpg', tipo: 'image/jpeg', data: c.toDataURL('image/jpeg', 0.72) }); }; im.onerror = () => err(new Error('Não foi possível ler a foto.')); im.src = r.result; }; r.readAsDataURL(f); return; }
@@ -2849,6 +2849,45 @@ function lerAnexoChat(f) {
 }
 function confPag(h) { const conf = S.data.assin.some(a => a.tipo === 'pagamento' && a.colabId === h.colabId && a.ref === h.comp), div = S.data.solic.find(s => s.tipo === 'divergencia_pag' && s.colabId === h.colabId && (s.dados || {}).comp === h.comp);
   return div ? ` · <b style="color:var(--bad)">divergência${div.status === 'pendente' ? ' (responder em Solicitações)' : ' respondida'}</b>` : conf ? ' · <span style="color:var(--ok)">conferido</span>' : ''; }
+
+/* ---------- Chat do RH: atestado a partir do anexo, respostas prontas, lembretes e busca ---------- */
+const normBusca = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+function btnAtestChat(m) {
+  if (m.de !== 'colab' || !m.arq) return ''; if (m.atestSolic) { const s = S.data.solic.find(x => x.id === m.atestSolic); return `<div style="margin-top:6px"><span class="pill ${s && s.status === 'aprovada' ? 'ok' : 'warn'}">${s && s.status === 'aprovada' ? 'Registrado como atestado' : s && s.status === 'recusada' ? 'Atestado recusado' : 'Atestado aguardando aprovação'}</span></div>`; }
+  return podeEditar() ? `<div style="margin-top:6px"><button class="btn sec sm" data-atc="${m.id}">Registrar como atestado</button></div>` : '';
+}
+function atestadoDoChat(id) {
+  const m = S.data.chat.find(x => x.id === id); if (!m) return; const c = colabById(m.colabId) || {};
+  modal(`Registrar atestado · ${esc(c.nome || '')}`, `${/^image\//.test(m.arq.tipo) ? `<img src="${m.arq.data}" alt="Atestado" style="width:100%;max-height:260px;object-fit:contain;border-radius:8px;margin-bottom:10px;background:#f4f4f6">` : `<p><a href="${m.arq.data}" download="${esc(m.arq.nome)}">Abrir ${esc(m.arq.nome)}</a></p>`}
+    <div class="grid"><div class="fld"><label for="at-d">Data de início</label><input class="inp" type="date" id="at-d" value="${m.em.slice(0, 10)}"></div><div class="fld"><label for="at-n">Dias de afastamento</label><input class="inp" type="number" min="1" max="15" id="at-n" value="1"></div>
+    <div class="fld full"><label for="at-o">Observação (opcional)</label><input class="inp" id="at-o" placeholder="Ex.: consulta médica, CID informado pelo médico"></div></div><p class="hint">Afastamento de mais de 15 dias segue para o INSS: registre em Afastamentos e licenças.</p>`,
+    { size: 'sm', foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="at-ok">Continuar para aprovar</button>', onMount: md => $('#at-ok', md).onclick = () => {
+      const d = $('#at-d', md).value, n = Math.max(1, Math.min(15, parseInt($('#at-n', md).value) || 1)); if (!d) return toast('Informe a data.', true);
+      const s = { id: uid(), colabId: m.colabId, tipo: 'atestado', dados: { data: d, dias: n, obs: ($('#at-o', md).value.trim() || 'Enviado pelo chat'), anexo: { nome: m.arq.nome, tipo: m.arq.tipo, data: m.arq.data } }, status: 'pendente', criadoEm: new Date().toISOString(), origem: 'chat' };
+      S.data.solic.push(s); m.atestSolic = s.id; save('solic'); save('chat'); audit(`Transformou um anexo do chat em atestado de ${c.nome}`); closeModal(); decidirSolic(s, () => go('chat')); } });
+}
+const RESP_PADRAO = ['Olá, {nome}! Seu holerite já está no portal, em Holerites.', 'Oi, {nome}! Envie o atestado pelo portal, em Atestados e ocorrências > Enviar atestado, para ele abonar a falta.', 'Recebemos, {nome}. Vamos verificar e respondemos ainda hoje.', '{nome}, há documentos esperando a sua assinatura no portal. Toque em Aceito para assinar.', 'Seu pedido foi aprovado, {nome}.'];
+const respostasProntas = () => (S.data.config.respostas && S.data.config.respostas.length ? S.data.config.respostas : RESP_PADRAO);
+function modalRespostas(sel, campo) {
+  const des = m => { const l = respostasProntas(); $('#rp-l', m).innerHTML = l.map((t, i) => `<li><button class="btn ghost sm" data-rpu="${i}" style="flex:1;text-align:left;white-space:normal;justify-content:flex-start">${esc(t)}</button><button class="btn ghost sm" data-rpx="${i}" aria-label="Apagar esta resposta" title="Apagar" style="color:var(--bad)">×</button></li>`).join('');
+    $$('[data-rpu]', m).forEach(b => b.onclick = () => { const c = colabById(sel) || {}; campo.value = l[+b.dataset.rpu].replace(/\{nome\}/g, String(c.nome || '').split(' ')[0]); closeModal(); campo.focus(); });
+    $$('[data-rpx]', m).forEach(b => b.onclick = () => { S.data.config.respostas = l.filter((_, i) => i !== +b.dataset.rpx); save('config'); des(m); }); };
+  modal('Respostas prontas', `<ul class="list" id="rp-l"></ul><div class="row" style="flex-wrap:nowrap;margin-top:10px"><input class="inp" id="rp-n" placeholder="Nova resposta (use {nome} para o primeiro nome)" maxlength="400"><button class="btn sec" id="rp-a">Salvar</button></div>`,
+    { onMount: m => { des(m); $('#rp-a', m).onclick = () => { const t = $('#rp-n', m).value.trim(); if (!t) return; S.data.config.respostas = [...respostasProntas(), t]; save('config'); $('#rp-n', m).value = ''; des(m); }; } });
+}
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-atc]'); if (b) atestadoDoChat(b.dataset.atc); });
+function lembretesAssinatura() {
+  if (!S.tenant || !S.data || !S.data.colab || !podeEditar() || S.data.config.lembretes === false) return; const agora = Date.now(), D3 = 3 * 864e5, pend = {}; let mud = false;
+  const vence = x => { if (!x.lembreteEm) return true; return agora - Date.parse(x.lembreteEm) >= D3; };
+  S.data.docs.filter(d => d.status === 'pendente' && d.requer !== false && d.enviadoEm && agora - Date.parse(d.enviadoEm) >= D3 && (d.lembretes || 0) < 3 && vence(d)).forEach(d => { (pend[d.colabId] = pend[d.colabId] || []).push(['d', d, d.titulo]); });
+  S.data.holerites.forEach(h => { if (!h.publicadoEm) { h.publicadoEm = new Date().toISOString(); mud = true; return; } const assin = S.data.assin.some(a => a.tipo === 'holerite' && a.colabId === h.colabId && a.ref === h.comp && (a.versao || 1) === (h.versao || 1));
+    if (!assin && agora - Date.parse(h.publicadoEm) >= D3 && (h.lembretes || 0) < 3 && vence(h)) (pend[h.colabId] = pend[h.colabId] || []).push(['h', h, `holerite de ${mesNome(h.comp)}`]); });
+  Object.entries(pend).forEach(([cid, l]) => { const c = colabById(cid); if (!c || c.status === 'desligado' || !c.portal || !c.portal.ativo) return;
+    S.data.chat.push({ id: uid(), colabId: cid, de: 'rh', texto: `Olá, ${c.nome.split(' ')[0]}! Lembrete: ${l.length === 1 ? 'falta assinar' : 'faltam assinar'} no portal: ${l.map(x => x[2]).join('; ')}. Toque em Aceito em cada um. Se não concordar, use Recuso e explique.`, em: new Date().toISOString(), por: 'Lembrete automático', lido: false });
+    l.forEach(([k, x]) => { x.lembreteEm = new Date().toISOString(); x.lembretes = (x.lembretes || 0) + 1; }); mud = true; audit(`Lembrete automático de assinatura enviado a ${c.nome} (${l.length} item(ns))`); });
+  if (mud) { save('docs'); save('holerites'); save('chat'); }
+}
+setTimeout(() => { try { lembretesAssinatura(); } catch (e) { } }, 8000); setInterval(() => { try { lembretesAssinatura(); } catch (e) { } }, 3600000);
 
 /* ---------- IA no chat do RH: sugere a resposta com os dados do funcionário ---------- */
 function contextoColabIA(c) {
@@ -3500,9 +3539,10 @@ function vPortal(el, aba = S.portalAba || 'solic', solo = false) {
   const re = () => { vPortal(el, aba, solo); atualizarBadge(); };
 
   if (aba === 'solic') {
+    const qs = normBusca(S.solicBusca);
     const f = S.portalFiltro || 'pendente';
-    const l = S.data.solic.filter(s => f === 'todas' || s.status === f).sort((a, b) => (f === 'pendente' ? a.criadoEm.localeCompare(b.criadoEm) : b.criadoEm.localeCompare(a.criadoEm)));
-    pt.innerHTML = `<div class="row" style="margin-bottom:14px"><select class="inp" id="ps-f" style="width:auto" aria-label="Situação">${opts([['pendente', 'Aguardando decisão'], ['aprovada', 'Aprovadas'], ['recusada', 'Recusadas'], ['todas', 'Todas']], f)}</select></div>
+    const l = S.data.solic.filter(s => f === 'todas' || s.status === f).filter(s => !qs || normBusca(`${nome(s.colabId)} ${TIPOS_SOLIC[s.tipo] || s.tipo} ${resumoSolic(s)}`).includes(qs)).sort((a, b) => (f === 'pendente' ? a.criadoEm.localeCompare(b.criadoEm) : b.criadoEm.localeCompare(a.criadoEm)));
+    pt.innerHTML = `<div class="row" style="margin-bottom:14px"><select class="inp" id="ps-f" style="width:auto" aria-label="Situação">${opts([['pendente', 'Aguardando decisão'], ['aprovada', 'Aprovadas'], ['recusada', 'Recusadas'], ['todas', 'Todas']], f)}</select><input class="inp" id="ps-q" placeholder="Buscar por nome, tipo ou detalhe" value="${esc(S.solicBusca || '')}" style="max-width:340px"></div>
       ${l.length ? `<div class="tbl-wrap"><table><thead><tr><th>Pedido em</th><th>Colaborador</th><th>Tipo</th><th>Detalhes</th><th>Situação</th><th></th></tr></thead><tbody>${l.map(s => `<tr>
         <td style="white-space:nowrap">${new Date(s.criadoEm).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</td><td><b>${nome(s.colabId)}</b></td><td>${TIPOS_SOLIC[s.tipo]}</td>
         <td>${esc(resumoSolic(s))}${s.resposta ? `<div class="hint">Resposta: ${esc(s.resposta)}</div>` : ''}</td>
@@ -3619,19 +3659,21 @@ function vPortal(el, aba = S.portalAba || 'solic', solo = false) {
     const conv = [...new Set(S.data.chat.map(m => m.colabId))].map(id => { const ms = S.data.chat.filter(m => m.colabId === id); return { id, ult: ms.reduce((a, b) => a.em > b.em ? a : b), nl: ms.filter(m => m.de === 'colab' && !m.lido).length }; }).sort((a, b) => b.ult.em.localeCompare(a.ult.em));
     const sel = S.chatColab && colabById(S.chatColab) ? S.chatColab : (conv[0] || {}).id;
     const outros = ativos().filter(c => c.portal && c.portal.ativo && !conv.some(x => x.id === c.id));
-    pt.innerHTML = `<div class="chat-rh"><div class="cl">${conv.map(x => `<button data-cc="${x.id}" class="${x.id === sel ? 'on' : ''}"><div class="av">${iniciais((colabById(x.id) || {}).nome)}</div><div style="flex:1;min-width:0"><b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nome(x.id)}</b><span class="hint" style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(x.ult.texto)}</span></div><span class="bdg">${x.nl || ''}</span></button>`).join('')}
+    const q = normBusca(S.chatBusca), convV = q ? conv.filter(x => normBusca(nome(x.id)).includes(q) || S.data.chat.some(m => m.colabId === x.id && normBusca(m.texto).includes(q))) : conv;
+    pt.innerHTML = `<div class="row" style="margin-bottom:10px;gap:10px"><input class="inp" id="ch-busca" placeholder="Buscar por nome ou por qualquer mensagem" value="${esc(S.chatBusca || '')}" style="max-width:380px"><span class="sp"></span><label class="row hint" style="gap:6px"><input type="checkbox" id="ch-lemb" ${S.data.config.lembretes === false ? '' : 'checked'} ${podeEditar() ? '' : 'disabled'}> Lembrete automático de assinatura (após 3 dias)</label></div><div class="chat-rh"><div class="cl">${q && !convV.length ? '<p class="hint" style="padding:12px">Nada encontrado.</p>' : ''}${convV.map(x => `<button data-cc="${x.id}" class="${x.id === sel ? 'on' : ''}"><div class="av">${iniciais((colabById(x.id) || {}).nome)}</div><div style="flex:1;min-width:0"><b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nome(x.id)}</b><span class="hint" style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(x.ult.texto)}</span></div><span class="bdg">${x.nl || ''}</span></button>`).join('')}
         ${outros.length ? `<div style="padding:12px"><select class="inp" id="ch-new" aria-label="Iniciar conversa"><option value="">Iniciar conversa com…</option>${opts(outros.map(c => [c.id, c.nome]), '')}</select></div>` : ''}</div>
-      <div class="th">${sel ? `<div style="padding:12px 16px;border-bottom:1px solid var(--line);font-weight:700">${nome(sel)}</div><div class="msgs" id="ch-m"></div>${ed ? '<div class="row" style="padding:10px;flex-wrap:nowrap"><textarea class="inp" id="ch-t" style="min-height:44px;height:44px;resize:none" placeholder="Responder" aria-label="Mensagem"></textarea><label class="btn sec" title="Anexar arquivo ou foto" style="cursor:pointer;white-space:nowrap">Anexar<input type="file" id="ch-arq" accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx" style="display:none"></label><button class="btn sec" id="ch-ia" title="A IA escreve uma sugestão com os dados do funcionário; você revisa antes de enviar">Sugerir com IA</button><button class="btn" id="ch-e">Enviar</button></div>' : ''}` : '<div class="empty" style="margin:auto"><b>Nenhuma conversa</b>As mensagens enviadas pelo portal aparecem aqui.</div>'}</div></div>`;
+      <div class="th">${sel ? `<div style="padding:12px 16px;border-bottom:1px solid var(--line);font-weight:700">${nome(sel)}</div><div class="msgs" id="ch-m"></div>${ed ? '<div class="row" style="padding:10px;flex-wrap:nowrap"><textarea class="inp" id="ch-t" style="min-height:44px;height:44px;resize:none" placeholder="Responder" aria-label="Mensagem"></textarea><button class="btn sec" id="ch-rp" title="Respostas prontas">Respostas</button><label class="btn sec" title="Anexar arquivo ou foto" style="cursor:pointer;white-space:nowrap">Anexar<input type="file" id="ch-arq" accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx" style="display:none"></label><button class="btn sec" id="ch-ia" title="A IA escreve uma sugestão com os dados do funcionário; você revisa antes de enviar">Sugerir com IA</button><button class="btn" id="ch-e">Enviar</button></div>' : ''}` : '<div class="empty" style="margin:auto"><b>Nenhuma conversa</b>As mensagens enviadas pelo portal aparecem aqui.</div>'}</div></div>`;
     if (ed) pt.insertAdjacentHTML('afterbegin', `<label class="check-row" style="margin-bottom:10px"><input type="checkbox" id="ch-auto" ${S.data.config.chatAssistente !== false ? 'checked' : ''}> <span>Assistente automático no portal: responde na hora sobre banco de horas, férias, holerite, escala, atestados e regimento, usando os dados do próprio funcionário. O que ele não souber vem para você.</span></label>`);
     const au = $('#ch-auto', pt); if (au) au.onchange = () => { S.data.config.chatAssistente = au.checked; save('config'); audit(`${au.checked ? 'Ligou' : 'Desligou'} o assistente automático do chat`); toast(au.checked ? 'Assistente ligado.' : 'Assistente desligado.'); };
     $$('[data-cc]', pt).forEach(b => b.onclick = () => { S.chatColab = b.dataset.cc; re(); });
     const nw = $('#ch-new', pt); if (nw) nw.onchange = e => { if (e.target.value) { S.chatColab = e.target.value; S.data.chat.push({ id: uid(), colabId: e.target.value, de: 'rh', texto: 'Olá! Estou à disposição por aqui.', em: new Date().toISOString(), por: S.user.nome, lido: false }); save('chat'); re(); } };
     if (sel) {
       const box = $('#ch-m', pt), ms = S.data.chat.filter(m => m.colabId === sel).sort((a, b) => a.em.localeCompare(b.em));
-      box.innerHTML = ms.map(m => `<div class="msg ${m.de === 'rh' ? 'eu' : ''}" style="white-space:pre-line">${esc(m.texto || '')}${arqHtml(m.arq)}<small>${m.de === 'rh' ? esc(m.por || 'RH') + ' · ' : m.de === 'ia' ? 'Assistente automático · ' : ''}${new Date(m.em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}${m.de === 'rh' ? (m.lido ? ' · lida' : ' · enviada') : ''}</small></div>`).join('');
+      box.innerHTML = ms.map(m => `<div class="msg ${m.de === 'rh' ? 'eu' : ''}" style="white-space:pre-line">${esc(m.texto || '')}${arqHtml(m.arq)}${btnAtestChat(m)}<small>${m.de === 'rh' ? esc(m.por || 'RH') + ' · ' : m.de === 'ia' ? 'Assistente automático · ' : ''}${new Date(m.em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}${m.de === 'rh' ? (m.lido ? ' · lida' : ' · enviada') : ''}</small></div>`).join('');
       box.scrollTop = box.scrollHeight;
       if (ms.some(m => m.de === 'colab' && !m.lido)) { ms.forEach(m => { if (m.de === 'colab') m.lido = true; }); save('chat'); atualizarBadge(); }
       const env = () => { const t = $('#ch-t', pt); const v = t.value.trim(); if (!v) return; S.chatColab = sel; S.data.chat.push({ id: uid(), colabId: sel, de: 'rh', texto: v.slice(0, 2000), em: new Date().toISOString(), por: S.user.nome, lido: false }); save('chat'); re(); setTimeout(() => { const n = $('#ch-t'); if (n) n.focus(); }, 0); };
+      const rpb = $('#ch-rp', pt); if (rpb) rpb.onclick = () => modalRespostas(sel, $('#ch-t', pt));
       const fa = $('#ch-arq', pt); if (fa) fa.onchange = async () => { const f = fa.files[0]; if (!f) return; try { const a = await lerAnexoChat(f), t = $('#ch-t', pt); S.chatColab = sel; S.data.chat.push({ id: uid(), colabId: sel, de: 'rh', texto: (t.value || '').trim().slice(0, 2000), arq: a, em: new Date().toISOString(), por: S.user.nome, lido: false }); save('chat'); audit(`Enviou um anexo no chat para ${nome(sel)}`); re(); } catch (er) { toast(er.message, true); } };
       const ia = $('#ch-ia', pt); if (ia) ia.onclick = () => sugerirRespostaIA(sel, $('#ch-t', pt), ia);
       const eb = $('#ch-e', pt); if (eb) { eb.onclick = env; $('#ch-t', pt).onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); env(); } }; }
@@ -3650,6 +3692,9 @@ function vPortal(el, aba = S.portalAba || 'solic', solo = false) {
     $$('[data-ga]', pt).forEach(b => b.onclick = async () => { await gerarAcesso(colabById(b.dataset.ga)); });
     $$('[data-bl]', pt).forEach(b => b.onclick = () => { const c = colabById(b.dataset.bl); confirmar(`Bloquear o acesso de <b>${esc(c.nome)}</b> ao portal?`, () => { bloquearPortal(c); save('colab'); audit(`Bloqueou o portal de ${c.nome}`); re(); }, 'Bloquear', true); });
   }
+  { const bq = $('#ch-busca', el); if (bq) bq.oninput = () => { S.chatBusca = bq.value; const p = bq.selectionStart; vPortal(el, 'chat', solo); const n = $('#ch-busca', el); if (n) { n.focus(); n.setSelectionRange(p, p); } };
+    const lb = $('#ch-lemb', el); if (lb) lb.onchange = () => { S.data.config.lembretes = lb.checked; save('config'); audit(`${lb.checked ? 'Ligou' : 'Desligou'} os lembretes automáticos de assinatura`); toast(lb.checked ? 'Lembretes ligados.' : 'Lembretes desligados.'); };
+    const sq = $('#ps-q', el); if (sq) sq.oninput = () => { S.solicBusca = sq.value; const p = sq.selectionStart; vPortal(el, 'solic', solo); const n = $('#ps-q', el); if (n) { n.focus(); n.setSelectionRange(p, p); } }; }
 }
 
 /* sincronização: o portal grava na mesma base; atualiza a tela do RH quando algo muda em outra aba */
