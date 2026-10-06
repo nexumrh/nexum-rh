@@ -1960,7 +1960,7 @@ new MutationObserver(() => requestAnimationFrame(aplicarSoLeitura)).observe(docu
 setInterval(() => { if (window.P && P.c && P.c.status === 'desligado' && estadoDeslig() === 'encerrado') telaEncerrado(P.c); }, 30000);
 
 /* ---------- Holerite pago: o funcionário confere no extrato ou informa divergência ---------- */
-function arqHtml(a) { if (!a || !a.data) return ''; return /^image\//.test(a.tipo || '') ? `<a href="${a.data}" target="_blank" rel="noopener" download="${esc(a.nome || 'foto.jpg')}" style="display:block;margin-top:6px"><img src="${a.data}" alt="${esc(a.nome || 'Foto')}" style="max-width:220px;max-height:220px;border-radius:8px;display:block"></a>` : `<a href="${a.data}" download="${esc(a.nome || 'arquivo')}" style="display:inline-block;margin-top:6px;font-weight:600">Anexo: ${esc(a.nome || 'arquivo')}</a>`; }
+function arqHtml(a) { if (!a || !a.data) return ''; return /^image\//.test(a.tipo || '') ? `<a href="${a.data}" target="_blank" rel="noopener" download="${esc(a.nome || 'foto.jpg')}" style="display:block;margin-top:6px"><img src="${a.data}" alt="${esc(a.nome || 'Foto')}" style="max-width:220px;max-height:220px;border-radius:8px;display:block"></a>` : `<a href="${a.data}" download="${esc(a.nome || 'arquivo')}" style="display:inline-block;margin-top:6px;font-weight:600;color:inherit;text-decoration:underline">Anexo: ${esc(a.nome || 'arquivo')}</a>`; }
 function divergenciaPag(h) {
   const liq = folhaItem(h.item).liq;
   modal(`Valor diferente · ${mesNome(h.comp)}`, `<p class="hint" style="margin-top:0">O holerite mostra líquido de <b>${brl(liq)}</b>, pago em ${fd(h.pagoEm)}. Informe o que caiu na sua conta e anexe o comprovante (foto ou PDF do extrato).</p>
@@ -1979,7 +1979,7 @@ function pagosHolerite() {
   $$('[data-hc]:not([data-pgk])', v).forEach(li => { const h = G('holerites').find(x => x.id === li.dataset.hc); if (!h || !h.pagoEm) return; li.dataset.pgk = '1'; li.style.flexWrap = 'wrap';
     const conf = G('assin').find(a => a.colabId === me() && a.tipo === 'pagamento' && a.ref === h.comp), div = G('solic').filter(s => s.colabId === me() && s.tipo === 'divergencia_pag' && (s.dados || {}).comp === h.comp).sort((a, b) => b.criadoEm.localeCompare(a.criadoEm))[0];
     const liq = folhaItem(h.item).liq; let html;
-    if (div) html = div.status === 'pendente' ? `<span class="pill warn">Divergência enviada ao RH em ${fd(div.criadoEm.slice(0, 10))}, aguardando resposta</span>` : `<div class="aviso" style="margin:0"><b>Resposta do RH sobre o pagamento:</b> ${esc(div.resposta || (div.status === 'aprovado' ? 'O RH reconheceu a diferença e vai corrigir.' : 'O RH conferiu e manteve o valor.'))}</div>`;
+    if (div) html = div.status === 'pendente' ? `<span class="pill warn">Divergência enviada ao RH em ${fd(div.criadoEm.slice(0, 10))}, aguardando resposta</span>` : `<div class="aviso" style="margin:0"><b>Resposta do RH sobre o pagamento:</b> ${esc(div.resposta || (div.status === 'aprovada' ? 'O RH reconheceu a diferença e vai corrigir.' : 'O RH conferiu e manteve o valor.'))}</div>`;
     else if (conf) html = `<span class="pill ok">Pagamento conferido por você em ${fd(conf.em.slice(0, 10))}</span>`;
     else html = `<div style="flex:1;min-width:200px"><b style="color:var(--ok)">Holerite pago em ${fd(h.pagoEm)}.</b> Confira no seu extrato bancário se caiu ${brl(liq)}.</div><button class="btn ok sm" data-pgc="${h.id}">Conferi, está certo</button><button class="btn sec sm" data-pgd="${h.id}">Valor diferente</button>`;
     li.insertAdjacentHTML('beforeend', `<div class="row" style="flex-basis:100%;gap:8px;margin-top:8px;align-items:center">${html}</div>`);
@@ -2272,7 +2272,7 @@ function vPesq(el) {
 
 /* ---------- Chat ---------- */
 function vChat(el) {
-  el.innerHTML = `<div class="chat"><div class="msgs" id="ch-m" aria-live="polite"></div><div class="chat-in"><textarea class="inp" id="ch-t" placeholder="Escreva para o RH" aria-label="Mensagem"></textarea><button class="btn" id="ch-e">Enviar</button></div></div>`;
+  el.innerHTML = `<div class="chat"><div class="msgs" id="ch-m" aria-live="polite"></div><div class="chat-in"><textarea class="inp" id="ch-t" placeholder="Escreva para o RH" aria-label="Mensagem"></textarea><label class="btn sec" title="Anexar foto ou PDF" aria-label="Anexar foto ou PDF" style="cursor:pointer;padding:0 12px;flex:0 0 auto;display:flex;align-items:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg><input type="file" id="ch-arqp" accept="image/*,application/pdf" style="display:none"></label><button class="btn" id="ch-e">Enviar</button></div></div>`;
   renderThread();
   const enviar = () => { const t = $('#ch-t'); const v = t.value.trim(); if (!v) return; const liga = P.cfg.chatAssistente !== false, r = liga ? assistente(v) : null;
     const repassa = !r || r.startsWith('Certo! Encaminhei'); mut('chat', l => l.push({ id: uid(), colabId: me(), de: 'colab', texto: v.slice(0, 2000), em: new Date().toISOString(), lido: !repassa })); t.value = ''; renderThread(); t.focus();
@@ -2281,6 +2281,9 @@ function vChat(el) {
     if (resp) setTimeout(() => { mut('chat', l => l.push({ id: uid(), colabId: me(), de: 'ia', texto: resp, em: new Date().toISOString(), lido: true })); renderThread(); }, 500); };
   $('#ch-e', el).onclick = enviar;
   $('#ch-t', el).onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviar(); } };
+  const fa = $('#ch-arqp'); if (fa) fa.onchange = async () => { const f = fa.files[0]; if (!f) return; let data; try { data = await lerArquivo(f); } catch (er) { fa.value = ''; return toast(String(er.message || er), true); }
+    const t = $('#ch-t'), pdf = f.type === 'application/pdf'; mut('chat', l => l.push({ id: uid(), colabId: me(), de: 'colab', texto: (t.value || '').trim().slice(0, 2000), arq: { nome: pdf ? f.name : f.name.replace(/\.\w+$/, '') + '.jpg', tipo: pdf ? 'application/pdf' : 'image/jpeg', data }, em: new Date().toISOString(), lido: false }));
+    t.value = ''; fa.value = ''; renderThread(); badges(); toast('Arquivo enviado ao RH.'); };
 }
 function renderThread() {
   const box = $('#ch-m'); if (!box) return;
