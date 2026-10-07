@@ -321,7 +321,7 @@ const FB = {
     if (!FB.aux) { FB.aux = firebase.initializeApp(FIREBASE_CONFIG, 'nexum-aux').auth(); await FB.aux.setPersistence(firebase.auth.Auth.Persistence.NONE); }
     const cr = await FB.aux.createUserWithEmailAndPassword(email, senha); const id = cr.user.uid; await FB.aux.signOut(); return id;
   },
-  tenant(s) { const x = s.data(); return { id: s.id, nome: x.nome, cnpj: x.cnpj || '', plano: x.plano, trial: !!x.trial, criadoEm: x.criadoEm, expira: iso(x.expiraTs.toDate()) }; },
+  tenant(s) { const x = s.data(); return { id: s.id, nome: x.nome, cnpj: x.cnpj || '', plano: x.plano, trial: !!x.trial, bloqueado: !!x.bloqueado, criadoEm: x.criadoEm, expira: iso(addD(x.expiraTs.toDate(), -1)) }; },
   emailColab: (tid, cpf, v) => `c${cpf}.v${v}.${tid}@colab.nexum.app`,
   falhou(e) { console.error('[NEXUM]', e); toast(FB.erro(e), true); },
   erro(e) {
@@ -645,7 +645,7 @@ function renderLogin() {
     }
     const t = Store.tenants().find(x => x.id === d.cod.toLowerCase());
     if (!t) return toast('Código da empresa não encontrado.', true);
-    if (diffD(hoje(), pd(t.expira)) < 0) return toast('Portal indisponível no momento. Procure o RH da empresa.', true);
+    if (estagioLic(t) === 'bloqueada') return telaPortalIndisp();
     const dig = d.cpf.replace(/\D/g, '');
     const c = Store.get(t.id, 'colab', []).find(x => (x.cpf || '').replace(/\D/g, '') === dig);
     if (c && c.status === 'desligado' && (!c.portal || !c.portal.ativo || !acessoDesligOk(c))) return telaEncerrado(c); if (!c || !c.portal || !c.portal.ativo || !acessoDesligOk(c)) return toast('Este CPF não tem acesso liberado. Procure o RH.', true);
@@ -655,7 +655,7 @@ function renderLogin() {
   };
 }
 function entrar(t, c) {
-  P.t = t; P.c = c; P.cfg = G('config');
+  P.t = t; P.c = c; P.cfg = G('config'); if (licPortal() === 'bloqueada') return telaPortalIndisp();
   sessionStorage.setItem('nexum:psess', JSON.stringify({ t: t.id, c: c.id }));
   let trocar;
   if (FB_ON) mut('acessos', l => { const a = l.find(y => y.colabId === c.id); if (a) { a.ultimoAcesso = new Date().toISOString(); trocar = a.trocar; } });
@@ -670,7 +670,7 @@ async function fbEntrarPortal(user) {
     const m = await FB.db.doc(`users/${user.uid}`).get(), u = m.exists ? m.data() : null;
     if (!u || u.tipo !== 'colab' || u.ativo === false) { await FB.auth.signOut(); return toast('Este acesso não está ativo. Procure o RH.', true); }
     const t = FB.tenant(await FB.db.doc(`tenants/${u.tenantId}`).get());
-    if (diffD(hoje(), pd(t.expira)) < 0) { await FB.auth.signOut(); return toast('Portal indisponível no momento. Procure o RH da empresa.', true); }
+    if (estagioLic(t) === 'bloqueada') { await FB.auth.signOut(); return telaPortalIndisp(); }
     await FB.abrir(t.id, ['colab', 'config', ...FB.LIVRES, ...FB.PROPRIOS, 'convites', 'vagas'], { colabId: u.colabId });
     const c = FB.get('colab', [])[0];
     if (!c || !acessoDesligOk(c) || !c.portal || !c.portal.ativo) { FB.fechar(); await FB.auth.signOut(); return c && c.status === 'desligado' ? telaEncerrado(c) : toast('Seu acesso ao portal foi encerrado. Procure o RH.', true); }
@@ -1947,14 +1947,14 @@ function avisoDeslig(el) {
 }
 const RO_OK = /baixar|imprimir|pdf|^ver\b|abrir|voltar|fechar|cancelar|detalhes|entendi|^‹/i, ehRescisao = t => /rescis|trct|desligamento|dispensa|aviso pr[eé]vio|demiss|não prorroga/i.test(t || '');
 function aplicarSoLeitura() {
-  if (estadoDeslig() !== 'leitura') return;
+  if (estadoDeslig() !== 'leitura' && licPortal() !== 'leitura') return;
   $$('#view button, #view .btn, .modal button, .modal .btn').forEach(x => { if (x.dataset.ro) return; x.dataset.ro = '1';
     if (x.closest('.tabs') || x.closest('#av72') || x.matches('[data-close]')) return; const dk = x.dataset.ac || x.dataset.rc || '';
     if (dk.startsWith('doc|')) { const d = G('docs').find(y => y.id === dk.slice(4)); if (d && ehRescisao(d.titulo)) return; }
     const md = x.closest('.modal'); if (md && ehRescisao((md.querySelector('h2,h3') || {}).innerText)) return;
     if (!RO_OK.test((x.innerText || x.getAttribute('aria-label') || '').trim())) x.style.display = 'none'; });
-  const ch = $('#ch-e'); if (ch && !$('#ch-bloq')) { const rw = ch.parentElement; rw.style.display = 'none'; rw.insertAdjacentHTML('afterend', '<p class="hint" id="ch-bloq" style="text-align:center;margin:10px 0 0">Seu contrato foi encerrado. Por aqui, só o RH envia mensagens.</p>'); }
-  const pc = $('#pc-h'); if (pc && !$('#pc-fim')) pc.parentElement.insertAdjacentHTML('beforeend', '<p class="hint" id="pc-fim" style="text-align:center">O registro de ponto foi encerrado junto com o contrato.</p>');
+  const ch = $('#ch-e'); if (ch && !$('#ch-bloq')) { const rw = ch.parentElement; rw.style.display = 'none'; rw.insertAdjacentHTML('afterend', (estadoDeslig() === 'leitura' ? '<p class="hint" id="ch-bloq" style="text-align:center;margin:10px 0 0">Seu contrato foi encerrado. Por aqui, só o RH envia mensagens.</p>' : '<p class="hint" id="ch-bloq" style="text-align:center;margin:10px 0 0">O envio de mensagens está suspenso temporariamente. Procure o RH.</p>')); }
+  const pc = $('#pc-h'); if (pc && !$('#pc-fim')) pc.parentElement.insertAdjacentHTML('beforeend', (estadoDeslig() === 'leitura' ? '<p class="hint" id="pc-fim" style="text-align:center">O registro de ponto foi encerrado junto com o contrato.</p>' : '<p class="hint" id="pc-fim" style="text-align:center">O registro de ponto está suspenso temporariamente. Procure o RH.</p>'));
 }
 new MutationObserver(() => requestAnimationFrame(aplicarSoLeitura)).observe(document.documentElement, { childList: true, subtree: true });
 setInterval(() => { if (window.P && P.c && P.c.status === 'desligado' && estadoDeslig() === 'encerrado') telaEncerrado(P.c); }, 30000);
@@ -1987,6 +1987,17 @@ function pagosHolerite() {
     const d = $(`[data-pgd="${h.id}"]`, li); if (d) d.onclick = e => { e.stopPropagation(); divergenciaPag(h); }; });
 }
 new MutationObserver(() => requestAnimationFrame(pagosHolerite)).observe(document.documentElement, { childList: true, subtree: true });
+
+/* ---------- Licença da empresa sem pagamento: portal só leitura (6º ao 15º dia) e indisponível (16º em diante) ---------- */
+function estagioLic(t) { if (t && t.bloqueado) return 'bloqueada'; if (!t || !t.expira) return 'ok'; const d = diffD(hoje(), pd(t.expira)), tol = t.trial ? 0 : 5; if (d >= -tol) return 'ok'; return d >= -15 ? 'leitura' : 'bloqueada'; }
+function licPortal() { return estagioLic(P && P.t); }
+function telaPortalIndisp() {
+  document.body.innerHTML = `<main style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#F3F2F7"><section class="panel" style="max-width:440px;text-align:center;padding:32px 28px"><h1 style="font-size:22px;margin:0 0 10px">Portal temporariamente indisponível</h1>
+    <p style="margin:0 0 8px">O acesso da sua empresa ao Portal do Colaborador está suspenso no momento.</p><p class="hint" style="margin:0 0 20px">Procure o RH da empresa. Seus registros continuam guardados.</p><button class="btn" onclick="location.reload()">Tentar de novo</button></section></main>`;
+}
+function avisoLicPortal() { const v = $('#view'); if (!v || licPortal() !== 'leitura' || $('#lic-av', v)) return; v.insertAdjacentHTML('afterbegin', '<section class="panel" id="lic-av" style="border-color:var(--warn);background:var(--warn-s)"><b>Registro de ponto e pedidos suspensos temporariamente.</b><div class="hint">Você ainda pode consultar holerites e documentos. Procure o RH da empresa.</div></section>'); }
+new MutationObserver(() => requestAnimationFrame(avisoLicPortal)).observe(document.documentElement, { childList: true, subtree: true });
+setInterval(() => { if (window.P && P.c && licPortal() === 'bloqueada') telaPortalIndisp(); }, 60000);
 
 /* ---------- Justificar o ponto ---------- */
 const MOTIVOS_JUST = [['esqueci', 'Esqueci de bater o ponto'], ['atestado', 'Atestado ou consulta médica'], ['transporte', 'Problema no transporte'], ['familia', 'Motivo familiar ou pessoal'], ['legal', 'Falta legal (doação de sangue, alistamento, etc.)'], ['outro', 'Outro motivo']];
