@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -241,6 +241,61 @@ tfoot td{font-weight:700;background:#FAFAFC;border-top:1px solid var(--line)}
 .cam-acao{align-self:center}
 @media (prefers-reduced-motion:reduce){.cam-oval{transition:none}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* ===== Tela de entrada do Portal do Colaborador ===== */
+.lx{min-height:100vh;min-height:100dvh;display:grid;grid-template-columns:1.15fr minmax(380px,.85fr);background:#040E2B;color:#fff;position:relative;overflow:hidden;font-family:var(--f)}
+.lx-fundo{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.lx-fundo i{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55}
+.lx-fundo .l1{width:520px;height:520px;left:-120px;top:-140px;background:#1D4FD8;animation:lxa 18s ease-in-out infinite alternate}
+.lx-fundo .l2{width:460px;height:460px;left:34%;bottom:-200px;background:#0B3AA8;animation:lxb 22s ease-in-out infinite alternate}
+.lx-fundo .l3{width:380px;height:380px;right:-120px;top:20%;background:#1E6BFF;opacity:.35;animation:lxa 26s ease-in-out infinite alternate-reverse}
+.lx-fundo b{position:absolute;height:2px;width:46vw;background:linear-gradient(90deg,transparent,rgba(80,160,255,.9),transparent);transform:rotate(-38deg);opacity:.0;animation:lxfeixe 9s ease-in-out infinite}
+.lx-fundo .f1{left:-10vw;top:12%}.lx-fundo .f2{right:-14vw;bottom:18%;animation-delay:4.5s}
+@keyframes lxa{to{transform:translate(90px,70px) scale(1.08)}}@keyframes lxb{to{transform:translate(-80px,-60px) scale(1.1)}}
+@keyframes lxfeixe{0%{opacity:0;translate:-30vw 18vh}35%{opacity:.75}70%{opacity:0;translate:30vw -18vh}100%{opacity:0}}
+#lx-rede{position:absolute;inset:0;width:100%;height:100%;opacity:.55}
+.lx-esq{position:relative;z-index:1;padding:clamp(36px,6vw,84px) clamp(28px,5vw,80px);display:flex;flex-direction:column;justify-content:center}
+.lx-marca{display:inline-flex;align-items:center;gap:14px;position:relative;line-height:1}.lx-marca>svg{width:calc(78px * var(--s,1));height:auto}
+.lx-marca .lw{font-family:'Montserrat','Onest',sans-serif;font-weight:800;font-size:calc(40px * var(--s,1));letter-spacing:-.01em;color:#fff}
+.lx-marca .lxx{background:linear-gradient(to top right,currentColor 0 52%,#2F8CFF 52% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.lx-marca .lb{width:2px;height:calc(40px * var(--s,1));background:#2F8CFF}.lx-marca .lr{font-family:'Montserrat','Onest',sans-serif;font-weight:700;font-size:calc(38px * var(--s,1));color:#fff}
+.lx-marca.esc .lw,.lx-marca.esc .lr{color:#0E1A4A}
+.lx-orb{position:absolute;left:calc(46px * var(--s,1));top:calc(-30px * var(--s,1));width:calc(74px * var(--s,1));height:calc(34px * var(--s,1));pointer-events:none}
+.lx-orb .ln{position:absolute;left:0;bottom:0;width:100%;height:2px;background:linear-gradient(90deg,#2F8CFF,#9CC8FF);transform-origin:left bottom;transform:rotate(-24deg);border-radius:2px}
+.lx-orb .pt{position:absolute;right:-4px;top:-2px;width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(156,200,255,.25);animation:lxpulso 2.6s ease-in-out infinite}
+.lx-orb .pt2{position:absolute;left:-3px;bottom:-4px;width:9px;height:9px;border-radius:50%;background:#2F8CFF}
+@keyframes lxpulso{50%{box-shadow:0 0 0 9px rgba(156,200,255,0)}}
+.lx-tag{font-size:12.5px;letter-spacing:.42em;color:rgba(255,255,255,.82);margin:22px 0 0;font-weight:500}
+.lx-esq h1{font-size:clamp(30px,3.3vw,46px);font-weight:500;line-height:1.12;margin:48px 0 0;color:#fff;letter-spacing:-.015em}
+.lx-esq h1 span{display:block;font-weight:800;color:#2F8CFF;background:linear-gradient(90deg,#2F8CFF,#7DB8FF);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.lx-esq .lx-txt{font-size:18px;color:rgba(255,255,255,.86);max-width:44ch;margin:18px 0 30px;line-height:1.5}
+.lx-feat{display:grid;grid-template-columns:repeat(2,minmax(0,280px));gap:22px 34px}
+.lx-feat div{display:flex;gap:14px;align-items:flex-start;opacity:0;animation:lxsobe .6s ease-out forwards}
+.lx-feat div:nth-child(2){animation-delay:.08s}.lx-feat div:nth-child(3){animation-delay:.16s}.lx-feat div:nth-child(4){animation-delay:.24s}.lx-feat div:nth-child(5){animation-delay:.32s}.lx-feat div:nth-child(6){animation-delay:.4s}
+.lx-feat .ic{flex:0 0 50px;height:50px;border:1.5px solid #2F7CF6;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#5AA2FF;background:rgba(31,95,232,.08)}
+.lx-feat .ic svg{width:26px;height:26px}.lx-feat b{display:block;font-size:16px;color:#fff}.lx-feat span{font-size:14.5px;color:rgba(255,255,255,.75);line-height:1.35}
+@keyframes lxsobe{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.lx-dir{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;padding:32px clamp(18px,4vw,64px)}
+.lx-card{width:100%;max-width:520px;background:linear-gradient(160deg,#FFFFFF 0%,#F2F5FC 100%);color:#0E1A4A;border-radius:22px;padding:clamp(28px,4vw,48px);box-shadow:0 40px 90px rgba(0,8,40,.55);animation:lxsobe .7s .1s ease-out both}
+.lx-card .lx-sub{font-size:11.5px;letter-spacing:.42em;color:#3C5BB0;margin:10px 0 0 calc(70px * var(--s,1));font-weight:600}
+.lx-card h2{font-size:30px;font-weight:800;margin:30px 0 6px;color:#0E1A4A;letter-spacing:-.02em}
+.lx-card .lx-p{color:#3B5BA8;font-size:16.5px;margin:0 0 24px;line-height:1.45}
+.lx-in{position:relative;margin-bottom:14px}
+.lx-in label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.lx-in svg.ic{position:absolute;left:18px;top:50%;transform:translateY(-50%);width:22px;height:22px;color:#2D3A64;pointer-events:none}
+.lx-in .inp{height:58px;border-radius:10px;border:1.5px solid #D3DAEA;background:#fff;padding:0 52px 0 54px;font-size:16px;color:#0E1A4A;width:100%}
+.lx-in .inp:focus{outline:0;border-color:#1F5FE8;box-shadow:0 0 0 4px rgba(31,95,232,.14)}
+.lx-olho{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:42px;height:42px;border:0;background:transparent;color:#2D3A64;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.lx-olho:hover{background:#EEF2FB}
+.lx-card .check{color:#3C4566;font-size:14.5px;margin:4px 0 18px;display:flex;gap:8px;align-items:center}
+.lx-ent{width:100%;height:58px;border:0;border-radius:10px;background:linear-gradient(90deg,#1F5FE8,#2B7BFF);color:#fff;font-family:var(--f);font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:12px;cursor:pointer;box-shadow:0 10px 24px rgba(31,95,232,.35);transition:transform .15s,box-shadow .15s}
+.lx-ent:hover{transform:translateY(-1px);box-shadow:0 14px 28px rgba(31,95,232,.42)}.lx-ent:disabled{opacity:.6;transform:none}
+.lx-ent svg{width:22px;height:22px}
+.lx-esq2{display:block;text-align:center;margin:20px 0 0;color:#1F5FE8;font-weight:700;font-size:15.5px;text-decoration:underline}
+.lx-seg{display:flex;gap:14px;align-items:flex-start;border-top:1px solid #DCE2EF;margin-top:26px;padding-top:20px;color:#4A5578;font-size:13.5px;line-height:1.45}
+.lx-seg svg{flex:0 0 30px;width:30px;height:30px;color:#2D3A64}.lx-seg a{color:#4A5578}
+:focus-visible{outline:3px solid #5AA2FF;outline-offset:2px}
+@media (max-width:980px){.lx{grid-template-columns:1fr}.lx-esq{padding:30px 22px 6px}.lx-esq h1{margin-top:26px;font-size:28px}.lx-feat{display:none}.lx-esq .lx-txt{font-size:16px;margin:12px 0 4px}.lx-dir{padding:18px 14px 28px;align-items:flex-start}.lx-esq{padding-top:46px!important}.lx-esq .lx-marca{--s:.62!important}.lx-card>.lx-marca,.lx-card>.lx-sub{display:none}.lx-tag{font-size:10.5px;letter-spacing:.32em;margin-top:16px}.lx-card h2{margin-top:22px;font-size:26px}}
+@media (prefers-reduced-motion:reduce){.lx *,.lx{animation:none!important;transition:none!important}.lx-feat div{opacity:1}#lx-rede{display:none}}
 </style>
 </head>
 <body>
@@ -615,19 +670,48 @@ function acaoDoLink() {
     setTimeout(async () => { await cadastrarRosto(false, !!(f && f.vivo !== true)); if (P.view === 'perfil') go('perfil'); }, 250); };
   esperar();
 }
+/* ---------- Logo NEXUM em vetor (N em fita) ---------- */
+function marcaNx(tam) {
+  const g = 'nx' + Math.random().toString(36).slice(2, 7);
+  return `<svg width="${tam}" height="${Math.round(tam * 0.9)}" viewBox="20 20 580 520" aria-hidden="true" style="flex:0 0 auto;filter:drop-shadow(0 6px 14px rgba(16,60,200,.35))"><defs>
+    <linearGradient id="${g}e" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2E93FF"/><stop offset=".45" stop-color="#1250D4"/><stop offset="1" stop-color="#041A52"/></linearGradient>
+    <linearGradient id="${g}d" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1E62E8"/><stop offset=".5" stop-color="#1350D2"/><stop offset="1" stop-color="#05205E"/></linearGradient>
+    <linearGradient id="${g}f" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#46ACFF"/><stop offset=".28" stop-color="#2170EE"/><stop offset=".7" stop-color="#1243BE"/><stop offset="1" stop-color="#082A84"/></linearGradient>
+    <linearGradient id="${g}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#021545" stop-opacity="0"/><stop offset="1" stop-color="#021545" stop-opacity=".55"/></linearGradient></defs>
+    <path d="M30 528V196c0-30 18-48 46-50L226 260v136z" fill="url(#${g}e)"/><path d="M226 250v146L30 528z" fill="url(#${g}s)" opacity=".7"/><path d="M404 124 578 30v330H404z" fill="url(#${g}d)"/><path d="M404 230h174v130H404z" fill="url(#${g}s)"/>
+    <path d="M36 168c8-32 42-56 78-82 26-19 50-44 74-54 22-9 44-4 60 12l316 290c16 15 16 32 2 46l-96 90c-16 15-38 15-54 0L104 166c-18-16-48-20-68 2z" fill="url(#${g}f)"/><path d="M60 140c30-34 80-74 118-100" stroke="#8FD0FF" stroke-opacity=".55" stroke-width="5" stroke-linecap="round" fill="none"/></svg>`;
+}
+const marcaPortal = (escuro, s) => `<span class="lx-marca ${escuro ? 'esc' : ''}" style="--s:${s}" role="img" aria-label="NEXUM RH"><span class="lx-orb" aria-hidden="true"><span class="ln"></span><span class="pt"></span><span class="pt2"></span></span>${marcaNx(Math.round(78 * s))}<span class="lw">NE<span class="lxx">X</span>UM</span><span class="lb"></span><span class="lr">RH</span></span>`;
+const ICL = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+function redeLogin() {
+  const c = $('#lx-rede'); if (!c || matchMedia('(prefers-reduced-motion: reduce)').matches) return; const x = c.getContext('2d'); let W, H, pts;
+  const ini = () => { W = c.width = c.offsetWidth * devicePixelRatio; H = c.height = c.offsetHeight * devicePixelRatio; pts = Array.from({ length: Math.min(60, Math.round(W * H / 26000)) }, () => ({ x: Math.random() * W, y: Math.random() * H, vx: (Math.random() - .5) * .25 * devicePixelRatio, vy: (Math.random() - .5) * .25 * devicePixelRatio })); };
+  ini(); addEventListener('resize', ini);
+  const passo = () => { if (!document.contains(c)) return; x.clearRect(0, 0, W, H); const L = 140 * devicePixelRatio;
+    pts.forEach(p => { p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > W) p.vx *= -1; if (p.y < 0 || p.y > H) p.vy *= -1; });
+    for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) { const a = pts[i], b = pts[j], d = Math.hypot(a.x - b.x, a.y - b.y); if (d < L) { x.strokeStyle = `rgba(90,162,255,${(1 - d / L) * .35})`; x.lineWidth = devicePixelRatio; x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(b.x, b.y); x.stroke(); } }
+    pts.forEach(p => { x.fillStyle = 'rgba(156,200,255,.8)'; x.beginPath(); x.arc(p.x, p.y, 1.6 * devicePixelRatio, 0, 7); x.fill(); }); requestAnimationFrame(passo); };
+  requestAnimationFrame(passo);
+}
+
 function renderLogin() {
   const lembr = JSON.parse(localStorage.getItem('nexum:plembrar') || '{}');
-  $('#root').innerHTML = `<div class="login">
-    <div class="login-top"><div class="brand"><img class="marca" src="${LOGO_MARCA}" alt="NEXUM"><span class="brand-sub">Portal do Colaborador</span></div>
-      <h1>Olá! Bom te ver por aqui.</h1><p>Ponto, holerites, férias e documentos na palma da mão.</p></div>
-    <div class="login-card"><form id="lg" novalidate>
-      <div class="fld"><label for="lg-cod">Código da empresa</label><input class="inp" id="lg-cod" name="cod" value="${esc(URL_EMPRESA || lembr.cod || '')}" autocapitalize="off" autocomplete="organization"></div>
-      <div class="fld"><label for="lg-cpf">CPF</label><input class="inp" id="lg-cpf" name="cpf" inputmode="numeric" value="${esc(lembr.cpf || '')}" autocomplete="username"></div>
-      <div class="fld"><label for="lg-s">Senha</label><input class="inp" id="lg-s" name="senha" type="password" autocomplete="current-password"></div>
+  const F = [['Holerite', 'Consulte e assine seus holerites', '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>'], ['Ponto', 'Registre e acompanhe seu ponto', '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'], ['Faltas e atestados', 'Justifique faltas e envie atestados', '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/><circle cx="16" cy="16" r="3"/><path d="M16 15v1.2l.8.6"/>'], ['Dados cadastrais', 'Mantenha seus dados atualizados', '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'], ['Documentos', 'Contratos e documentos importantes', '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 12h6M9 16h6"/>'], ['Comunicados', 'Fique por dentro de tudo', '<path d="M21 12a8.5 8.5 0 0 1-12.4 7.6L3 21l1.4-5.2A8.5 8.5 0 1 1 21 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/>']];
+  $('#root').innerHTML = `<main class="lx"><div class="lx-fundo" aria-hidden="true"><i class="l1"></i><i class="l2"></i><i class="l3"></i><b class="f1"></b><b class="f2"></b><canvas id="lx-rede"></canvas></div>
+    <section class="lx-esq">${marcaPortal(false, 1)}<p class="lx-tag">TECNOLOGIA QUE VALORIZA PESSOAS</p>
+      <h1>Bem-vindo(a) ao<span>Portal de Recursos Humanos</span></h1><p class="lx-txt">Aqui você encontra tudo o que precisa para a sua jornada na empresa, de forma simples, rápida e segura.</p>
+      <div class="lx-feat">${F.map(([t, d, ic]) => `<div><span class="ic">${ICL(ic)}</span><span><b>${t}</b><span>${d}</span></span></div>`).join('')}</div></section>
+    <section class="lx-dir"><div class="lx-card">${marcaPortal(true, .78)}<p class="lx-sub">PORTAL DO COLABORADOR</p><h2>Faça seu login</h2><p class="lx-p">Acesse sua conta para continuar no Portal de Recursos Humanos.</p>
+      <form id="lg" novalidate>
+      <div class="lx-in">${ICL('<path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16"/><path d="M15 9h4a1 1 0 0 1 1 1v11"/><path d="M8 8h3M8 12h3M8 16h3M2.5 21h19"/>').replace('<svg', '<svg class="ic"')}<label for="lg-cod">Código da empresa</label><input class="inp" id="lg-cod" name="cod" placeholder="Código da empresa" value="${esc(URL_EMPRESA || lembr.cod || '')}" autocapitalize="off" autocomplete="organization"></div>
+      <div class="lx-in">${ICL('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>').replace('<svg', '<svg class="ic"')}<label for="lg-cpf">CPF</label><input class="inp" id="lg-cpf" name="cpf" placeholder="CPF" inputmode="numeric" value="${esc(lembr.cpf || '')}" autocomplete="username"></div>
+      <div class="lx-in">${ICL('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>').replace('<svg', '<svg class="ic"')}<label for="lg-s">Senha</label><input class="inp" id="lg-s" name="senha" type="password" placeholder="Senha" autocomplete="current-password"><button type="button" class="lx-olho" id="lg-olho" aria-label="Mostrar senha">${ICL('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>')}</button></div>
       <label class="check"><input type="checkbox" name="lembrar" ${lembr.cod ? 'checked' : ''}> Lembrar empresa e CPF neste aparelho</label>
-      <button class="btn block" type="submit">Entrar</button>
-      <p class="hint" style="text-align:center;margin-top:18px"><a href="#" id="lg-esq">Esqueci minha senha</a> · Primeiro acesso? Peça ao RH.<br><a href="termos.html" target="_blank" rel="noopener">Termos de uso</a> · <a href="privacidade.html" target="_blank" rel="noopener">Política de privacidade</a></p>
-    </form></div></div>`;
+      <button class="lx-ent" type="submit">${ICL('<path d="M5 12h14M13 6l6 6-6 6"/>')}Entrar</button>
+      <a href="#" id="lg-esq" class="lx-esq2">Esqueceu sua senha?</a>
+      <div class="lx-seg">${ICL('<path d="M12 3 4 6v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/>')}<span>Seus dados estão seguros: acesso individual com senha e conexão protegida. Primeiro acesso? Peça a senha ao RH.<br><a href="termos.html" target="_blank" rel="noopener">Termos de uso</a> · <a href="privacidade.html" target="_blank" rel="noopener">Política de privacidade</a></span></div>
+    </form></div></section></main>`;
+  { const o = $('#lg-olho'); o.onclick = () => { const i = $('#lg-s'), v = i.type === 'password'; i.type = v ? 'text' : 'password'; o.setAttribute('aria-label', v ? 'Esconder senha' : 'Mostrar senha'); }; } redeLogin();
   const cpf = $('#lg-cpf'); cpf.oninput = () => cpf.value = cpfFmt(cpf.value);
   $('#lg').onsubmit = async e => {
     e.preventDefault(); const d = formData(e.target);
@@ -1999,6 +2083,20 @@ function avisoLicPortal() { const v = $('#view'); if (!v || licPortal() !== 'lei
 new MutationObserver(() => requestAnimationFrame(avisoLicPortal)).observe(document.documentElement, { childList: true, subtree: true });
 setInterval(() => { if (window.P && P.c && licPortal() === 'bloqueada') telaPortalIndisp(); }, 60000);
 
+/* ---------- Mural no Início e limite do adiantamento ---------- */
+function limiteVale() { const pct = ((P.cfg && P.cfg.vale) || {}).pct ?? 40, sal = num(P.c && P.c.salario); if (!sal) return null; const mes = iso(hoje()).slice(0, 7);
+  const usado = G('solic').filter(s => s.colabId === me() && s.tipo === 'adiantamento' && s.status !== 'recusada' && (s.criadoEm || '').slice(0, 7) === mes).reduce((t, s) => t + num((s.dados || {}).valor), 0);
+  return Math.max(0, Math.round((sal * pct / 100 - usado) * 100) / 100); }
+function muralInicio() {
+  const v = $('#view'); if (!v || !P || !P.c || P.view !== 'inicio' || $('#mural', v)) return; const m = (P.cfg || {}).mural; if (!m || m.mes !== iso(hoje()).slice(0, 7)) return;
+  const dia = hoje().getDate(), aniv = m.aniv || [], casa = m.casa || []; if (!aniv.length && !casa.length) return;
+  const item = (x, txt) => `<li style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)"><span style="flex:0 0 40px;height:40px;border-radius:12px;background:${x.dia === dia ? 'var(--pri)' : 'var(--bg,#F3F2F7)'};color:${x.dia === dia ? '#fff' : 'inherit'};display:flex;align-items:center;justify-content:center;font-weight:800">${String(x.dia).padStart(2, '0')}</span><span><b>${esc(x.nome)}</b>${x.dia === dia ? ' · é hoje!' : ''}<br><span class="hint">${txt}</span></span></li>`;
+  v.insertAdjacentHTML('beforeend', `<section class="panel" id="mural"><h2>Mural de ${hoje().toLocaleDateString('pt-BR', { month: 'long' })}</h2>
+    ${aniv.length ? `<h3 style="font-size:15px;margin:10px 0 2px">Aniversariantes</h3><ul style="list-style:none;margin:0;padding:0">${aniv.map(x => item(x, 'Aniversário')).join('')}</ul>` : ''}
+    ${casa.length ? `<h3 style="font-size:15px;margin:14px 0 2px">Tempo de casa</h3><ul style="list-style:none;margin:0;padding:0">${casa.map(x => item(x, `${x.anos} ano${x.anos > 1 ? 's' : ''} de empresa`)).join('')}</ul>` : ''}</section>`);
+}
+new MutationObserver(() => requestAnimationFrame(muralInicio)).observe(document.documentElement, { childList: true, subtree: true });
+
 /* ---------- Justificar o ponto ---------- */
 const MOTIVOS_JUST = [['esqueci', 'Esqueci de bater o ponto'], ['atestado', 'Atestado ou consulta médica'], ['transporte', 'Problema no transporte'], ['familia', 'Motivo familiar ou pessoal'], ['legal', 'Falta legal (doação de sangue, alistamento, etc.)'], ['outro', 'Outro motivo']];
 function diasParaJustificar() {
@@ -2185,7 +2283,7 @@ function formSolic(el, tipo = 'ajuste_ponto') {
     segunda_via: `<div class="fld"><label for="sx-doc">Documento</label><select class="inp" id="sx-doc" name="doc">${opts(['Holerite', 'Recibo de férias', 'Contrato de trabalho', 'Informe de rendimentos', 'Outro'].map(x => [x, x]), 'Holerite')}</select></div>
       <div class="fld"><label for="sx-det">Mês ou detalhe</label><input class="inp" id="sx-det" name="detalhe"></div>`,
     declaracao: `<div class="fld full"><label for="sx-fin">Para que você precisa?</label><input class="inp" id="sx-fin" name="finalidade" placeholder="Ex.: comprovar vínculo para financiamento"></div>`,
-    adiantamento: `<div class="fld"><label for="sx-val">Valor (R$)</label><input class="inp" id="sx-val" name="valor" inputmode="decimal"></div>
+    adiantamento: `<div class="fld"><label for="sx-val">Valor (R$)</label><input class="inp" id="sx-val" name="valor" inputmode="decimal">${limiteVale() !== null ? `<span class="hint">Disponível neste mês: <b>${brl(limiteVale())}</b></span>` : ''}</div>
       <div class="fld full"><label for="sx-mot2">Motivo</label><input class="inp" id="sx-mot2" name="motivo" placeholder="Opcional"></div>`,
     outro: `<div class="fld full"><label for="sx-as">Assunto</label><input class="inp" id="sx-as" name="assunto"></div>
       <div class="fld full"><label for="sx-tx">Descreva</label><textarea class="inp" id="sx-tx" name="texto"></textarea></div>`
@@ -2203,7 +2301,7 @@ function formSolic(el, tipo = 'ajuste_ponto') {
           if (d.marc.some(x => !/^([01]\d|2[0-3]):[0-5]\d$/.test(x))) return toast('Use o formato HH:MM, por exemplo 08:05.', true);
           d.marc.sort();
         }
-        if (tipo === 'adiantamento') { d.valor = num(d.valor); if (!d.valor) return toast('Informe o valor.', true); }
+        if (tipo === 'adiantamento') { d.valor = num(d.valor); if (!d.valor) return toast('Informe o valor.', true); const lv = limiteVale(); if (lv !== null && d.valor > lv) return toast(lv ? `Neste mês você pode pedir até ${brl(lv)}.` : 'Você já atingiu o limite de adiantamento deste mês.', true); }
         if (tipo === 'outro' && !d.assunto) return toast('Informe o assunto.', true);
         novaSolic(tipo, d); closeModal(true); toast('Solicitação enviada ao RH.'); go('solic');
       };
