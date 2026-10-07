@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="NEXUM">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -346,7 +346,75 @@ html[data-theme="dark"] .doc-prev{background:#fff;color:#111}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media(max-width:820px){.top{flex-wrap:wrap;row-gap:8px;column-gap:8px}.top .menu-btn{flex:0 0 40px;width:40px!important;height:40px!important;display:flex;align-items:center;justify-content:center}.top .menu-btn svg{width:24px;height:24px}
 #t-view{flex:1 1 calc(100% - 56px);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:21px;margin:0}.top .sp,.top .sync{display:none}.top .tb{flex:0 0 auto;padding:6px 8px;font-size:12.5px}}@media(max-width:420px){.top{column-gap:5px;padding-left:12px;padding-right:12px}.top .tb{padding:5px 7px;font-size:12px}}
-@media(max-width:560px){.lista-aten li{flex-direction:column;align-items:flex-start;gap:6px}.lista-aten li .t{width:100%}}</style>
+@media(max-width:560px){.lista-aten li{flex-direction:column;align-items:flex-start;gap:6px}.lista-aten li .t{width:100%}}/* ===== Tela de entrada do Portal do Colaborador ===== */
+.lx{min-height:100vh;min-height:100dvh;display:grid;grid-template-columns:1.15fr minmax(380px,.85fr);background:#040E2B;color:#fff;position:relative;overflow:hidden;font-family:var(--f)}
+.lx-fundo{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.lx-fundo i{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55}
+.lx-fundo .l1{width:520px;height:520px;left:-120px;top:-140px;background:#1D4FD8;animation:lxa 18s ease-in-out infinite alternate}
+.lx-fundo .l2{width:460px;height:460px;left:34%;bottom:-200px;background:#0B3AA8;animation:lxb 22s ease-in-out infinite alternate}
+.lx-fundo .l3{width:380px;height:380px;right:-120px;top:20%;background:#1E6BFF;opacity:.35;animation:lxa 26s ease-in-out infinite alternate-reverse}
+.lx-fundo b{position:absolute;height:2px;width:46vw;background:linear-gradient(90deg,transparent,rgba(80,160,255,.9),transparent);transform:rotate(-38deg);opacity:.0;animation:lxfeixe 9s ease-in-out infinite}
+.lx-fundo .f1{left:-10vw;top:12%}.lx-fundo .f2{right:-14vw;bottom:18%;animation-delay:4.5s}
+@keyframes lxa{to{transform:translate(90px,70px) scale(1.08)}}@keyframes lxb{to{transform:translate(-80px,-60px) scale(1.1)}}
+@keyframes lxfeixe{0%{opacity:0;translate:-30vw 18vh}35%{opacity:.75}70%{opacity:0;translate:30vw -18vh}100%{opacity:0}}
+#lx-rede{position:absolute;inset:0;width:100%;height:100%;opacity:.55}
+.lx-esq{position:relative;z-index:1;padding:clamp(36px,6vw,84px) clamp(28px,5vw,80px);display:flex;flex-direction:column;justify-content:center}
+.lx-marca{display:inline-flex;align-items:center;gap:14px;position:relative;line-height:1}
+.lx-marca .lw{font-family:'Montserrat','Onest',sans-serif;font-weight:800;font-size:calc(40px * var(--s,1));letter-spacing:-.01em;color:#fff}
+.lx-marca .lxx{background:linear-gradient(to top right,currentColor 0 52%,#2F8CFF 52% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.lx-marca .lb{width:2px;height:calc(40px * var(--s,1));background:#2F8CFF}.lx-marca .lr{font-family:'Montserrat','Onest',sans-serif;font-weight:700;font-size:calc(38px * var(--s,1));color:#fff}
+.lx-marca.esc .lw,.lx-marca.esc .lr{color:#0E1A4A}
+.lx-orb{position:absolute;left:calc(46px * var(--s,1));top:calc(-30px * var(--s,1));width:calc(74px * var(--s,1));height:calc(34px * var(--s,1));pointer-events:none}
+.lx-orb .ln{position:absolute;left:0;bottom:0;width:100%;height:2px;background:linear-gradient(90deg,#2F8CFF,#9CC8FF);transform-origin:left bottom;transform:rotate(-24deg);border-radius:2px}
+.lx-orb .pt{position:absolute;right:-4px;top:-2px;width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(156,200,255,.25);animation:lxpulso 2.6s ease-in-out infinite}
+.lx-orb .pt2{position:absolute;left:-3px;bottom:-4px;width:9px;height:9px;border-radius:50%;background:#2F8CFF}
+@keyframes lxpulso{50%{box-shadow:0 0 0 9px rgba(156,200,255,0)}}
+.lx-tag{font-size:12.5px;letter-spacing:.42em;color:rgba(255,255,255,.82);margin:22px 0 0;font-weight:500}
+.lx-esq h1{font-size:clamp(30px,3.3vw,46px);font-weight:500;line-height:1.12;margin:48px 0 0;color:#fff;letter-spacing:-.015em}
+.lx-esq h1 span{display:block;font-weight:800;color:#2F8CFF;background:linear-gradient(90deg,#2F8CFF,#7DB8FF);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.lx-esq .lx-txt{font-size:18px;color:rgba(255,255,255,.86);max-width:44ch;margin:18px 0 30px;line-height:1.5}
+.lx-feat{display:grid;grid-template-columns:repeat(2,minmax(0,280px));gap:22px 34px}
+.lx-feat div{display:flex;gap:14px;align-items:flex-start;opacity:0;animation:lxsobe .6s ease-out forwards}
+.lx-feat div:nth-child(2){animation-delay:.08s}.lx-feat div:nth-child(3){animation-delay:.16s}.lx-feat div:nth-child(4){animation-delay:.24s}.lx-feat div:nth-child(5){animation-delay:.32s}.lx-feat div:nth-child(6){animation-delay:.4s}
+.lx-feat .ic{flex:0 0 50px;height:50px;border:1.5px solid #2F7CF6;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#5AA2FF;background:rgba(31,95,232,.08)}
+.lx-feat .ic svg{width:26px;height:26px}.lx-feat b{display:block;font-size:16px;color:#fff}.lx-feat span{font-size:14.5px;color:rgba(255,255,255,.75);line-height:1.35}
+@keyframes lxsobe{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.lx-dir{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;padding:32px clamp(18px,4vw,64px)}
+.lx-card{width:100%;max-width:520px;background:linear-gradient(160deg,#FFFFFF 0%,#F2F5FC 100%);color:#0E1A4A;border-radius:22px;padding:clamp(28px,4vw,48px);box-shadow:0 40px 90px rgba(0,8,40,.55);animation:lxsobe .7s .1s ease-out both}
+.lx-card .lx-sub{font-size:11.5px;letter-spacing:.42em;color:#3C5BB0;margin:10px 0 0 calc(70px * var(--s,1));font-weight:600}
+.lx-card h2{font-size:30px;font-weight:800;margin:30px 0 6px;color:#0E1A4A;letter-spacing:-.02em}
+.lx-card .lx-p{color:#3B5BA8;font-size:16.5px;margin:0 0 24px;line-height:1.45}
+.lx-in{position:relative;margin-bottom:14px}
+.lx-in label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.lx-in svg.ic{position:absolute;left:18px;top:50%;transform:translateY(-50%);width:22px;height:22px;color:#2D3A64;pointer-events:none}
+.lx-in .inp{height:58px;border-radius:10px;border:1.5px solid #D3DAEA;background:#fff;padding:0 52px 0 54px;font-size:16px;color:#0E1A4A;width:100%}
+.lx-in .inp:focus{outline:0;border-color:#1F5FE8;box-shadow:0 0 0 4px rgba(31,95,232,.14)}
+.lx-olho{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:42px;height:42px;border:0;background:transparent;color:#2D3A64;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.lx-olho:hover{background:#EEF2FB}
+.lx-card .check{color:#3C4566;font-size:14.5px;margin:4px 0 18px;display:flex;gap:8px;align-items:center}
+.lx-ent{width:100%;height:58px;border:0;border-radius:10px;background:linear-gradient(90deg,#1F5FE8,#2B7BFF);color:#fff;font-family:var(--f);font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:12px;cursor:pointer;box-shadow:0 10px 24px rgba(31,95,232,.35);transition:transform .15s,box-shadow .15s}
+.lx-ent:hover{transform:translateY(-1px);box-shadow:0 14px 28px rgba(31,95,232,.42)}.lx-ent:disabled{opacity:.6;transform:none}
+.lx-ent svg{width:22px;height:22px}
+.lx-esq2{display:block;text-align:center;margin:20px 0 0;color:#1F5FE8;font-weight:700;font-size:15.5px;text-decoration:underline}
+.lx-seg{display:flex;gap:14px;align-items:flex-start;border-top:1px solid #DCE2EF;margin-top:26px;padding-top:20px;color:#4A5578;font-size:13.5px;line-height:1.45}
+.lx-seg svg{flex:0 0 30px;width:30px;height:30px;color:#2D3A64}.lx-seg a{color:#4A5578}
+:focus-visible{outline:3px solid #5AA2FF;outline-offset:2px}
+@media (max-width:980px){.lx{grid-template-columns:1fr}.lx-esq{padding:30px 22px 6px}.lx-esq h1{margin-top:26px;font-size:28px}.lx-feat{display:none}.lx-esq .lx-txt{font-size:16px;margin:12px 0 4px}.lx-dir{padding:18px 14px 28px;align-items:flex-start}.lx-esq .lx-marca{--s:.7}.lx-tag{font-size:10.5px;letter-spacing:.32em;margin-top:16px}.lx-card .lx-marca{--s:.62}.lx-card h2{margin-top:22px;font-size:26px}}
+@media (prefers-reduced-motion:reduce){.lx *,.lx{animation:none!important;transition:none!important}.lx-feat div{opacity:1}#lx-rede{display:none}}
+/* abas e formulários dentro do cartão do RH */
+.lx-card .seg{display:flex;background:#E9EEF8;border-radius:12px;padding:4px;gap:4px;margin:26px 0 22px}
+.lx-card .seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:11px 10px;font-family:var(--f);font-weight:700;font-size:15px;color:#3C4566;cursor:pointer}
+.lx-card .seg button.on{background:#fff;color:#0E1A4A;box-shadow:0 2px 8px rgba(14,26,74,.12)}
+.lx-card #auth-body h2{font-size:26px!important;font-weight:800;color:#0E1A4A;margin:0 0 6px;letter-spacing:-.02em}
+.lx-card #auth-body>p.hint{color:#3B5BA8;font-size:15.5px}
+.lx-card .fld label{color:#2D3A64;font-weight:600;font-size:14px}
+.lx-card .inp{height:52px;border-radius:10px;border:1.5px solid #D3DAEA;background:#fff;color:#0E1A4A;font-size:16px}
+.lx-card .inp:focus{border-color:#1F5FE8;box-shadow:0 0 0 4px rgba(31,95,232,.14);outline:0}
+.lx-card .btn.block{height:56px;border:0;border-radius:10px;background:linear-gradient(90deg,#1F5FE8,#2B7BFF);color:#fff;font-size:17.5px;font-weight:700;box-shadow:0 10px 24px rgba(31,95,232,.35);margin-top:6px}
+.lx-card .btn.block:hover{filter:brightness(1.05)}
+.lx-card .btn.ghost{color:#1F5FE8;font-weight:700;text-decoration:underline;background:none}
+.lx-card .check,.lx-card label.row{color:#3C4566}
+</style>
 </head>
 <body>
 <div id="root"></div>
@@ -368,6 +436,7 @@ const NEXUM = {
   trialDias: 14,
   linkAssinatura: '', // cole aqui o link de pagamento (ex.: Mercado Pago)
   suporte: '45998524338', // seu WhatsApp de suporte com DDD
+  site: 'https://nexumdp.com.br/', // endereço do site de vendas (usado no link de indicação)
   planos: {
     essencial:    { nome: 'Essencial',    limite: 10,    preco: 49 },
     profissional: { nome: 'Profissional', limite: 50,    preco: 129 },
@@ -405,7 +474,8 @@ const FIREBASE_CONFIG = {
   messagingSenderId: '988792881104',
   appId: '1:988792881104:web:c0517c2b62b6e9f14603d5'
 };
-const FB_ON = !!FIREBASE_CONFIG.apiKey && typeof firebase !== 'undefined' && location.protocol !== 'file:';
+const DEMO = location.hash === '#demo';
+const FB_ON = !DEMO && !!FIREBASE_CONFIG.apiKey && typeof firebase !== 'undefined' && location.protocol !== 'file:';
 const FB = {
   tid: null, cache: {}, unsubs: [], criando: false, aux: null, escopo: null,
   PROPRIOS: ['ponto', 'ferias', 'solic', 'docs', 'metas', 'chat', 'bh', 'assin', 'holerites', 'acessos', 'faces', 'bioFalhas', 'dispositivos', 'externos', 'logins', 'ocorr', 'comissoes', 'reunioes'],
@@ -596,6 +666,49 @@ function telaBloqueio(lic) {
   const bk = $('#bq-bk'); if (bk) bk.onclick = () => fazerBackup(); $('#bq-s').onclick = sair;
 }
 
+/* ---------- Demonstração sem cadastro (#demo): empresa de exemplo só neste navegador ---------- */
+async function iniciarDemo() {
+  const ID = 'demonexum'; let t = Store.tenants().find(x => x.id === ID);
+  if (!t) {
+    t = await novoTenant({ empresa: 'Loja Exemplo (demonstração)', nome: 'Você (demonstração)', email: 'demo@nexum.app', senha: 'demo1234', cnpj: '11.222.333/0001-81', telefone: '45999990000', plano: 'profissional' }, ID);
+    const cfg = Store.get(ID, 'config', {}); cfg.passosOcultos = true; cfg.backupAuto = false; cfg.lojas = [{ id: 'L1', nome: 'Loja Centro', minimo: 2 }, { id: 'L2', nome: 'Loja Shopping', minimo: 2 }]; cfg.empresa = { ...(cfg.empresa || {}), cidade: 'Foz do Iguaçu/PR', endereco: 'Av. Brasil, 100 - Centro' }; Store.set(ID, 'config', cfg);
+    const P = [['Adriana Souza', 'Vendedora', 'L1', 2200, '1996-03-14', '2023-02-01'], ['Bruno Martins', 'Vendedor', 'L1', 2200, '1999-10-21', '2024-05-10'], ['Carla Mendes', 'Caixa', 'L1', 1900, '2001-07-03', '2025-03-03'], ['Diego Lima', 'Técnico de celulares', 'L1', 2800, '1993-10-09', '2022-10-05'], ['Elisa Rocha', 'Gerente de loja', 'L2', 3500, '1990-01-28', '2021-06-15'], ['Fábio Nunes', 'Vendedor', 'L2', 2200, '1998-12-11', '2024-11-04'], ['Gabriela Alves', 'Vendedora', 'L2', 2200, '2000-05-19', '2025-08-11'], ['Hugo Pereira', 'Estoquista', 'L2', 1900, '1997-10-30', '2023-10-02']];
+    const cpfs = ['529.982.247-25', '111.444.777-35', '390.533.447-05', '714.602.380-01', '268.371.890-42', '934.051.700-56', '612.843.290-07', '087.215.390-30'];
+    const colab = P.map((x, i) => ({ id: 'd' + i, nome: x[0], cargo: x[1], loja: x[2], salario: x[3], nascimento: x[4], admissao: x[5], cpf: cpfs[i], status: 'ativo', tipo: 'clt', escalaId: 'segsex', dependentes: i % 3 === 0 ? 1 : 0, asos: i === 3 ? [] : [{ id: 'aso' + i, tipo: 'periodico', data: iso(addD(hoje(), -40 - i * 25)), resultado: 'apto' }], ...(i === 3 ? {} : { asoData: iso(addD(hoje(), -40 - i * 25)) }), telefone: '4599' + String(1000000 + i * 1234567).slice(0, 7) })); Store.set(ID, 'colab', colab);
+    const ponto = []; for (let k = 1; k <= 16; k++) { const d = addD(hoje(), -k); if (!d.getDay() || d.getDay() === 6) continue; colab.forEach((c, i) => { if (i === 6 && k === 3) return; const atraso = i === 2 && k === 2 ? '08:17' : '08:0' + (i % 5); ponto.push({ id: `p${k}_${i}`, colabId: c.id, data: iso(d), marc: [atraso, '12:0' + (i % 4), '13:0' + (i % 4), i === 1 && k === 4 ? '19:40' : '17:4' + (i % 9)], origem: 'bio' }); }); }
+    Store.set(ID, 'ponto', ponto);
+    const ferias = []; colab.forEach(c => { const adm = pd(c.admissao), anos = anosEntre(adm, hoje()); for (let y = 0; y < anos - 1; y++) ferias.push({ id: `fe${c.id}${y}`, colabId: c.id, inicio: iso(addM(adm, (y + 1) * 12 + 2)), dias: 30, abono: false, aquis: iso(addM(adm, y * 12)) }); }); Store.set(ID, 'ferias', ferias);
+    const comp = iso(addD(new Date(hoje().getFullYear(), hoje().getMonth(), 1), -1)).slice(0, 7);
+    Store.set(ID, 'folhas', [{ id: 'f' + comp, comp, fechada: true, itens: colab.map(c => ({ colabId: c.id, nome: c.nome, cargo: c.cargo, sal: c.salario, dep: c.dependentes, adic: 0, desc: 0 })) }]);
+    Store.set(ID, 'ocorr', [{ id: 'o1', colabId: 'd6', tipo: 'atestado', data: iso(addD(hoje(), -3)), dias: 1, desc: 'Atestado médico de 1 dia.' }]);
+    Store.set(ID, 'solic', [{ id: 's1', colabId: 'd1', tipo: 'adiantamento', dados: { valor: 400, motivo: 'Conserto da moto' }, status: 'pendente', criadoEm: new Date(Date.now() - 3600e3).toISOString() }, { id: 's2', colabId: 'd2', tipo: 'ajuste_ponto', dados: { data: iso(addD(hoje(), -2)), marc: ['08:00', '12:00', '13:00', '17:48'], motivo: 'Esqueci de bater a entrada' }, status: 'pendente', criadoEm: new Date(Date.now() - 7200e3).toISOString() }]);
+    t = Store.tenants().find(x => x.id === ID);
+  }
+  entrar(t, Store.get(ID, 'users', [])[0]);
+}
+/* ---------- Mural do portal: aniversariantes e tempo de casa do mês (só primeiro nome e dia) ---------- */
+function publicarMural() {
+  if (!S.tenant || !S.data || !S.data.colab || !podeEditar() || !can('admin', 'rh')) return; const h = hoje(), mes = h.getMonth() + 1, ano = h.getFullYear();
+  const curto = n => { const p = String(n || '').trim().split(/\s+/); return p.length > 1 ? `${p[0]} ${p[p.length - 1][0]}.` : p[0]; };
+  const aniv = ativos().filter(c => c.nascimento && +c.nascimento.slice(5, 7) === mes).map(c => ({ nome: curto(c.nome), dia: +c.nascimento.slice(8, 10) })).sort((a, b) => a.dia - b.dia);
+  const casa = ativos().filter(c => c.admissao && +c.admissao.slice(5, 7) === mes && ano - +c.admissao.slice(0, 4) >= 1).map(c => ({ nome: curto(c.nome), dia: +c.admissao.slice(8, 10), anos: ano - +c.admissao.slice(0, 4) })).sort((a, b) => a.dia - b.dia);
+  const novo = { mes: iso(h).slice(0, 7), aniv, casa }; if (JSON.stringify(S.data.config.mural || {}) === JSON.stringify(novo)) return; S.data.config.mural = novo; save('config');
+}
+setTimeout(() => { try { publicarMural(); } catch (e) { } }, 7000); setInterval(() => { try { publicarMural(); } catch (e) { } }, 3600000);
+/* ---------- Limite dos pedidos de adiantamento pelo portal ---------- */
+function painelLimiteVale(el) {
+  if (!podeEditar() || $('#lv-p', el)) return; const pct = (S.data.config.vale || {}).pct ?? 40;
+  el.insertAdjacentHTML('afterbegin', `<section class="panel" id="lv-p" style="padding:14px 18px"><div class="row" style="gap:10px"><span style="flex:1"><b>Pedidos de adiantamento pelo portal</b><br><span class="hint">Cada funcionário pode pedir, por mês, até este percentual do salário. Os pedidos chegam em Solicitações para você aprovar.</span></span><label class="hint" for="lv-v">Até</label><input class="inp" id="lv-v" type="number" min="0" max="100" value="${pct}" style="width:90px"><span>% do salário</span><button class="btn sm" id="lv-ok">Salvar</button></div></section>`);
+  $('#lv-ok', el).onclick = () => { const v = Math.max(0, Math.min(100, parseInt($('#lv-v', el).value) || 0)); S.data.config.vale = { pct: v }; save('config'); audit(`Definiu o limite de adiantamento pelo portal em ${v}% do salário`); toast(v ? `Limite salvo: ${v}% do salário por mês.` : 'Pedidos de adiantamento pelo portal desligados.'); };
+}
+/* ---------- Indique e ganhe (Configurações > Plano) ---------- */
+function painelIndique(cf) {
+  if (!S.tenant || $('#ig-p', cf)) return; const cod = String(S.tenant.id).toLowerCase(), link = `${NEXUM.site}?ind=${cod}`, txt = `Uso o NEXUM RH na ${S.tenant.nome} para ponto pelo rosto, folha e holerites no celular. Teste grátis: ${link} (código de indicação ${cod})`;
+  cf.insertAdjacentHTML('beforeend', `<section class="panel" id="ig-p"><h2 style="margin-bottom:6px">Indique e ganhe 1 mês grátis</h2><p class="hint" style="margin-top:0">Cada empresa que assinar o NEXUM RH com o seu código dá a você um mês grátis, lançado na sua licença quando o pagamento dela for confirmado.</p>
+    <div class="row" style="gap:10px;align-items:center"><span>Seu código: <b style="font-size:18px;letter-spacing:.04em">${esc(cod)}</b></span><span class="sp"></span><button class="btn sec sm" id="ig-c">Copiar link</button><a class="btn sm" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Mandar pelo WhatsApp</a></div></section>`);
+  $('#ig-c', cf).onclick = async () => { try { await navigator.clipboard.writeText(link); toast('Link copiado.'); } catch (e) { toast(link); } };
+}
+
 function licenca() {
   const t = S.tenant; const exp = pd(t.expira); const d = diffD(hoje(), exp);
   const tol = t.trial ? 0 : REGUA.tolerancia;
@@ -746,31 +859,43 @@ const NAV = [
 /* =====================================================================
    AUTENTICAÇÃO E CRIAÇÃO DE EMPRESA (TENANT)
    ===================================================================== */
+/* ---------- Logo NEXUM em vetor (N em fita) ---------- */
+function marcaNx(tam) {
+  const g = 'nx' + Math.random().toString(36).slice(2, 7);
+  return `<svg width="${tam}" height="${Math.round(tam * 0.9)}" viewBox="20 20 580 520" aria-hidden="true" style="flex:0 0 auto;filter:drop-shadow(0 6px 14px rgba(16,60,200,.35))"><defs>
+    <linearGradient id="${g}e" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2E93FF"/><stop offset=".45" stop-color="#1250D4"/><stop offset="1" stop-color="#041A52"/></linearGradient>
+    <linearGradient id="${g}d" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1E62E8"/><stop offset=".5" stop-color="#1350D2"/><stop offset="1" stop-color="#05205E"/></linearGradient>
+    <linearGradient id="${g}f" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#46ACFF"/><stop offset=".28" stop-color="#2170EE"/><stop offset=".7" stop-color="#1243BE"/><stop offset="1" stop-color="#082A84"/></linearGradient>
+    <linearGradient id="${g}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#021545" stop-opacity="0"/><stop offset="1" stop-color="#021545" stop-opacity=".55"/></linearGradient></defs>
+    <path d="M30 528V196c0-30 18-48 46-50L226 260v136z" fill="url(#${g}e)"/><path d="M226 250v146L30 528z" fill="url(#${g}s)" opacity=".7"/><path d="M404 124 578 30v330H404z" fill="url(#${g}d)"/><path d="M404 230h174v130H404z" fill="url(#${g}s)"/>
+    <path d="M36 168c8-32 42-56 78-82 26-19 50-44 74-54 22-9 44-4 60 12l316 290c16 15 16 32 2 46l-96 90c-16 15-38 15-54 0L104 166c-18-16-48-20-68 2z" fill="url(#${g}f)"/><path d="M60 140c30-34 80-74 118-100" stroke="#8FD0FF" stroke-opacity=".55" stroke-width="5" stroke-linecap="round" fill="none"/></svg>`;
+}
+const marcaPortal = (escuro, s) => `<span class="lx-marca ${escuro ? 'esc' : ''}" style="--s:${s}" role="img" aria-label="NEXUM RH"><span class="lx-orb" aria-hidden="true"><span class="ln"></span><span class="pt"></span><span class="pt2"></span></span>${marcaNx(Math.round(78 * s))}<span class="lw">NE<span class="lxx">X</span>UM</span><span class="lb"></span><span class="lr">RH</span></span>`;
+const ICL = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+function redeLogin() {
+  const c = $('#lx-rede'); if (!c || matchMedia('(prefers-reduced-motion: reduce)').matches) return; const x = c.getContext('2d'); let W, H, pts;
+  const ini = () => { W = c.width = c.offsetWidth * devicePixelRatio; H = c.height = c.offsetHeight * devicePixelRatio; pts = Array.from({ length: Math.min(60, Math.round(W * H / 26000)) }, () => ({ x: Math.random() * W, y: Math.random() * H, vx: (Math.random() - .5) * .25 * devicePixelRatio, vy: (Math.random() - .5) * .25 * devicePixelRatio })); };
+  ini(); addEventListener('resize', ini);
+  const passo = () => { if (!document.contains(c)) return; x.clearRect(0, 0, W, H); const L = 140 * devicePixelRatio;
+    pts.forEach(p => { p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > W) p.vx *= -1; if (p.y < 0 || p.y > H) p.vy *= -1; });
+    for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) { const a = pts[i], b = pts[j], d = Math.hypot(a.x - b.x, a.y - b.y); if (d < L) { x.strokeStyle = `rgba(90,162,255,${(1 - d / L) * .35})`; x.lineWidth = devicePixelRatio; x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(b.x, b.y); x.stroke(); } }
+    pts.forEach(p => { x.fillStyle = 'rgba(156,200,255,.8)'; x.beginPath(); x.arc(p.x, p.y, 1.6 * devicePixelRatio, 0, 7); x.fill(); }); requestAnimationFrame(passo); };
+  requestAnimationFrame(passo);
+}
+
 function renderAuth(aba = location.hash === '#criar' ? 'criar' : 'entrar') {
   $$('.bk-card').forEach(e => e.remove());
-  $('#root').innerHTML = `
-  <div class="auth">
-    <section class="auth-art">
-      <canvas id="net" aria-hidden="true"></canvas>
-      <div class="brand"><img class="marca" src="${LOGO_MARCA}" alt="NEXUM"><span class="brand-sub">RH</span></div>
-      <div>
-        <div class="auth-claim">Cada pessoa da equipe, conectada.</div>
-        <p class="auth-sub">Admissão, ponto, férias, folha e rescisão da sua empresa em um só lugar, com as tabelas de ${TAB_PADRAO.ano} prontas.</p>
-      </div>
-      <div class="auth-foot">NEXUM RH v${NEXUM.versao}</div>
-    </section>
-    <section class="auth-form">
-      <div class="auth-box">
-        <div class="seg" role="tablist">
-          <button class="${aba === 'entrar' ? 'on' : ''}" data-aba="entrar" role="tab">Entrar</button>
-          <button class="${aba === 'criar' ? 'on' : ''}" data-aba="criar" role="tab">Criar empresa</button>
-        </div>
-        <div id="auth-body"></div>
-        <p class="hint" style="text-align:center;margin-top:18px"><a href="termos.html" target="_blank" rel="noopener">Termos de uso</a> · <a href="privacidade.html" target="_blank" rel="noopener">Política de privacidade</a></p>
-      </div>
-    </section>
-  </div>`;
-  $$('.seg button').forEach(b => b.onclick = () => renderAuth(b.dataset.aba));
+  const F = [['Ponto e jornada', 'Ponto pelo rosto, banco de horas e escalas', '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'], ['Folha e holerites', 'Cálculo automático e assinatura no celular', '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/>'], ['Admissão e desligamento', 'Da ficha do novo funcionário ao TRCT', '<circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M19 8v6M22 11h-6"/>'], ['Documentos e assinaturas', 'Contratos e termos assinados com foto', '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 14l2 2 4-4"/>'], ['Portal do colaborador', 'A equipe resolve tudo pelo celular', '<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>'], ['Gestão das lojas', 'Cada gerente com a sua equipe', '<path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M9 20v-6h6v6"/>']];
+  $('#root').innerHTML = `<main class="lx"><div class="lx-fundo" aria-hidden="true"><i class="l1"></i><i class="l2"></i><i class="l3"></i><b class="f1"></b><b class="f2"></b><canvas id="lx-rede"></canvas></div>
+    <section class="lx-esq">${marcaPortal(false, 1)}<p class="lx-tag">TECNOLOGIA QUE VALORIZA PESSOAS</p>
+      <h1>Bem-vindo(a) ao<span>Portal de Recursos Humanos</span></h1><p class="lx-txt">Admissão, ponto, férias, folha e rescisão da sua empresa em um só lugar, com as tabelas de ${TAB_PADRAO.ano} prontas.</p>
+      <div class="lx-feat">${F.map(([t, d, ic]) => `<div><span class="ic">${ICL(ic)}</span><span><b>${t}</b><span>${d}</span></span></div>`).join('')}</div></section>
+    <section class="lx-dir"><div class="lx-card">${marcaPortal(true, .78)}<p class="lx-sub">SISTEMA DE GESTÃO DE RH</p>
+      <div class="seg" role="tablist"><button class="${aba === 'entrar' ? 'on' : ''}" data-aba="entrar" role="tab" aria-selected="${aba === 'entrar'}">Entrar</button><button class="${aba === 'criar' ? 'on' : ''}" data-aba="criar" role="tab" aria-selected="${aba === 'criar'}">Criar empresa · teste grátis</button></div>
+      <div id="auth-body"></div>
+      <div class="lx-seg">${ICL('<path d="M12 3 4 6v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/>')}<span>Seus dados estão seguros: cada empresa tem os dados separados e cada usuário entra com a própria senha.<br><a href="termos.html" target="_blank" rel="noopener">Termos de uso</a> · <a href="privacidade.html" target="_blank" rel="noopener">Política de privacidade</a> · NEXUM RH v${NEXUM.versao}</span></div>
+    </div></section></main>`;
+  $$('.lx-card .seg button').forEach(b => b.onclick = () => renderAuth(b.dataset.aba));
   const body = $('#auth-body');
   if (aba === 'entrar') {
     const ultimo = localStorage.getItem('nexum:ultimo') || '';
@@ -825,7 +950,7 @@ function renderAuth(aba = location.hash === '#criar' ? 'criar' : 'entrar') {
         { size: 'sm', foot: `<button class="btn" id="go">Acessar o sistema</button>`, onMount: m => $('#go', m).onclick = () => { closeModal(); entrar(t, Store.get(t.id, 'users', [])[0]); } });
     };
   }
-  startNet();
+  redeLogin();
 }
 
 async function novoTenant(d, idFixo) {
@@ -915,7 +1040,8 @@ function renderApp() {
   const nav = NAV.filter(n => n[2].includes(S.user.role));
   if (!nav.some(n => n[0] === S.view)) S.view = nav[0][0];
   let banner = '';
-  if (lic.suspenso) banner = `<div class="banner bad">O acesso desta empresa está suspenso. O sistema está em modo somente leitura. ${NEXUM.suporte ? `Fale com o suporte: <a href="https://wa.me/55${NEXUM.suporte.replace(/\D/g, '')}" target="_blank" rel="noopener" style="color:inherit;font-weight:700">WhatsApp</a>.` : 'Fale com o suporte da NEXUM.'}</div>`;
+  if (DEMO) banner = `<div class="banner" style="background:#EEF3FF;color:#1C2E7A"><b>Demonstração:</b> os dados são fictícios e ficam só neste navegador. Mexa à vontade. <a href="${location.pathname}#criar" onclick="setTimeout(()=>location.reload(),30)" style="color:inherit;font-weight:700">Criar minha conta grátis</a> · <a href="${NEXUM.site}#planos" style="color:inherit;font-weight:700">Ver planos</a></div>`;
+  else if (lic.suspenso) banner = `<div class="banner bad">O acesso desta empresa está suspenso. O sistema está em modo somente leitura. ${NEXUM.suporte ? `Fale com o suporte: <a href="https://wa.me/55${NEXUM.suporte.replace(/\D/g, '')}" target="_blank" rel="noopener" style="color:inherit;font-weight:700">WhatsApp</a>.` : 'Fale com o suporte da NEXUM.'}</div>`;
   else if (!lic.ativa) banner = `<div class="banner bad">Sua licença venceu em ${fd(S.tenant.expira)}. O sistema está em modo somente leitura e o ponto pelo portal está suspenso. Em ${addD(pd(S.tenant.expira), REGUA.leitura + 1).toLocaleDateString('pt-BR')}, o acesso será bloqueado. ${can('admin') ? (linkPagar() ? `<a href="${linkPagar()}" target="_blank" rel="noopener" style="color:inherit;font-weight:700">Pagar agora</a> ou renove em Configurações > Plano.` : 'Renove em Configurações > Plano.') : 'Fale com o administrador.'}</div>`;
   else if (lic.tolerancia) banner = `<div class="banner">Pagamento pendente: a licença venceu em ${fd(S.tenant.expira)}. O sistema funciona normalmente até ${addD(pd(S.tenant.expira), REGUA.tolerancia).toLocaleDateString('pt-BR')}; depois, fica somente para consulta. ${can('admin') ? (linkPagar() ? `<a href="${linkPagar()}" target="_blank" rel="noopener" style="color:inherit;font-weight:700">Pagar agora</a>` : 'Renove em Configurações > Plano.') : 'Avise o administrador.'}</div>`;
   else if (lic.trial && lic.dias <= 5) banner = `<div class="banner">Seu teste grátis termina em ${lic.dias} dia${lic.dias === 1 ? '' : 's'}.</div>`;
@@ -989,7 +1115,7 @@ function go(v) { if (!document.getElementById('view')) return;
   const el = $('#view'); el.innerHTML = '';
   ({ dash: e => { vDash(e); atalhosDash(e); }, tempo: vTempo, colab: vColab, ponto: vPonto, bio: vBio, atest: e => vOcorr(e, '', { tipo: 'atestado' }), ferias: e => { vFerias(e); if (podeEditar()) { e.insertAdjacentHTML('afterbegin', '<div class="row end" style="margin-bottom:10px"><button class="btn sec" id="fe-col">Férias coletivas</button></div>'); $('#fe-col', e).onclick = feriasColetivas; } }, bh: e => { vPortal(e, 'bh', true); painelAcoesBH(e); }, abs: vAbs,
     adv: e => vOcorr(e, '', { tipo: 'advertencia' }), susp: e => vOcorr(e, '', { tipo: 'suspensao' }), com: e => vPortal(e, 'avisos', true), chat: e => vPortal(e, 'chat', true), portal: e => { vPortal(e); painelPedSenha(e); },
-    fin: vFin, adiant: vAdiant, folha: e => vFolha(e), recr: vRecr, adm: vAdm, resc: e => { vDem(e); painelPrazosResc(e); painelPortalDeslig(e); e.insertAdjacentHTML('afterbegin', `<div class="row" style="margin-bottom:12px"><b>Central do desligamento</b><span class="sp"></span><button class="btn sec sm" id="rs-av">Aviso prévio</button><button class="btn sec sm" id="rs-np">Não prorrogação da experiência</button><button class="btn sec sm" id="rs-cd">Carta de dispensa</button><button class="btn sec sm" id="rs-13">Calculadora de 13º</button><button class="btn sec sm" id="rs-ra">Reativar desligado</button></div><p class="hint" style="margin:-4px 0 12px">Abaixo fica a calculadora de rescisão: ao registrar, ela gera o TRCT completo e a carta da modalidade escolhida e envia ao portal.</p>`); $('#rs-av', e).onclick = () => modalDocsResc('aviso'); $('#rs-np', e).onclick = () => modalDocsResc('naoprorrog'); $('#rs-cd', e).onclick = modalCartaDispensa; $('#rs-13', e).onclick = modal13; $('#rs-ra', e).onclick = modalReativar; }, afast: vAfast, benef: e => vBenef(e), jornada: e => vJornada(e), sst: e => vSST(e), obrig: e => vObrig(e), ia: vIA, agenda: vAgenda, docs: vTpl, relat: e => { vRelat(e); painelLojas(e); painelSaidas(e); e.insertAdjacentHTML('afterbegin', `<div class="row" style="margin-bottom:14px"><span class="hint">Arquivos e documentos legais</span><span class="sp"></span><button class="btn" id="rl-rs">Resumo do mês</button><button class="btn sec" id="rl-ct">Pacote do contador</button><button class="btn sec" id="rl-ir">Informes de rendimentos</button><button class="btn sec" id="rl-afd">Arquivos fiscais do ponto (AFD/AEJ)</button></div>`); $('#rl-afd', e).onclick = modalFiscal; $('#rl-rs', e).onclick = () => modalResumo(); $('#rl-ct', e).onclick = () => modal('Pacote do contador', `<p class="hint" style="margin-top:0">Uma planilha com folha, admissões, desligamentos, férias, afastamentos, pensões e vale-transporte do mês, pronta para o contador importar ou conferir.</p><input class="inp" type="month" id="pc-c" value="${iso(addM(hoje(), -1)).slice(0, 7)}" style="width:auto">`, { foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="pc-ok">Baixar planilha</button>', onMount: m => $('#pc-ok', m).onclick = async () => { try { await pacoteContador($('#pc-c', m).value); closeModal(); } catch (er) { toast('Não foi possível carregar o gerador de planilhas. Verifique a internet.', true); } } }); $('#rl-ir', e).onclick = modalInformes; }, venc: vVenc, trein: vTrein, loja: vLoja, reuniao: vReunioes, planfer: e => vPlanFer(e), conv: vConv, comis: e => vComis(e), etica: vEtica, audit: vAudit, ocorr: e => vOcorr(e, '', { contratados: true }), config: vConfig })[v](el);
+    fin: vFin, adiant: e => { vAdiant(e); painelLimiteVale(e); }, folha: e => vFolha(e), recr: vRecr, adm: vAdm, resc: e => { vDem(e); painelPrazosResc(e); painelPortalDeslig(e); e.insertAdjacentHTML('afterbegin', `<div class="row" style="margin-bottom:12px"><b>Central do desligamento</b><span class="sp"></span><button class="btn sec sm" id="rs-av">Aviso prévio</button><button class="btn sec sm" id="rs-np">Não prorrogação da experiência</button><button class="btn sec sm" id="rs-cd">Carta de dispensa</button><button class="btn sec sm" id="rs-13">Calculadora de 13º</button><button class="btn sec sm" id="rs-ra">Reativar desligado</button></div><p class="hint" style="margin:-4px 0 12px">Abaixo fica a calculadora de rescisão: ao registrar, ela gera o TRCT completo e a carta da modalidade escolhida e envia ao portal.</p>`); $('#rs-av', e).onclick = () => modalDocsResc('aviso'); $('#rs-np', e).onclick = () => modalDocsResc('naoprorrog'); $('#rs-cd', e).onclick = modalCartaDispensa; $('#rs-13', e).onclick = modal13; $('#rs-ra', e).onclick = modalReativar; }, afast: vAfast, benef: e => vBenef(e), jornada: e => vJornada(e), sst: e => vSST(e), obrig: e => vObrig(e), ia: vIA, agenda: vAgenda, docs: vTpl, relat: e => { vRelat(e); painelLojas(e); painelSaidas(e); e.insertAdjacentHTML('afterbegin', `<div class="row" style="margin-bottom:14px"><span class="hint">Arquivos e documentos legais</span><span class="sp"></span><button class="btn" id="rl-rs">Resumo do mês</button><button class="btn sec" id="rl-ct">Pacote do contador</button><button class="btn sec" id="rl-ir">Informes de rendimentos</button><button class="btn sec" id="rl-afd">Arquivos fiscais do ponto (AFD/AEJ)</button></div>`); $('#rl-afd', e).onclick = modalFiscal; $('#rl-rs', e).onclick = () => modalResumo(); $('#rl-ct', e).onclick = () => modal('Pacote do contador', `<p class="hint" style="margin-top:0">Uma planilha com folha, admissões, desligamentos, férias, afastamentos, pensões e vale-transporte do mês, pronta para o contador importar ou conferir.</p><input class="inp" type="month" id="pc-c" value="${iso(addM(hoje(), -1)).slice(0, 7)}" style="width:auto">`, { foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="pc-ok">Baixar planilha</button>', onMount: m => $('#pc-ok', m).onclick = async () => { try { await pacoteContador($('#pc-c', m).value); closeModal(); } catch (er) { toast('Não foi possível carregar o gerador de planilhas. Verifique a internet.', true); } } }); $('#rl-ir', e).onclick = modalInformes; }, venc: vVenc, trein: vTrein, loja: vLoja, reuniao: vReunioes, planfer: e => vPlanFer(e), conv: vConv, comis: e => vComis(e), etica: vEtica, audit: vAudit, ocorr: e => vOcorr(e, '', { contratados: true }), config: vConfig })[v](el);
   atualizarBadge();
   $('.content').scrollTop = 0;
 }
@@ -4831,7 +4957,7 @@ function montarTopo() {
   const tm = $('#b-tema'); if (tm) tm.onclick = () => { const n = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = n; localStorage.setItem('nexum:tema', n); };
   const pb = $('#b-portal'); if (pb) pb.onclick = modalPortalBloq;
   atualizarTopo();
-  if (can('admin') && S.data.colab.length && !sessionStorage.getItem('nexum:bkvisto')) { const u = S.data.config.ultimoBackup, d = u ? diffD(pd(u), hoje()) : 99;
+  if (!DEMO && can('admin') && S.data.colab.length && !sessionStorage.getItem('nexum:bkvisto')) { const u = S.data.config.ultimoBackup, d = u ? diffD(pd(u), hoje()) : 99;
     if (d >= 7 && S.data.config.backupAuto !== false) { fazerBackup(); toast('Backup da semana baixado automaticamente (pasta Downloads).'); }
     else if (d >= 7) { const el = document.createElement('div'); el.className = 'bk-card'; el.innerHTML = `<b>${u ? `Último backup há ${d} dias` : 'Nenhum backup feito ainda'}</b><span>Recomendado: uma vez por semana.</span><div class="row" style="margin-top:8px"><button class="btn sm" id="bk-f">Fazer agora</button><button class="btn ghost sm" id="bk-d" style="color:#fff">Depois</button></div>`; document.body.appendChild(el);
       $('#bk-f').onclick = () => { fazerBackup(); el.remove(); }; $('#bk-d').onclick = () => { sessionStorage.setItem('nexum:bkvisto', '1'); el.remove(); }; } }
@@ -5637,6 +5763,7 @@ function vConfig(el, aba = S.cfgAba || 'empresa') {
     const rs = $('#tb-reset', cf); if (rs) rs.onclick = () => confirmar(`Restaurar as tabelas padrão de ${TAB_PADRAO.ano}?`, () => { cfg.tabelas = JSON.parse(JSON.stringify(TAB_PADRAO)); save('config'); audit('Restaurou tabelas padrão'); vConfig(el, 'tabelas'); });
   }
   if (aba === 'plano') {
+    setTimeout(() => painelIndique(cf), 0);
     const lic = licenca();
     cf.innerHTML = `<section class="panel"><div class="res" style="margin-bottom:20px">
       <div><span class="hint">Plano atual</span><b>${lic.plano.nome}${lic.trial ? ' (teste grátis)' : ''}</b></div>
@@ -5719,7 +5846,7 @@ document.documentElement.dataset.theme = localStorage.getItem('nexum:tema') || (
 (function avisoFirebase() {
   let msg = '';
   if (FIREBASE_CONFIG.apiKey && location.protocol === 'file:') msg = 'Você abriu o arquivo direto do computador. O Firebase só funciona com o sistema hospedado (ex.: GitHub Pages). Aqui ele roda em modo local, com dados só neste navegador.';
-  else if (FIREBASE_CONFIG.apiKey && typeof firebase === 'undefined') msg = 'Não foi possível carregar o Firebase. Verifique a internet e recarregue a página.';
+  else if (!DEMO && FIREBASE_CONFIG.apiKey && typeof firebase === 'undefined') msg = 'Não foi possível carregar o Firebase. Verifique a internet e recarregue a página.';
   if (!msg) return;
   const el = document.createElement('div'); el.setAttribute('role', 'alert');
   el.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:90;background:#B42318;color:#fff;font:600 14px/1.4 system-ui,sans-serif;padding:10px 44px 10px 16px;text-align:center';
@@ -5733,6 +5860,7 @@ document.documentElement.dataset.theme = localStorage.getItem('nexum:tema') || (
     const s = JSON.parse(sessionStorage.getItem('nexum:sess') || 'null');
     if (s) { const t = Store.tenants().find(x => x.id === s.t); const u = t && Store.get(t.id, 'users', []).find(x => x.id === s.u && x.ativo !== false); if (u) return entrar(t, u); }
   } catch (e) { }
+  if (DEMO) return iniciarDemo();
   renderAuth();
 })();
 </script>
