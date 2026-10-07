@@ -367,7 +367,7 @@ const NEXUM = {
   versao: '1.0.0',
   trialDias: 14,
   linkAssinatura: '', // cole aqui o link de pagamento (ex.: Mercado Pago)
-  suporte: '', // seu WhatsApp de suporte com DDD, ex.: '45999999999'
+  suporte: '45998524338', // seu WhatsApp de suporte com DDD
   planos: {
     essencial:    { nome: 'Essencial',    limite: 10,    preco: 49 },
     profissional: { nome: 'Profissional', limite: 50,    preco: 129 },
@@ -451,7 +451,7 @@ const FB = {
     if (!FB.aux) { FB.aux = firebase.initializeApp(FIREBASE_CONFIG, 'nexum-aux').auth(); await FB.aux.setPersistence(firebase.auth.Auth.Persistence.NONE); }
     const cr = await FB.aux.createUserWithEmailAndPassword(email, senha); const id = cr.user.uid; await FB.aux.signOut(); return id;
   },
-  tenant(s) { const x = s.data(); return { id: s.id, nome: x.nome, cnpj: x.cnpj || '', plano: x.plano, trial: !!x.trial, suspenso: !!x.suspenso, criadoEm: x.criadoEm, expira: iso(addD(x.expiraTs.toDate(), -1)) }; },
+  tenant(s) { const x = s.data(); return { id: s.id, nome: x.nome, cnpj: x.cnpj || '', plano: x.plano, trial: !!x.trial, suspenso: !!x.suspenso, bloqueado: !!x.bloqueado, criadoEm: x.criadoEm, expira: iso(addD(x.expiraTs.toDate(), -1)) }; },
   emailColab: (tid, cpf, v) => `c${cpf}.v${v}.${tid}@colab.nexum.app`,
   falhou(e) { console.error('[NEXUM]', e); toast(FB.erro(e), true); },
   erro(e) {
@@ -581,9 +581,26 @@ function audit(acao) {
 }
 const colabById = id => S.data.colab.find(c => c.id === id);
 const ativos = () => S.data.colab.filter(c => c.status !== 'desligado' && c.status !== 'admissao' && noEscopoLoja(c));
+/* ---------- Licença sem pagamento: tolerância (até 5 dias), somente leitura (6º ao 15º), bloqueio total (16º em diante) ---------- */
+const REGUA = { tolerancia: 5, leitura: 15 };
+function linkPagar() { return NEXUM.linkAssinatura || (NEXUM.suporte ? `https://wa.me/55${NEXUM.suporte.replace(/\D/g, '')}?text=${encodeURIComponent(`Olá! Quero regularizar o pagamento do NEXUM RH da empresa ${S.tenant.nome}.`)}` : ''); }
+function telaBloqueio(lic) {
+  const ini = addD(pd(S.tenant.expira), REGUA.leitura + 1), adm = can('admin'), lp = linkPagar();
+  $('#root').innerHTML = `<main style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#F3F5FB"><section class="panel" style="max-width:520px;text-align:center;padding:34px 30px">
+    <div style="width:64px;height:64px;border-radius:50%;background:#FDECEF;color:#C62D46;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+    <h1 style="font-size:24px;margin:0 0 10px">${lic.manual ? 'Acesso bloqueado' : 'Acesso bloqueado por falta de pagamento'}</h1>
+    <p style="margin:0 0 8px">${lic.manual ? `O acesso de <b>${esc(S.tenant.nome)}</b> ao NEXUM foi bloqueado pela administração da plataforma. O Portal do Colaborador também está bloqueado.` : `A licença de <b>${esc(S.tenant.nome)}</b> venceu em ${fd(S.tenant.expira)} e o sistema está bloqueado desde ${ini.toLocaleDateString('pt-BR')}. O Portal do Colaborador também está bloqueado.`}</p>
+    <p class="hint" style="margin:0 0 22px">${adm ? 'Assim que o pagamento for confirmado, o acesso volta. Enquanto isso, você pode baixar todos os dados da empresa.' : 'Avise o administrador da empresa para regularizar o pagamento.'}</p>
+    <div class="row" style="justify-content:center;gap:10px;flex-wrap:wrap">${adm && lp ? `<a class="btn" href="${lp}" target="_blank" rel="noopener">Pagar agora</a>` : ''}${adm ? '<button class="btn sec" id="bq-bk">Baixar backup dos dados</button>' : ''}<button class="btn ghost" id="bq-s">Sair</button></div>
+    <p class="hint" style="margin:22px 0 0;font-size:13px">Conforme o <a href="contrato.html" target="_blank" rel="noopener">contrato de prestação de serviços</a>, após 90 dias de bloqueio o contrato é encerrado e os dados podem ser excluídos, com aviso prévio.</p></section></main>`;
+  const bk = $('#bq-bk'); if (bk) bk.onclick = () => fazerBackup(); $('#bq-s').onclick = sair;
+}
+
 function licenca() {
   const t = S.tenant; const exp = pd(t.expira); const d = diffD(hoje(), exp);
-  return { ativa: d >= 0 && !t.suspenso, suspenso: !!t.suspenso, dias: d, plano: NEXUM.planos[t.plano] || NEXUM.planos.essencial, trial: !!t.trial };
+  const tol = t.trial ? 0 : REGUA.tolerancia;
+  const bq = !!t.bloqueado;
+  return { ativa: !bq && d >= -tol && !t.suspenso, tolerancia: !bq && d < 0 && d >= -tol && !t.suspenso, bloqueada: bq || (d < -REGUA.leitura && !t.suspenso), manual: bq, suspenso: !!t.suspenso, dias: d, plano: NEXUM.planos[t.plano] || NEXUM.planos.essencial, trial: !!t.trial };
 }
 const can = (...roles) => roles.includes(S.user.role);
 const podeEditar = () => S.user.role !== 'leitura' && licenca().ativa;
@@ -860,7 +877,7 @@ async function fbEntrarRH(user) {
     await FB.abrir(t.id, COLS);
     entrar(t, { id: user.uid, nome: u.nome, email: u.email, role: u.role, ativo: true });
     if (FB.unTenant) FB.unTenant();
-    FB.unTenant = FB.db.doc(`tenants/${t.id}`).onSnapshot(s => { if (!s.exists || !S.tenant || S.tenant.id !== t.id) return; const n = FB.tenant(s), mudou = ['plano', 'trial', 'suspenso', 'expira'].some(k => n[k] !== S.tenant[k]); Object.assign(S.tenant, n); if (mudou) { renderApp(); toast(licenca().ativa ? 'Sua licença foi atualizada.' : 'A licença desta empresa mudou.'); } }, () => { });
+    FB.unTenant = FB.db.doc(`tenants/${t.id}`).onSnapshot(s => { if (!s.exists || !S.tenant || S.tenant.id !== t.id) return; const n = FB.tenant(s), mudou = ['plano', 'trial', 'suspenso', 'bloqueado', 'expira'].some(k => n[k] !== S.tenant[k]); Object.assign(S.tenant, n); if (mudou) { renderApp(); toast(licenca().ativa ? 'Sua licença foi atualizada.' : 'A licença desta empresa mudou.'); } }, () => { });
   } catch (err) { FB.falhou(err); await FB.auth.signOut(); }
 }
 
@@ -894,12 +911,13 @@ function stopNet() { if (netRAF) cancelAnimationFrame(netRAF); netRAF = null; wi
    APLICAÇÃO
    ===================================================================== */
 function renderApp() {
-  const lic = licenca();
+  const lic = licenca(); if (lic.bloqueada) return telaBloqueio(lic);
   const nav = NAV.filter(n => n[2].includes(S.user.role));
   if (!nav.some(n => n[0] === S.view)) S.view = nav[0][0];
   let banner = '';
   if (lic.suspenso) banner = `<div class="banner bad">O acesso desta empresa está suspenso. O sistema está em modo somente leitura. ${NEXUM.suporte ? `Fale com o suporte: <a href="https://wa.me/55${NEXUM.suporte.replace(/\D/g, '')}" target="_blank" rel="noopener" style="color:inherit;font-weight:700">WhatsApp</a>.` : 'Fale com o suporte da NEXUM.'}</div>`;
-  else if (!lic.ativa) banner = `<div class="banner bad">Sua licença expirou em ${fd(S.tenant.expira)}. O sistema está em modo somente leitura. ${can('admin') ? 'Renove em Configurações > Plano.' : 'Fale com o administrador.'}</div>`;
+  else if (!lic.ativa) banner = `<div class="banner bad">Sua licença venceu em ${fd(S.tenant.expira)}. O sistema está em modo somente leitura e o ponto pelo portal está suspenso. Em ${addD(pd(S.tenant.expira), REGUA.leitura + 1).toLocaleDateString('pt-BR')}, o acesso será bloqueado. ${can('admin') ? (linkPagar() ? `<a href="${linkPagar()}" target="_blank" rel="noopener" style="color:inherit;font-weight:700">Pagar agora</a> ou renove em Configurações > Plano.` : 'Renove em Configurações > Plano.') : 'Fale com o administrador.'}</div>`;
+  else if (lic.tolerancia) banner = `<div class="banner">Pagamento pendente: a licença venceu em ${fd(S.tenant.expira)}. O sistema funciona normalmente até ${addD(pd(S.tenant.expira), REGUA.tolerancia).toLocaleDateString('pt-BR')}; depois, fica somente para consulta. ${can('admin') ? (linkPagar() ? `<a href="${linkPagar()}" target="_blank" rel="noopener" style="color:inherit;font-weight:700">Pagar agora</a>` : 'Renove em Configurações > Plano.') : 'Avise o administrador.'}</div>`;
   else if (lic.trial && lic.dias <= 5) banner = `<div class="banner">Seu teste grátis termina em ${lic.dias} dia${lic.dias === 1 ? '' : 's'}.</div>`;
   $('#root').innerHTML = `
   <div class="app">
@@ -961,7 +979,7 @@ function atualizarBadge() {
   set('bio', revisoesPend().length + S.data.faces.filter(f => f.status === 'pendente').length + S.data.dispositivos.reduce((t, d) => t + Object.keys(d.pedidos || {}).length, 0)); set('adm', S.data.admis.filter(p => p.status === 'andamento').length);
   $$('.nav-sec').forEach(sec => { const n = $$('.nav-itens .bdg', sec).reduce((t, b) => t + (parseInt(b.textContent) || 0), 0); $('.bdg-g', sec).textContent = n || ''; });
 }
-function go(v) {
+function go(v) { if (!document.getElementById('view')) return;
   clearInterval(S.timer); clearInterval(S.relogio);
   S.view = v;
   $$('.side .nav button[data-v]').forEach(b => b.classList.toggle('on', b.dataset.v === v));
@@ -3698,7 +3716,7 @@ function vPortal(el, aba = S.portalAba || 'solic', solo = false) {
 }
 
 /* sincronização: o portal grava na mesma base; atualiza a tela do RH quando algo muda em outra aba */
-window.addEventListener('storage', e => { if (e.key !== 'nexum:tenants' || !S.tenant || FB_ON) return; const n = Store.tenants().find(x => x.id === S.tenant.id); if (!n) return; const mudou = ['plano', 'trial', 'suspenso', 'expira'].some(k => n[k] !== S.tenant[k]); Object.assign(S.tenant, n); if (mudou) { renderApp(); toast('Sua licença foi atualizada.'); } });
+window.addEventListener('storage', e => { if (e.key !== 'nexum:tenants' || !S.tenant || FB_ON) return; const n = Store.tenants().find(x => x.id === S.tenant.id); if (!n) return; const mudou = ['plano', 'trial', 'suspenso', 'bloqueado', 'expira'].some(k => n[k] !== S.tenant[k]); Object.assign(S.tenant, n); if (mudou) { renderApp(); toast('Sua licença foi atualizada.'); } });
 window.addEventListener('storage', e => {
   if (!S.tenant || !e.key || !e.key.startsWith(`nexum:${S.tenant.id}:`)) return;
   const c = e.key.split(':')[2]; if (!COLS.includes(c)) return;
