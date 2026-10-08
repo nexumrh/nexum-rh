@@ -4222,7 +4222,7 @@ function supRender() {
   const fechado = ['concluido', 'cancelado'].includes(d.status);
   if (SUP.dig) h += `<div class="sp-m bot"><span class="mini">${supN(18)}</span><div class="bb sp-dig"><i></i><i></i><i></i></div></div>`;
   else if (fechado) h += `<div class="sp-dia">Atendimento ${SUP_ST[d.status].toLowerCase()}. </div><button class="sp-ini" data-sp="novo">Iniciar novo chat</button>`;
-  else h += `<div class="sp-ops">${d.status === 'bot' && NEXUM.ia.claude && (d.msgs || []).length > 2 && (d.msgs || []).slice(-1)[0].de === 'bot' ? '<button data-sp="completa">Quero uma resposta mais completa</button>' : ''}${d.status === 'bot' ? '<button data-sp="atendente">Falar com atendente</button>' : ''}<button data-sp="lista">Meus atendimentos</button><button data-sp="sair">Encerrar atendimento</button></div>`;
+  else h += `<div class="sp-ops">${d.status === 'bot' && NEXUM.ia.claude && (d.msgs || []).length > 2 && (d.msgs || []).slice(-1)[0].de === 'bot' ? '<button data-sp="completa">Quero uma resposta mais completa</button>' : ''}${d.status === 'bot' ? '<button data-sp="atendente">Falar com atendente</button>' : ''}<button data-sp="lista">Meus atendimentos</button></div>`;
   c.innerHTML = h; c.scrollTop = c.scrollHeight; supEntrada(!fechado && !SUP.dig);
 }
 function supEntrada(on) { const t = $('#sp-t'); if (!t) return; t.disabled = !on; t.placeholder = on ? 'Enviar uma mensagem...' : 'Inicie um chat para escrever'; }
