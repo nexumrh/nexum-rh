@@ -478,6 +478,38 @@ html[data-theme="dark"] .doc-prev{background:#fff;color:#111}
 .pz-rod{justify-content:flex-start;max-width:600px}.pz-leg{text-align:left}
 .pz-cab h2{font-size:25px}.pz-card .lx-in .inp{height:56px}.pz-card .lx-ent{height:56px}
 }
+/* ===== Chat de suporte (canto inferior direito) ===== */
+#sup-b{position:fixed;right:24px;bottom:24px;z-index:900;width:62px;height:62px;border-radius:50%;border:0;background:#13284B;color:#fff;box-shadow:0 6px 18px rgba(19,40,75,.35);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s,background .15s}
+#sup-b:hover{background:#1B3766;transform:scale(1.05)}#sup-b svg{width:36px;height:36px}
+#sup-b .dot{position:absolute;top:4px;right:4px;width:14px;height:14px;border-radius:50%;background:#E5484D;border:2px solid #fff;display:none}#sup-b.novo .dot{display:block}
+#sup-p{position:fixed;right:24px;bottom:98px;z-index:901;width:370px;height:min(580px,calc(100vh - 120px));background:#fff;border-radius:14px;box-shadow:0 20px 60px rgba(11,30,74,.32);display:none;flex-direction:column;overflow:hidden;font-family:var(--f);color:#1B2440}
+#sup-p.on{display:flex}
+.sp-h{background:#0B1E4A;color:#fff;display:flex;align-items:center;gap:12px;padding:14px 14px 14px 18px}
+.sp-h b{flex:1;font-size:16px}.sp-h small{display:block;font-weight:500;font-size:12px;opacity:.75}
+.sp-h button{background:transparent;border:0;color:#fff;width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:20px;line-height:1}.sp-h button:hover{background:rgba(255,255,255,.12)}
+.sp-av{flex:0 0 38px;height:38px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center}
+.sp-c{flex:1;overflow-y:auto;background:#F7F8FB;padding:16px 14px}
+.sp-dia{text-align:center;color:#7A8199;font-size:12.5px;margin:10px 0}
+.sp-m{display:flex;gap:8px;align-items:flex-end;margin:10px 0}.sp-m .bb{max-width:78%;padding:10px 13px;border-radius:14px;font-size:14.5px;line-height:1.45;white-space:pre-wrap;word-wrap:break-word}
+.sp-m.bot .bb,.sp-m.dono .bb{background:#EEF0F4;border-bottom-left-radius:4px}.sp-m.dono .bb{background:#E4EDFF}
+.sp-m.rh{justify-content:flex-end}.sp-m.rh .bb{background:#1F5FE8;color:#fff;border-bottom-right-radius:4px}
+.sp-m .mini{flex:0 0 30px;height:30px;border-radius:50%;background:#fff;border:1px solid #E1E5EE;display:flex;align-items:center;justify-content:center}
+.sp-hr{font-size:11.5px;color:#7A8199;margin:-4px 0 0 40px}.sp-m.rh+.sp-hr{text-align:right;margin:-4px 2px 0 0}
+.sp-ops{display:flex;flex-direction:column;gap:6px;margin:6px 0 4px 38px;background:#EEF0F4;border-radius:12px;padding:8px}
+.sp-ops button{background:#fff;border:0;border-radius:6px;padding:9px 10px;color:#0B5FB8;font:inherit;font-size:14.5px;cursor:pointer;text-align:center}.sp-ops button:hover{background:#F2F6FF}
+.sp-ini{display:block;margin:16px auto 6px;background:#E6E9EF;border:1.5px solid #0B1E4A;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;color:#0B1E4A;cursor:pointer}
+.sp-ini:hover{background:#DCE1EA}
+.sp-dig{display:flex;gap:4px;padding:10px 12px}.sp-dig i{width:7px;height:7px;border-radius:50%;background:#9AA2B6;animation:spd 1s infinite}.sp-dig i:nth-child(2){animation-delay:.15s}.sp-dig i:nth-child(3){animation-delay:.3s}
+@keyframes spd{50%{opacity:.3;transform:translateY(-2px)}}
+.sp-in{display:flex;align-items:flex-end;gap:8px;padding:10px 12px;border-top:1px solid #E6E9EF;background:#fff}
+.sp-in textarea{flex:1;border:0;border-bottom:2px solid #5B6BC9;resize:none;font:inherit;font-size:15px;padding:8px 2px;max-height:110px;outline:0;color:#1B2440;background:transparent}
+.sp-in textarea:disabled{border-color:#D5D9E3}
+.sp-in button{background:transparent;border:0;width:40px;height:40px;border-radius:8px;cursor:pointer;color:#6B7389;display:flex;align-items:center;justify-content:center}.sp-in button:hover{color:#1F5FE8;background:#F2F6FF}
+.sp-pw{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;color:#8A90A3;padding:7px 0 9px;background:#F7F8FB;border-top:1px solid #EEF0F4}.sp-pw b{color:#0B1E4A}
+.sp-lst button{display:flex;width:100%;text-align:left;gap:10px;align-items:center;background:#fff;border:1px solid #E6E9EF;border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer;font:inherit}
+.sp-lst button:hover{border-color:#1F5FE8}.sp-lst b{display:block;font-size:14px}.sp-lst span{font-size:12.5px;color:#7A8199}
+.sp-st{font-size:11.5px;font-weight:700;border-radius:999px;padding:3px 9px;white-space:nowrap}.sp-st.bot{background:#EEF0F4;color:#4A5578}.sp-st.analise{background:#FFF1DC;color:#9A5B00}.sp-st.concluido{background:#E2F6EC;color:#0F7A4F}.sp-st.cancelado{background:#FDECEF;color:#B4233B}
+@media (max-width:520px){#sup-p{right:0;bottom:0;width:100%;height:100%;border-radius:0}#sup-p.on~#sup-b{display:none}}
 </style>
 </head>
 <body>
@@ -501,6 +533,9 @@ const NEXUM = {
   linkAssinatura: '', // cole aqui o link de pagamento (ex.: Mercado Pago)
   suporte: '45998524338', // seu WhatsApp de suporte com DDD
   site: 'https://nexumdp.com.br/', // endereço do site de vendas (usado no link de indicação)
+  /* Chaves de IA embutidas por decisão do dono da plataforma (ficam visíveis no código do site).
+     Ordem de uso: chave do próprio cliente > chave salva no Painel do Dono > estas. */
+  ia: { groq: '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', claude: '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', workspace: 'wrkspc_01YArvhE44tmUyNbKgyKBTn7', modeloClaude: 'claude-sonnet-5-5' },
   planos: {
     essencial:    { nome: 'Essencial',    limite: 10,    preco: 49 },
     profissional: { nome: 'Profissional', limite: 50,    preco: 129 },
@@ -948,6 +983,7 @@ function redeLogin() {
 }
 
 function renderAuth(aba = location.hash === '#criar' ? 'criar' : 'entrar') {
+  ['sup-b', 'sup-p'].forEach(id => { const x = document.getElementById(id); if (x) x.remove(); }); if (typeof SUP !== 'undefined' && SUP.unsubL) { SUP.unsubL(); SUP.unsubL = null; }
   $$('.bk-card').forEach(e => e.remove());
   const jaAberta = !!$('.pz');
   $('#root').innerHTML = `<main class="pz${jaAberta ? ' pz-sa' : ''}"><div class="lx-fundo" aria-hidden="true"><i class="l1"></i><i class="l2"></i><i class="l3"></i><canvas id="lx-rede"></canvas></div><div class="pz-faixas" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i></div><div class="pz-col"><div class="pz-foto" aria-hidden="true"></div>
@@ -1098,6 +1134,7 @@ function stopNet() { if (netRAF) cancelAnimationFrame(netRAF); netRAF = null; wi
    APLICAÇÃO
    ===================================================================== */
 function renderApp() {
+  setTimeout(suporteIniciar, 0);
   const lic = licenca(); if (lic.bloqueada) return telaBloqueio(lic);
   const nav = NAV.filter(n => n[2].includes(S.user.role));
   if (!nav.some(n => n[0] === S.view)) S.view = nav[0][0];
@@ -4144,10 +4181,99 @@ function ajustarPonto(cid, dia, depois) {
   });
 }
 
+/* =====================================================================
+   SUPORTE: chat no canto da tela (assistente + atendente do NEXUM)
+   Protocolo numérico em suporte/{protocolo}; só o usuário do RH que abriu e o dono da plataforma veem.
+   ===================================================================== */
+const supUid = () => (S.user && (S.user.uid || S.user.id)) || '';
+const SUP_ST = { bot: 'Com o assistente', analise: 'Em análise', concluido: 'Concluído', cancelado: 'Cancelado' };
+const SUP = { aberto: false, prot: null, doc: null, lista: [], unsub: null, unsubL: null, dig: false };
+const supN = (t = 20) => `<svg width="${t}" height="${Math.round(t * .9)}" viewBox="20 20 580 520" aria-hidden="true"><path d="M30 528V196c0-30 18-48 46-50L226 260v136z" fill="#1557E0"/><path d="M404 124 578 30v330H404z" fill="#0E43BF"/><path d="M36 168c8-32 42-56 78-82 26-19 50-44 74-54 22-9 44-4 60 12l316 290c16 15 16 32 2 46l-96 90c-16 15-38 15-54 0L104 166c-18-16-48-20-68 2z" fill="#2F8CFF"/></svg>`;
+const supHora = iso => new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+const supProt = () => { const d = new Date(); return String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') + String(Math.floor(1000 + Math.random() * 9000)); };
+const supMsg = (de, t) => ({ id: uid(8), de, t: String(t).slice(0, 4000), em: new Date().toISOString(), por: de === 'rh' ? (S.user && S.user.nome) || '' : '' });
+/* armazenamento: Firebase quando hospedado; neste navegador no modo local */
+const SupDB = {
+  local: () => JSON.parse(localStorage.getItem('nexum:suporte') || '{}'), salvaLocal: o => localStorage.setItem('nexum:suporte', JSON.stringify(o)),
+  async criar(d) { if (FB_ON) return FB.db.doc(`suporte/${d.protocolo}`).set(d); const o = SupDB.local(); o[d.protocolo] = d; SupDB.salvaLocal(o); SupDB.avisa(); },
+  async add(prot, m, extra = {}) { if (FB_ON) return FB.db.doc(`suporte/${prot}`).update({ msgs: firebase.firestore.FieldValue.arrayUnion(m), atualizadoEm: m.em, ...extra }); const o = SupDB.local(); o[prot].msgs.push(m); Object.assign(o[prot], { atualizadoEm: m.em }, extra); SupDB.salvaLocal(o); SupDB.avisa(); },
+  async set(prot, d) { if (FB_ON) return FB.db.doc(`suporte/${prot}`).update(d); const o = SupDB.local(); Object.assign(o[prot], d); SupDB.salvaLocal(o); SupDB.avisa(); },
+  ouvintes: [], avisa() { SupDB.ouvintes.forEach(f => f()); },
+  ouvirLista(cb) { if (FB_ON) return FB.db.collection('suporte').where('uid', '==', supUid()).onSnapshot(s => cb(s.docs.map(d => d.data())), () => cb([]));
+    const f = () => cb(Object.values(SupDB.local()).filter(x => x.uid === supUid())); SupDB.ouvintes.push(f); f(); return () => { SupDB.ouvintes = SupDB.ouvintes.filter(x => x !== f); }; }
+};
+function supSistema() {
+  const lic = licenca(), t = S.tenant;
+  return `Você é o assistente de suporte do NEXUM RH, um sistema de RH por assinatura para comércio e redes de lojas no Brasil. Responda em português do Brasil, com frases curtas e passos numerados quando for um "como faço". Seja cordial e direto. Nunca invente recursos: se não souber, diga que não tem certeza e sugira o botão "Falar com atendente". Para pagamento, cobrança, bloqueio, cancelamento, erro técnico ou pedido de algo que o sistema não faz, sugira "Falar com atendente". Não dê parecer jurídico definitivo: lembre que cálculos devem ser conferidos com a contabilidade.
+Contexto do cliente: empresa ${t.nome}; plano ${lic.plano.nome}${lic.trial ? ' (teste grátis)' : ''}; licença vence em ${fd(t.expira)}; situação: ${lic.bloqueada ? 'bloqueada' : !lic.ativa ? 'somente leitura (vencida)' : lic.tolerancia ? 'vencida, em tolerância' : 'ativa'}; usuário ${S.user.nome}, papel ${S.user.role}.
+Onde ficam as coisas: menu lateral com Dashboard; EQUIPE (Colaboradores, Ponto, Escalas, Férias, Afastamentos e ocorrências, Saúde e segurança, Contratos e documentos); COMUNICAÇÃO (Portal do colaborador, Solicitações, Chat, Comunicados, Canal de ética); FINANCEIRO (Folha mensal, Holerites, Adiantamentos e vales, 13º, Rescisões, Comissões); CONTRATAÇÃO (Admissão, Recrutamento); FERRAMENTAS (Calculadoras, Relatórios, Auditoria, Backup). Configurações (ícone de engrenagem/menu do usuário): Empresa, Lojas, Jornada e escalas, Feriados, Convenção coletiva, Plano (pagamento por PIX), Integrações, Usuários.
+Regras do plano: Essencial R$ 49 até 10 funcionários, Profissional R$ 129 até 50, Empresa R$ 299 ilimitado; Recrutamento e Seleção R$ 189 à parte. Sem pagamento: até o 5º dia após o vencimento funciona com aviso; do 6º ao 15º só leitura e o ponto pelo portal fica suspenso; a partir do 16º o sistema e o portal são bloqueados, restando pagar e baixar o backup.
+Recursos: ponto pelo rosto com prova de vida e localização da loja; banco de horas; folha com INSS, IRRF e FGTS 2026; holerites assinados com foto no portal; documentos e contratos com assinatura; férias com aviso e recibo; rescisão com TRCT e carta de dispensa; portal do colaborador com senha definida pelo RH (Portal do colaborador > liberar acesso); importação de funcionários por planilha do Excel.
+Recursos recentes: limite dos pedidos de adiantamento pelo portal em Financeiro > Adiantamentos e vales, no quadro do topo (percentual do salário por mês; padrão 40%; zero desliga); mural de aniversariantes e tempo de casa no Início do portal, publicado sozinho; Indique e ganhe em Configurações > Plano (código e link; 1 mês grátis por empresa indicada que assinar); chat de suporte no canto da tela com protocolo; régua de bloqueio por falta de pagamento.`;
+}
+function supRender() {
+  const p = $('#sup-p'); if (!p) return; const c = $('.sp-c', p), d = SUP.doc;
+  if (SUP.tela === 'lista') { $('.sp-h small', p).textContent = 'Meus atendimentos'; c.innerHTML = `<div class="sp-lst">${SUP.lista.length ? SUP.lista.slice().sort((a, b) => (b.atualizadoEm || '').localeCompare(a.atualizadoEm || '')).map(x => `<button data-sp-abre="${x.protocolo}"><span style="flex:1"><b>Protocolo ${x.protocolo}</b><span>${new Date(x.criadoEm).toLocaleString('pt-BR').slice(0, 17)} · ${esc(((x.msgs || []).filter(m => m.de === 'rh').pop() || {}).t || 'sem mensagens').slice(0, 40)}</span></span><span class="sp-st ${x.status}">${SUP_ST[x.status]}</span></button>`).join('') : '<p style="color:#7A8199;text-align:center;margin-top:30px">Você ainda não abriu nenhum atendimento.</p>'}</div><button class="sp-ini" data-sp="novo">Iniciar novo chat</button>`; supEntrada(false); return; }
+  if (!d) { $('.sp-h small', p).textContent = 'Estamos aqui para ajudar';
+    c.innerHTML = `<div class="sp-m bot"><span class="mini">${supN(18)}</span><div class="bb">Olá${S.user ? ', ' + esc(String(S.user.nome).split(' ')[0]) : ''}! Este é o suporte do NEXUM RH. Toque em <b>Iniciar chat</b> para tirar dúvidas com o assistente ou falar com um atendente.</div></div><button class="sp-ini" data-sp="novo">Iniciar chat</button>${SUP.lista.length ? '<button class="sp-ini" data-sp="lista" style="border-color:#C9CFDB;font-weight:500">Meus atendimentos</button>' : ''}`; supEntrada(false); return; }
+  $('.sp-h small', p).textContent = `Protocolo ${d.protocolo} · ${SUP_ST[d.status]}`;
+  let dia = '', h = ''; (d.msgs || []).forEach(m => { const dd = new Date(m.em).toLocaleDateString('pt-BR'); if (dd !== dia) { dia = dd; h += `<div class="sp-dia">${dd}</div>`; }
+    h += `<div class="sp-m ${m.de}">${m.de !== 'rh' ? `<span class="mini">${supN(18)}</span>` : ''}<div class="bb">${m.de === 'dono' ? '<b style="display:block;font-size:12px;color:#1F5FE8">Atendente NEXUM</b>' : ''}${esc(m.t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')}</div></div><div class="sp-hr">${supHora(m.em)}</div>`; });
+  const fechado = ['concluido', 'cancelado'].includes(d.status);
+  if (SUP.dig) h += `<div class="sp-m bot"><span class="mini">${supN(18)}</span><div class="bb sp-dig"><i></i><i></i><i></i></div></div>`;
+  else if (fechado) h += `<div class="sp-dia">Atendimento ${SUP_ST[d.status].toLowerCase()}. </div><button class="sp-ini" data-sp="novo">Iniciar novo chat</button>`;
+  else h += `<div class="sp-ops">${d.status === 'bot' && NEXUM.ia.claude && (d.msgs || []).length > 2 && (d.msgs || []).slice(-1)[0].de === 'bot' ? '<button data-sp="completa">Quero uma resposta mais completa</button>' : ''}${d.status === 'bot' ? '<button data-sp="atendente">Falar com atendente</button>' : ''}<button data-sp="lista">Meus atendimentos</button><button data-sp="sair">Encerrar atendimento</button></div>`;
+  c.innerHTML = h; c.scrollTop = c.scrollHeight; supEntrada(!fechado && !SUP.dig);
+}
+function supEntrada(on) { const t = $('#sp-t'); if (!t) return; t.disabled = !on; t.placeholder = on ? 'Enviar uma mensagem...' : 'Inicie um chat para escrever'; }
+function supAbrir(prot) {
+  if (SUP.unsub) { SUP.unsub(); SUP.unsub = null; } SUP.tela = 'chat'; SUP.prot = prot; SUP.doc = SUP.lista.find(x => x.protocolo === prot) || null;
+  if (prot && FB_ON) SUP.unsub = FB.db.doc(`suporte/${prot}`).onSnapshot(s => { SUP.doc = s.data() || null; if (SUP.doc && SUP.doc.naoLidoRh && SUP.aberto) SupDB.set(prot, { naoLidoRh: false }).catch(() => {}); supRender(); }, () => {});
+  if (SUP.doc && SUP.doc.naoLidoRh) SupDB.set(prot, { naoLidoRh: false }).catch(() => {}); supRender();
+}
+async function supNovo() {
+  const prot = supProt(), d = { protocolo: prot, tid: S.tenant.id, empresa: S.tenant.nome, uid: supUid(), nome: S.user.nome || '', email: S.user.email || '', status: 'bot', criadoEm: new Date().toISOString(), atualizadoEm: new Date().toISOString(), naoLidoDono: false, naoLidoRh: false,
+    msgs: [supMsg('bot', `Olá, ${String(S.user.nome || '').split(' ')[0] || 'tudo bem'}! Seja bem-vindo(a) ao suporte do NEXUM RH. 😊\nSeu protocolo é ${prot}.\n\nSou o assistente virtual: pode perguntar qualquer dúvida sobre o sistema. Se preferir falar com uma pessoa, toque em "Falar com atendente".`)] };
+  try { await SupDB.criar(d); SUP.lista = [...SUP.lista.filter(x => x.protocolo !== prot), d]; supAbrir(prot); setTimeout(() => $('#sp-t') && $('#sp-t').focus(), 50); } catch (e) { toast('Não foi possível abrir o atendimento: ' + (e.code || e.message), true); }
+}
+async function supEnviar() {
+  const t = $('#sp-t'), txt = t.value.trim(), d = SUP.doc; if (!txt || !d || ['concluido', 'cancelado'].includes(d.status)) return; t.value = ''; t.style.height = '';
+  const m = supMsg('rh', txt); d.msgs = [...(d.msgs || []), m]; supRender();
+  try { await SupDB.add(d.protocolo, m, d.status === 'analise' ? { naoLidoDono: true } : {}); } catch (e) { return toast('Mensagem não enviada: ' + (e.code || e.message), true); }
+  if (d.status !== 'bot') return;
+  SUP.dig = true; supRender(); let resp;
+  try { const hist = d.msgs.slice(-12).map(x => ({ role: x.de === 'rh' ? 'user' : 'assistant', content: x.t })); resp = await perguntarIA(hist, supSistema()); }
+  catch (e) { resp = e.message === 'SEM_CHAVE' ? 'O assistente automático ainda não está disponível. Toque em "Falar com atendente" que uma pessoa responde você.' : 'Não consegui responder agora. Tente de novo em instantes ou toque em "Falar com atendente".'; }
+  SUP.dig = false; const r = supMsg('bot', String(resp || '').trim() || 'Pode reformular a pergunta?'); d.msgs = [...d.msgs, r]; supRender(); SupDB.add(d.protocolo, r).catch(() => {});
+}
+async function supAcao(a) {
+  const d = SUP.doc;
+  if (a === 'novo') return supNovo();
+  if (a === 'completa' && d) { SUP.dig = true; supRender(); let resp; try { const hist = d.msgs.slice(-12).map(x => ({ role: x.de === 'rh' ? 'user' : 'assistant', content: x.t })); hist.push({ role: 'user', content: 'Explique de novo, de forma mais completa e detalhada, com o passo a passo no sistema.' }); resp = await perguntarClaude(hist, supSistema()); } catch (e) { resp = 'Não consegui uma resposta mais completa agora. Toque em "Falar com atendente".'; } SUP.dig = false; const r = supMsg('bot', String(resp || '').trim()); d.msgs = [...d.msgs, r]; supRender(); SupDB.add(d.protocolo, r).catch(() => {}); return; } if (a === 'lista') { if (SUP.unsub) { SUP.unsub(); SUP.unsub = null; } SUP.tela = 'lista'; return supRender(); }
+  if (a === 'atendente' && d) { const m = supMsg('bot', `Pronto! Chamei um atendente do NEXUM. Seu protocolo ${d.protocolo} está em análise.\nPode escrever aqui os detalhes: a resposta aparece neste chat, mesmo se você fechar e abrir de novo (atendimento em dias úteis, das 9h às 18h).`);
+    d.status = 'analise'; d.msgs = [...(d.msgs || []), m]; supRender(); try { await SupDB.add(d.protocolo, m, { status: 'analise', naoLidoDono: true }); } catch (e) { toast('Não foi possível chamar o atendente: ' + (e.code || e.message), true); } return; }
+  if (a === 'sair') { SUP.tela = 'chat'; SUP.doc = null; SUP.prot = null; if (SUP.unsub) { SUP.unsub(); SUP.unsub = null; } supRender(); }
+}
+function suporteIniciar() {
+  if (DEMO || !S.user || !S.tenant || document.getElementById('sup-b')) return;
+  document.body.insertAdjacentHTML('beforeend', `<div id="sup-p" role="dialog" aria-label="Suporte NEXUM RH"><div class="sp-h"><span class="sp-av">${supN(22)}</span><b>Suporte NEXUM RH<small>Estamos aqui para ajudar</small></b><button data-sp="lista" title="Meus atendimentos" aria-label="Meus atendimentos">☰</button><button id="sp-x" aria-label="Minimizar">×</button></div><div class="sp-c"></div>
+    <div class="sp-in"><textarea id="sp-t" rows="1" placeholder="Enviar uma mensagem..." aria-label="Mensagem"></textarea><button id="sp-env" aria-label="Enviar"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 20.5 21.5 12 3 3.5 3.1 10 15 12 3.1 14z"/></svg></button></div>
+    <div class="sp-pw">Powered by ${supN(16)} <b>NEXUM RH</b></div></div>
+    <button id="sup-b" aria-label="Abrir o chat de suporte" title="Suporte NEXUM RH"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 6.5h14a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H10.5L7 20.5v-3H5A1.5 1.5 0 0 1 3.5 16V8A1.5 1.5 0 0 1 5 6.5z"/><path d="M20.5 11.5H27a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 27 22.5h-2v3l-3.5-3H14a1.5 1.5 0 0 1-1.5-1.5v-3.5"/></svg><span class="dot"></span></button>`);
+  const p = $('#sup-p'), b = $('#sup-b');
+  b.onclick = () => { SUP.aberto = !p.classList.contains('on'); p.classList.toggle('on', SUP.aberto); b.classList.remove('novo'); if (SUP.aberto) { if (SUP.doc && SUP.doc.naoLidoRh) SupDB.set(SUP.doc.protocolo, { naoLidoRh: false }).catch(() => {}); supRender(); } };
+  $('#sp-x').onclick = () => { SUP.aberto = false; p.classList.remove('on'); };
+  p.addEventListener('click', e => { const a = e.target.closest('[data-sp]'), o = e.target.closest('[data-sp-abre]'); if (a) supAcao(a.dataset.sp); if (o) supAbrir(o.dataset.spAbre); });
+  $('#sp-env').onclick = supEnviar; const t = $('#sp-t'); t.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); supEnviar(); } }; t.oninput = () => { t.style.height = ''; t.style.height = Math.min(110, t.scrollHeight) + 'px'; };
+  SUP.unsubL = SupDB.ouvirLista(l => { SUP.lista = l; const novo = l.some(x => x.naoLidoRh); if (novo && !SUP.aberto) b.classList.add('novo'); if (!SUP.doc) { const ab = l.find(x => ['bot', 'analise'].includes(x.status) && x.naoLidoRh); if (ab && !SUP.aberto) SUP.prot = ab.protocolo; } if (!FB_ON && SUP.prot) SUP.doc = l.find(x => x.protocolo === SUP.prot) || SUP.doc; if (SUP.aberto) supRender(); });
+  if (FB_ON && !S.iaPlat) FB.db.doc('plataforma/ia').get().then(d => { const x = d.data() || {}; S.iaPlat = x.groqKey || ''; S.iaPlatC = { claude: x.claudeKey || '', workspace: x.workspace || '' }; }).catch(() => {});
+  supRender();
+}
+
 /* ---------- IA (Groq) ---------- */
-const iaChave = () => localStorage.getItem('nexum:iaKey') || '';
+const iaChave = () => localStorage.getItem('nexum:iaKey') || (typeof S !== 'undefined' && S.iaPlat) || NEXUM.ia.groq || '';
 const iaModelo = () => localStorage.getItem('nexum:iaModelo') || 'openai/gpt-oss-120b';
-async function perguntarIA(msgs, sistema) {
+async function perguntarGroq(msgs, sistema) {
   const k = iaChave(); if (!k) throw new Error('SEM_CHAVE');
   const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + k },
@@ -4155,6 +4281,20 @@ async function perguntarIA(msgs, sistema) {
   });
   if (!r.ok) { const t = await r.text(); throw new Error(r.status === 401 ? 'Chave da IA inválida. Confira em Configurações > Integrações.' : r.status === 404 ? 'Modelo de IA indisponível. Troque o modelo em Configurações > Integrações.' : r.status === 429 ? 'Limite de uso da IA atingido. Aguarde um minuto.' : 'Falha na IA: ' + t.slice(0, 160)); }
   const j = await r.json(); return (j.choices && j.choices[0] && j.choices[0].message.content) || '';
+}
+/* Claude (Anthropic): respostas mais completas e reserva quando o Groq falha */
+async function perguntarClaude(msgs, sistema) {
+  const p = (typeof S !== 'undefined' && S.iaPlatC) || {}, c = { ...NEXUM.ia, ...(p.claude ? { claude: p.claude, workspace: p.workspace || '' } : {}) }; if (!c.claude) throw new Error('SEM_CHAVE');
+  const ms = msgs.filter(m => m.content).map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: String(m.content) }));
+  while (ms.length && ms[0].role !== 'user') ms.shift();
+  const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'content-type': 'application/json', 'x-api-key': c.claude, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true', ...(c.workspace ? { 'anthropic-workspace-id': c.workspace } : {}) },
+    body: JSON.stringify({ model: c.modeloClaude || 'claude-sonnet-5-5', max_tokens: 1800, system: sistema, messages: ms }) });
+  if (!r.ok) { const t = await r.text(); throw new Error(r.status === 401 ? 'Chave da Anthropic inválida.' : r.status === 429 ? 'Limite de uso da IA atingido. Aguarde um minuto.' : 'Falha na IA: ' + t.slice(0, 160)); }
+  const j = await r.json(); return (j.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+}
+async function perguntarIA(msgs, sistema) {
+  try { return await perguntarGroq(msgs, sistema); }
+  catch (e) { if (NEXUM.ia.claude) { try { return await perguntarClaude(msgs, sistema); } catch (e2) { } } throw e; }
 }
 const mdLeve = t => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/^#{1,4}\s*(.+)$/gm, '<b>$1</b>').replace(/^\s*[-*]\s+(.+)$/gm, '• $1').replace(/\n/g, '<br>');
 const semChaveIA = () => `<div class="panel empty"><b>Conecte a IA para usar este recurso</b>Crie uma chave gratuita em console.groq.com/keys e cole em Configurações > Integrações.${can('admin') ? '<div style="margin-top:12px"><button class="btn" onclick="S.cfgAba=\'integ\';go(\'config\')">Configurar agora</button></div>' : ''}</div>`;
