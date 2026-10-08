@@ -557,7 +557,7 @@ const TAB_PADRAO = {
 };
 
 const ROLES = { admin: 'Administrador', rh: 'RH', gestor: 'Gestor', leitura: 'Somente leitura' };
-const COLS = ['colab', 'ponto', 'ferias', 'folhas', 'ocorr', 'users', 'config', 'audit', 'avisos', 'solic', 'docs', 'metas', 'pesq', 'chat', 'bh', 'assin', 'holerites', 'acessos', 'faces', 'bioFalhas', 'adiant', 'vagas', 'cands', 'admis', 'agenda', 'templates', 'dispositivos', 'externos', 'logins', 'diretorio', 'convites', 'comissoes', 'avaliacoes', 'denuncias', 'pensoes', 'propostas', 'admdocs', 'reunioes'];
+const COLS = ['colab', 'ponto', 'ferias', 'folhas', 'ocorr', 'users', 'config', 'audit', 'avisos', 'solic', 'docs', 'metas', 'pesq', 'chat', 'bh', 'assin', 'holerites', 'acessos', 'faces', 'bioFalhas', 'adiant', 'vagas', 'cands', 'admis', 'agenda', 'templates', 'dispositivos', 'externos', 'logins', 'diretorio', 'convites', 'comissoes', 'avaliacoes', 'desempenho', 'denuncias', 'pensoes', 'propostas', 'admdocs', 'reunioes'];
 
 /* =====================================================================
    FIREBASE — cole a configuração do seu projeto abaixo para ativar
@@ -936,7 +936,7 @@ const NAV = [
   ['atest', 'Atestados', R_EQ, 'EQUIPE'],
   ['ferias', 'Férias', ['admin', 'rh', 'leitura'], 'EQUIPE'],
   ['bh', 'Banco de Horas', R_EQ, 'EQUIPE'],
-  ['abs', 'Absenteísmo', R_EQ, 'EQUIPE'], ['loja', 'Minha loja', R_EQ, 'EQUIPE'], ['venc', 'Vencimentos', R_EQ, 'EQUIPE'], ['planfer', 'Planejamento de férias', R_EQ, 'EQUIPE'], ['afast', 'Afastamentos e licenças', R_EQ, 'EQUIPE'], ['jornada', 'Infrações de jornada', R_EQ, 'EQUIPE'], ['sst', 'Saúde e segurança', R_EQ, 'EQUIPE'],
+  ['abs', 'Absenteísmo', R_EQ, 'EQUIPE'], ['desemp', 'Avaliação de desempenho', R_RH, 'EQUIPE'], ['loja', 'Minha loja', R_EQ, 'EQUIPE'], ['venc', 'Vencimentos', R_EQ, 'EQUIPE'], ['planfer', 'Planejamento de férias', R_EQ, 'EQUIPE'], ['afast', 'Afastamentos e licenças', R_EQ, 'EQUIPE'], ['jornada', 'Infrações de jornada', R_EQ, 'EQUIPE'], ['sst', 'Saúde e segurança', R_EQ, 'EQUIPE'],
   ['adv', 'Advertências', R_EQ, 'EQUIPE'],
   ['susp', 'Suspensões Disciplinares', R_RH, 'EQUIPE'],
   ['com', 'Comunicados', R_RH, 'COMUNICAÇÃO'],
@@ -983,7 +983,7 @@ function redeLogin() {
 }
 
 function renderAuth(aba = location.hash === '#criar' ? 'criar' : 'entrar') {
-  ['sup-b', 'sup-p'].forEach(id => { const x = document.getElementById(id); if (x) x.remove(); }); if (typeof SUP !== 'undefined' && SUP.unsubL) { SUP.unsubL(); SUP.unsubL = null; }
+  ['sup-b', 'sup-p', 'av-mod', 'av-fx'].forEach(id => { const x = document.getElementById(id); if (x) x.remove(); }); if (typeof SUP !== 'undefined' && SUP.unsubL) { SUP.unsubL(); SUP.unsubL = null; }
   $$('.bk-card').forEach(e => e.remove());
   const jaAberta = !!$('.pz');
   $('#root').innerHTML = `<main class="pz${jaAberta ? ' pz-sa' : ''}"><div class="lx-fundo" aria-hidden="true"><i class="l1"></i><i class="l2"></i><i class="l3"></i><canvas id="lx-rede"></canvas></div><div class="pz-faixas" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i></div><div class="pz-col"><div class="pz-foto" aria-hidden="true"></div>
@@ -1134,7 +1134,7 @@ function stopNet() { if (netRAF) cancelAnimationFrame(netRAF); netRAF = null; wi
    APLICAÇÃO
    ===================================================================== */
 function renderApp() {
-  setTimeout(suporteIniciar, 0);
+  setTimeout(suporteIniciar, 0); setTimeout(avisosChecar, 400);
   const lic = licenca(); if (lic.bloqueada) return telaBloqueio(lic);
   const nav = NAV.filter(n => n[2].includes(S.user.role));
   if (!nav.some(n => n[0] === S.view)) S.view = nav[0][0];
@@ -1212,9 +1212,9 @@ function go(v) { if (!document.getElementById('view')) return;
   $('#side').classList.remove('open');
   $('#t-view').textContent = (NAV.find(n => n[0] === v) || [])[1] || '';
   const el = $('#view'); el.innerHTML = '';
-  ({ dash: e => { vDash(e); atalhosDash(e); }, tempo: vTempo, colab: vColab, ponto: vPonto, bio: vBio, atest: e => vOcorr(e, '', { tipo: 'atestado' }), ferias: e => { vFerias(e); if (podeEditar()) { e.insertAdjacentHTML('afterbegin', '<div class="row end" style="margin-bottom:10px"><button class="btn sec" id="fe-col">Férias coletivas</button></div>'); $('#fe-col', e).onclick = feriasColetivas; } }, bh: e => { vPortal(e, 'bh', true); painelAcoesBH(e); }, abs: vAbs,
+  ({ dash: e => { vDash(e); atalhosDash(e); }, tempo: vTempo, colab: vColab, ponto: vPonto, bio: vBio, atest: e => vOcorr(e, '', { tipo: 'atestado' }), desemp: vDesempenho, ferias: e => { vFerias(e); if (podeEditar()) { e.insertAdjacentHTML('afterbegin', '<div class="row end" style="margin-bottom:10px"><button class="btn sec" id="fe-col">Férias coletivas</button></div>'); $('#fe-col', e).onclick = feriasColetivas; } }, bh: e => { vPortal(e, 'bh', true); painelAcoesBH(e); }, abs: vAbs,
     adv: e => vOcorr(e, '', { tipo: 'advertencia' }), susp: e => vOcorr(e, '', { tipo: 'suspensao' }), com: e => vPortal(e, 'avisos', true), chat: e => vPortal(e, 'chat', true), portal: e => { vPortal(e); painelPedSenha(e); },
-    fin: vFin, adiant: e => { vAdiant(e); painelLimiteVale(e); }, folha: e => vFolha(e), recr: vRecr, adm: vAdm, resc: e => { vDem(e); painelPrazosResc(e); painelPortalDeslig(e); e.insertAdjacentHTML('afterbegin', `<div class="row" style="margin-bottom:12px"><b>Central do desligamento</b><span class="sp"></span><button class="btn sec sm" id="rs-av">Aviso prévio</button><button class="btn sec sm" id="rs-np">Não prorrogação da experiência</button><button class="btn sec sm" id="rs-cd">Carta de dispensa</button><button class="btn sec sm" id="rs-13">Calculadora de 13º</button><button class="btn sec sm" id="rs-ra">Reativar desligado</button></div><p class="hint" style="margin:-4px 0 12px">Abaixo fica a calculadora de rescisão: ao registrar, ela gera o TRCT completo e a carta da modalidade escolhida e envia ao portal.</p>`); $('#rs-av', e).onclick = () => modalDocsResc('aviso'); $('#rs-np', e).onclick = () => modalDocsResc('naoprorrog'); $('#rs-cd', e).onclick = modalCartaDispensa; $('#rs-13', e).onclick = modal13; $('#rs-ra', e).onclick = modalReativar; }, afast: vAfast, benef: e => vBenef(e), jornada: e => vJornada(e), sst: e => vSST(e), obrig: e => vObrig(e), ia: vIA, agenda: vAgenda, docs: vTpl, relat: e => { vRelat(e); painelLojas(e); painelSaidas(e); e.insertAdjacentHTML('afterbegin', `<div class="row" style="margin-bottom:14px"><span class="hint">Arquivos e documentos legais</span><span class="sp"></span><button class="btn" id="rl-rs">Resumo do mês</button><button class="btn sec" id="rl-ct">Pacote do contador</button><button class="btn sec" id="rl-ir">Informes de rendimentos</button><button class="btn sec" id="rl-afd">Arquivos fiscais do ponto (AFD/AEJ)</button></div>`); $('#rl-afd', e).onclick = modalFiscal; $('#rl-rs', e).onclick = () => modalResumo(); $('#rl-ct', e).onclick = () => modal('Pacote do contador', `<p class="hint" style="margin-top:0">Uma planilha com folha, admissões, desligamentos, férias, afastamentos, pensões e vale-transporte do mês, pronta para o contador importar ou conferir.</p><input class="inp" type="month" id="pc-c" value="${iso(addM(hoje(), -1)).slice(0, 7)}" style="width:auto">`, { foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="pc-ok">Baixar planilha</button>', onMount: m => $('#pc-ok', m).onclick = async () => { try { await pacoteContador($('#pc-c', m).value); closeModal(); } catch (er) { toast('Não foi possível carregar o gerador de planilhas. Verifique a internet.', true); } } }); $('#rl-ir', e).onclick = modalInformes; }, venc: vVenc, trein: vTrein, loja: vLoja, reuniao: vReunioes, planfer: e => vPlanFer(e), conv: vConv, comis: e => vComis(e), etica: vEtica, audit: vAudit, ocorr: e => vOcorr(e, '', { contratados: true }), config: vConfig })[v](el);
+    fin: vFin, adiant: e => { vAdiant(e); painelLimiteVale(e); }, folha: e => { vFolha(e); if (!$('#fm-b', e)) { e.insertAdjacentHTML('afterbegin', '<div class="row" style="margin-bottom:12px"><span class="sp"></span><button class="btn sec" id="fm-c2">Enviar ao contador</button><button class="btn" id="fm-b">Fechamento do mês</button></div>'); $('#fm-b', e).onclick = () => fechamentoGuiado(S.folhaComp || compPadrao()); $('#fm-c2', e).onclick = () => modalContador(S.folhaComp || compPadrao()); } }, recr: vRecr, adm: vAdm, resc: e => { vDem(e); painelPrazosResc(e); painelPortalDeslig(e); e.insertAdjacentHTML('afterbegin', `<div class="row" style="margin-bottom:12px"><b>Central do desligamento</b><span class="sp"></span><button class="btn sec sm" id="rs-av">Aviso prévio</button><button class="btn sec sm" id="rs-np">Não prorrogação da experiência</button><button class="btn sec sm" id="rs-cd">Carta de dispensa</button><button class="btn sec sm" id="rs-13">Calculadora de 13º</button><button class="btn sec sm" id="rs-ra">Reativar desligado</button></div><p class="hint" style="margin:-4px 0 12px">Abaixo fica a calculadora de rescisão: ao registrar, ela gera o TRCT completo e a carta da modalidade escolhida e envia ao portal.</p>`); $('#rs-av', e).onclick = () => modalDocsResc('aviso'); $('#rs-np', e).onclick = () => modalDocsResc('naoprorrog'); $('#rs-cd', e).onclick = modalCartaDispensa; $('#rs-13', e).onclick = modal13; $('#rs-ra', e).onclick = modalReativar; }, afast: vAfast, benef: e => vBenef(e), jornada: e => vJornada(e), sst: e => { vSST(e); painelExames(e); }, obrig: e => vObrig(e), ia: vIA, agenda: vAgenda, docs: vTpl, relat: e => { vRelat(e); painelLojas(e); painelSaidas(e); e.insertAdjacentHTML('afterbegin', `<div class="row" style="margin-bottom:14px"><span class="hint">Arquivos e documentos legais</span><span class="sp"></span><button class="btn" id="rl-rs">Resumo do mês</button><button class="btn sec" id="rl-ct">Pacote do contador</button><button class="btn sec" id="rl-ir">Informes de rendimentos</button><button class="btn sec" id="rl-afd">Arquivos fiscais do ponto (AFD/AEJ)</button></div>`); $('#rl-afd', e).onclick = modalFiscal; $('#rl-rs', e).onclick = () => modalResumo(); $('#rl-ct', e).onclick = () => modal('Pacote do contador', `<p class="hint" style="margin-top:0">Uma planilha com folha, admissões, desligamentos, férias, afastamentos, pensões e vale-transporte do mês, pronta para o contador importar ou conferir.</p><input class="inp" type="month" id="pc-c" value="${iso(addM(hoje(), -1)).slice(0, 7)}" style="width:auto">`, { foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="pc-ok">Baixar planilha</button>', onMount: m => $('#pc-ok', m).onclick = async () => { try { await pacoteContador($('#pc-c', m).value); closeModal(); } catch (er) { toast('Não foi possível carregar o gerador de planilhas. Verifique a internet.', true); } } }); $('#rl-ir', e).onclick = modalInformes; }, venc: vVenc, trein: vTrein, loja: vLoja, reuniao: vReunioes, planfer: e => vPlanFer(e), conv: vConv, comis: e => vComis(e), etica: vEtica, audit: vAudit, ocorr: e => vOcorr(e, '', { contratados: true }), config: vConfig })[v](el);
   atualizarBadge();
   $('.content').scrollTop = 0;
 }
@@ -2507,6 +2507,176 @@ function modalResumo(comp = iso(addM(hoje(), -1)).slice(0, 7)) {
   modal(`Resumo de ${mesNome(comp)}`, `<input class="inp" type="month" id="rs-c" value="${comp}" style="width:auto;margin-bottom:10px"><div class="doc-prev">${html}</div>`, { size: 'lg', foot: '<button class="btn sec" id="rs-w">Enviar pelo WhatsApp</button><button class="btn" id="rs-p">Imprimir / PDF</button>', onMount: m => {
     $('#rs-c', m).onchange = e => { closeModal(); modalResumo(e.target.value); }; $('#rs-p', m).onclick = () => printDoc(`Resumo ${comp}`, html); $('#rs-w', m).onclick = () => window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, '_blank', 'noopener'); } });
 }
+/* =====================================================================
+   FECHAMENTO DO MÊS GUIADO e EXPORTAÇÃO CONTÁBIL
+   ===================================================================== */
+const mesRot = comp => { const [a, m] = comp.split('-'); return `${['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'][+m - 1]} de ${a}`; };
+const compPadrao = () => { const h = hoje(); return h.getDate() <= 15 ? iso(new Date(h.getFullYear(), h.getMonth(), 0)).slice(0, 7) : iso(h).slice(0, 7); };
+function passosFechamento(comp) {
+  const ini = `${comp}-01`, fim = iso(new Date(+comp.slice(0, 4), +comp.slice(5), 0)), noMes = d => d && d >= ini && d <= fim, reg = (S.data.config.fechamentos || {})[comp] || {};
+  const at = ativos().filter(c => c.tipo !== 'pj' && (!c.admissao || c.admissao <= fim));
+  const pontoMes = S.data.ponto.filter(p => noMes(p.data)), impares = pontoMes.filter(p => (p.marc || []).filter(Boolean).length % 2 === 1).length;
+  const solic = S.data.solic.filter(s => s.status === 'pendente' && ['ajuste_ponto', 'atestado', 'justificativa', 'folga', 'adiantamento'].includes(s.tipo)).length;
+  const f = S.data.folhas.find(x => !x.tipo && x.comp === comp), comPonto = f ? f.itens.filter(i => i.ponto).length : 0;
+  const hol = S.data.holerites.filter(h => h.comp === comp), assin = hol.filter(h => (S.data.assin || []).some(a => a.ref === h.id || a.holeriteId === h.id)).length, pagos = hol.filter(h => h.pagoEm).length;
+  return [
+    { id: 'ponto', t: 'Conferir o ponto do mês', ok: impares === 0, d: impares ? `${impares} dia${impares > 1 ? 's' : ''} com marcação ímpar (falta uma batida)` : pontoMes.length ? `${pontoMes.length} registro${pontoMes.length > 1 ? 's' : ''}, nenhuma batida faltando` : 'Nenhum registro de ponto neste mês', acao: ['Abrir o ponto', () => go('ponto')] },
+    { id: 'solic', t: 'Responder os pedidos dos funcionários', ok: solic === 0, d: solic ? `${solic} pedido${solic > 1 ? 's' : ''} de ajuste, atestado ou folga esperando você` : 'Nenhum pedido pendente', acao: ['Ver pedidos', () => go('solic')] },
+    { id: 'gerar', t: 'Gerar a folha com as horas do ponto', ok: !!f && (comPonto > 0 || !pontoMes.length), d: !f ? 'A folha deste mês ainda não foi criada' : comPonto ? `Folha criada, ponto importado para ${comPonto} funcionário${comPonto > 1 ? 's' : ''}` : 'Folha criada; o ponto ainda não foi importado', acao: ['Abrir a folha', () => { S.folhaComp = comp; go('folha'); }] },
+    { id: 'fechar', t: 'Conferir e fechar a folha', ok: !!(f && f.fechada), d: f && f.fechada ? 'Folha fechada' : 'Confira os valores e feche a folha', acao: ['Abrir a folha', () => { S.folhaComp = comp; go('folha'); }] },
+    { id: 'publicar', t: 'Publicar os holerites no portal', ok: hol.length > 0 && hol.length >= (f ? f.itens.length : at.length), d: hol.length ? `${hol.length} holerite${hol.length > 1 ? 's' : ''} publicado${hol.length > 1 ? 's' : ''}` : 'Nenhum holerite publicado', acao: ['Abrir a folha', () => { S.folhaComp = comp; go('folha'); }] },
+    { id: 'pagar', t: 'Pagar os salários e marcar como pago', ok: hol.length > 0 && pagos === hol.length, d: hol.length ? `${pagos} de ${hol.length} marcados como pagos` : 'Publique os holerites primeiro', acao: ['Abrir a folha', () => { S.folhaComp = comp; go('folha'); }] },
+    { id: 'assin', t: 'Acompanhar as assinaturas dos holerites', ok: hol.length > 0 && assin === hol.length, opc: true, d: hol.length ? `${assin} de ${hol.length} assinados pelos funcionários` : 'Publique os holerites primeiro', acao: ['Abrir a folha', () => { S.folhaComp = comp; go('folha'); }] },
+    { id: 'contador', t: 'Enviar ao contador', ok: !!reg.contador, d: reg.contador ? `Enviado em ${new Date(reg.contador).toLocaleString('pt-BR').slice(0, 17)}` : 'Planilha do mês e arquivos para a contabilidade', acao: ['Gerar arquivos', () => modalContador(comp)] }
+  ];
+}
+function fechamentoGuiado(comp = compPadrao()) {
+  const ps = passosFechamento(comp), obrig = ps.filter(p => !p.opc), feitos = obrig.filter(p => p.ok).length, pct = Math.round(feitos / obrig.length * 100), reg = (S.data.config.fechamentos || {})[comp] || {};
+  const comps = [...new Set([compPadrao(), iso(hoje()).slice(0, 7), ...S.data.folhas.filter(x => !x.tipo).map(x => x.comp)])].sort().reverse().slice(0, 12);
+  modal('Fechamento do mês', `<div class="row" style="gap:10px;align-items:center;margin-bottom:12px"><label for="fm-c" class="hint">Mês</label><select class="inp" id="fm-c" style="width:auto">${opts(comps.map(c => [c, mesRot(c)]), comp)}</select><span class="sp"></span>${reg.concluido ? `<span class="pill ok">Concluído em ${fd(reg.concluido.slice(0, 10))}</span>` : `<span class="pill ${pct === 100 ? 'ok' : 'warn'}">${feitos} de ${obrig.length} etapas</span>`}</div>
+    <div style="height:8px;border-radius:4px;background:var(--line,#E2E7F1);overflow:hidden;margin-bottom:14px"><i style="display:block;height:100%;width:${pct}%;background:${pct === 100 ? 'var(--ok,#0F8A5F)' : 'var(--pri,#1F5FE8)'}"></i></div>
+    <ol style="list-style:none;margin:0;padding:0">${ps.map((p, i) => `<li style="display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line,#E2E7F1)"><span style="flex:0 0 30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;${p.ok ? 'background:#E3F6EE;color:#0F8A5F' : 'background:#EEF2FB;color:#46507A'}">${p.ok ? '✓' : i + 1}</span><div style="flex:1"><b>${p.t}</b>${p.opc ? ' <span class="hint">(acompanhamento)</span>' : ''}<div class="hint">${p.d}</div></div><button class="btn ${p.ok ? 'ghost' : 'sec'} sm" data-fm="${p.id}">${p.acao[0]}</button></li>`).join('')}</ol>`,
+    { size: 'lg', foot: `<button class="btn sec" data-close>Fechar</button><button class="btn" id="fm-ok" ${pct === 100 && !reg.concluido ? '' : 'disabled'}>Concluir o fechamento de ${mesRot(comp)}</button>`, onMount: m => {
+      $('#fm-c', m).onchange = e => fechamentoGuiado(e.target.value);
+      $$('[data-fm]', m).forEach(b => b.onclick = () => { const p = ps.find(x => x.id === b.dataset.fm); if (p.id !== 'contador') closeModal(); p.acao[1](); });
+      $('#fm-ok', m).onclick = () => { S.data.config.fechamentos = { ...(S.data.config.fechamentos || {}), [comp]: { ...reg, concluido: new Date().toISOString(), por: (S.user && S.user.nome) || '' } }; save('config'); audit(`Concluiu o fechamento de ${mesRot(comp)}`); toast(`Fechamento de ${mesRot(comp)} concluído.`); fechamentoGuiado(comp); };
+    } });
+}
+/* Arquivos para a contabilidade */
+const CONTAB_PADRAO = { sep: ';', contas: { despSal: '', despFgts: '', salPagar: '', inssRec: '', irrfRec: '', fgtsRec: '', outrosDesc: '' }, eventos: { salario: '101', he50: '150', he100: '151', noturno: '160', dsr: '170', faltas: '201', inss: '973', irrf: '987', salFam: '650', pensao: '310', outros: '300' } };
+function modalContador(comp) {
+  const cf = { ...CONTAB_PADRAO, ...(S.data.config.contabil || {}) }; cf.contas = { ...CONTAB_PADRAO.contas, ...(cf.contas || {}) }; cf.eventos = { ...CONTAB_PADRAO.eventos, ...(cf.eventos || {}) };
+  const f = S.data.folhas.find(x => !x.tipo && x.comp === comp);
+  const CT = [['despSal', 'Despesa com salários (débito)'], ['salPagar', 'Salários a pagar'], ['inssRec', 'INSS a recolher'], ['irrfRec', 'IRRF a recolher'], ['despFgts', 'Despesa com FGTS (débito)'], ['fgtsRec', 'FGTS a recolher'], ['outrosDesc', 'Adiantamentos e outros descontos']];
+  const EV = [['salario', 'Salário'], ['he50', 'Hora extra 50%'], ['he100', 'Hora extra 100%'], ['noturno', 'Adicional noturno'], ['dsr', 'DSR sobre horas'], ['faltas', 'Faltas e atrasos'], ['inss', 'INSS'], ['irrf', 'IRRF'], ['salFam', 'Salário-família'], ['pensao', 'Pensão alimentícia'], ['outros', 'Outros descontos']];
+  modal(`Enviar ao contador: ${mesRot(comp)}`, `${f ? '' : '<p class="banner bad" style="margin-top:0">A folha deste mês ainda não foi criada.</p>'}
+    <p class="hint" style="margin-top:0">Três arquivos: a planilha completa do mês, os lançamentos contábeis e os eventos por funcionário. Os códigos abaixo variam de escritório para escritório: confirme com o seu contador e salve uma vez.</p>
+    <div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:14px"><button class="btn" id="ct-x">Planilha do mês (Excel)</button><button class="btn sec" id="ct-l" ${f ? '' : 'disabled'}>Lançamentos contábeis (CSV)</button><button class="btn sec" id="ct-e" ${f ? '' : 'disabled'}>Eventos por funcionário (CSV)</button></div>
+    <details><summary style="cursor:pointer;font-weight:700;padding:6px 0">Códigos de contas e eventos</summary>
+      <div class="grid" style="margin-top:8px"><div class="fld"><label for="ct-sep">Separador</label><select class="inp" id="ct-sep">${opts([[';', 'Ponto e vírgula ( ; )'], [',', 'Vírgula ( , )'], ['|', 'Barra vertical ( | )']], cf.sep)}</select></div></div>
+      <h3 style="margin:10px 0 6px;font-size:15px">Contas contábeis</h3><div class="grid">${CT.map(([k, t]) => `<div class="fld"><label for="ct-c-${k}">${t}</label><input class="inp" id="ct-c-${k}" value="${esc(cf.contas[k] || '')}" placeholder="Código no plano de contas"></div>`).join('')}</div>
+      <h3 style="margin:10px 0 6px;font-size:15px">Códigos dos eventos da folha</h3><div class="grid">${EV.map(([k, t]) => `<div class="fld"><label for="ct-e-${k}">${t}</label><input class="inp" id="ct-e-${k}" value="${esc(cf.eventos[k] || '')}"></div>`).join('')}</div>
+      <div class="row" style="justify-content:flex-end"><button class="btn sec sm" id="ct-sv">Salvar códigos</button></div></details>`,
+    { size: 'lg', foot: '<button class="btn sec" data-close>Fechar</button><button class="btn" id="ct-ok">Marcar como enviado ao contador</button>', onMount: m => {
+      const ler = () => { cf.sep = $('#ct-sep', m).value; CT.forEach(([k]) => cf.contas[k] = $(`#ct-c-${k}`, m).value.trim()); EV.forEach(([k]) => cf.eventos[k] = $(`#ct-e-${k}`, m).value.trim()); return cf; };
+      $('#ct-sv', m).onclick = () => { S.data.config.contabil = ler(); save('config'); toast('Códigos salvos.'); };
+      const baixar = (nome, linhas) => { const sep = cf.sep, q = v => { const s = String(v ?? ''); return (s.includes(sep) || /["\n]/.test(s)) ? `"${s.replace(/"/g, '""')}"` : s; }, txt = '\ufeff' + linhas.map(l => l.map(q).join(sep)).join('\r\n');
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt], { type: 'text/csv;charset=utf-8' })); a.download = nome; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1500); };
+      const dec = v => (Math.round((+v || 0) * 100) / 100).toFixed(2).replace('.', ',');
+      $('#ct-x', m).onclick = async () => { try { await pacoteContador(comp); } catch (e) { toast('Não foi possível gerar a planilha: ' + e.message, true); } };
+      $('#ct-l', m).onclick = () => { ler(); const t = { bruto: 0, inss: 0, irrf: 0, fgts: 0, desc: 0 };
+        f.itens.forEach(i => { const k = folhaItem(i); t.bruto += +k.bruto || 0; t.inss += +k.inss || 0; t.irrf += +k.irrf || 0; t.fgts += +k.fgts || 0; t.desc += (+i.desc || 0) + (+i.pensao || 0); });
+        const dt = iso(new Date(+comp.slice(0, 4), +comp.slice(5), 0)).split('-').reverse().join('/'), C = cf.contas, h = s => `${s} ref. ${comp.slice(5)}/${comp.slice(0, 4)}`;
+        const L = [['Data', 'Conta débito', 'Conta crédito', 'Valor', 'Histórico'], [dt, C.despSal, C.salPagar, dec(t.bruto), h('Salários e ordenados')], [dt, C.salPagar, C.inssRec, dec(t.inss), h('INSS retido dos empregados')], [dt, C.salPagar, C.irrfRec, dec(t.irrf), h('IRRF retido sobre salários')], [dt, C.salPagar, C.outrosDesc, dec(t.desc), h('Adiantamentos, pensões e outros descontos')], [dt, C.despFgts, C.fgtsRec, dec(t.fgts), h('FGTS sobre a folha')]].filter((l, i) => !i || +l[3].replace(',', '.') > 0);
+        baixar(`lancamentos_folha_${comp}.csv`, L); if (CT.some(([k]) => !C[k])) toast('Arquivo gerado. Preencha os códigos das contas para o contador importar direto.'); };
+      $('#ct-e', m).onclick = () => { ler(); const E = cf.eventos, L = [['Competência', 'CPF', 'Nome', 'Código do evento', 'Evento', 'Valor']], ev = Object.fromEntries(EV);
+        f.itens.forEach(i => { const c = colabById(i.colabId) || {}, k = folhaItem(i), p = i.ponto || {}, add = (cod, v) => { if (+v > 0) L.push([`${comp.slice(5)}/${comp.slice(0, 4)}`, c.cpf || '', i.nome, E[cod] || '', ev[cod], dec(v)]); };
+          add('salario', i.sal); add('he50', p.he50); add('he100', p.he100); add('noturno', p.not); add('dsr', p.dsr); add('faltas', (+p.faltas || 0) + (+p.dsrFalta || 0) + (+p.atraso || 0)); add('salFam', i.salFam); add('inss', k.inss); add('irrf', k.irrf); add('pensao', i.pensao); add('outros', i.desc); });
+        baixar(`eventos_folha_${comp}.csv`, L); };
+      $('#ct-ok', m).onclick = () => { const r = (S.data.config.fechamentos || {})[comp] || {}; S.data.config.fechamentos = { ...(S.data.config.fechamentos || {}), [comp]: { ...r, contador: new Date().toISOString() } }; save('config'); toast('Marcado como enviado ao contador.'); closeModal(); setTimeout(() => fechamentoGuiado(comp), 320); };
+    } });
+}
+
+/* ---------- Análise do mês pela IA: números calculados pelo sistema, explicação pela IA ---------- */
+function dadosDoMes(comp) {
+  const ini = `${comp}-01`, ult = new Date(+comp.slice(0, 4), +comp.slice(5), 0), fim = iso(ult), ate = fim < iso(hoje()) ? fim : iso(addD(hoje(), -1)), noMes = d => d && d >= ini && d <= fim;
+  const inicioPonto = S.data.ponto.reduce((mn, p) => (p.data && (!mn || p.data < mn)) ? p.data : mn, ''), lojas = S.data.config.lojas || [], nomeLoja = id => (lojas.find(l => l.id === id) || {}).nome || 'Sem loja', cfg = S.data.config, tol = 5;
+  const por = ativos().filter(c => c.tipo !== 'pj').map(c => {
+    const esc = escalaDe(c, cfg), r = { nome: c.nome, loja: nomeLoja(c.loja), faltas: 0, atrasos: 0, minAtraso: 0, intervalosCurtos: 0, saidasAntecipadas: 0, minExtras: 0, atestados: 0 };
+    for (let d = new Date(ini + 'T12:00:00'); iso(d) <= ate; d = addD(d, 1)) {
+      const dia = iso(d); if ((c.admissao && dia < c.admissao) || !inicioPonto || dia < inicioPonto) continue; const t = esc && esc.tipo !== '12x36' ? (esc.dias || [])[d.getDay()] : null, p = S.data.ponto.find(x => x.colabId === c.id && x.data === dia), m = ((p && p.marc) || []).filter(Boolean).slice().sort();
+      const afast = S.data.ocorr.some(o => o.colabId === c.id && ['atestado', 'afastamento', 'licenca'].includes(o.tipo) && o.data <= dia && iso(addD(new Date(o.data + 'T12:00:00'), Math.max(0, (+o.dias || 1) - 1))) >= dia) || S.data.ferias.some(f => f.colabId === c.id && f.inicio <= dia && iso(addD(new Date(f.inicio + 'T12:00:00'), (+f.dias || 0) - 1)) >= dia);
+      if (!t) continue; if (!m.length) { if (!afast) r.faltas++; continue; }
+      const at = minutos(m[0]) - minutos(t.ent); if (at > tol) { r.atrasos++; r.minAtraso += at; }
+      if (m.length >= 4 && (t.int ?? 60) > 0 && minutos(m[2]) - minutos(m[1]) < (t.int ?? 60) - tol) r.intervalosCurtos++;
+      const sai = minutos(m[m.length - 1]) - minutos(t.sai); if (m.length % 2 === 0) { if (sai < -tol) r.saidasAntecipadas++; else if (sai > tol) r.minExtras += sai; }
+    }
+    r.atestados = S.data.ocorr.filter(o => o.colabId === c.id && o.tipo === 'atestado' && noMes(o.data)).length; return r; });
+  const somaLoja = {}; por.forEach(r => { const l = somaLoja[r.loja] = somaLoja[r.loja] || { loja: r.loja, pessoas: 0, faltas: 0, atrasos: 0, horasExtras: 0, intervalosCurtos: 0 }; l.pessoas++; l.faltas += r.faltas; l.atrasos += r.atrasos; l.horasExtras += r.minExtras / 60; l.intervalosCurtos += r.intervalosCurtos; });
+  const ferias = ativos().map(c => ({ nome: c.nome, st: statusFerias(c) })).filter(x => x.st.limite && x.st.saldo > 0 && diffD(hoje(), x.st.limite) <= 60).map(x => ({ nome: x.nome, limite: iso(x.st.limite), dias: diffD(hoje(), x.st.limite), saldo: x.st.saldo }));
+  return { comp, periodo: `${fd(inicioPonto && inicioPonto > ini ? inicioPonto : ini)} a ${fd(ate)}`, pessoas: por.length, por, lojas: Object.values(somaLoja).map(l => ({ ...l, horasExtras: Math.round(l.horasExtras * 10) / 10 })), ferias, pendentes: S.data.solic.filter(s => s.status === 'pendente').length };
+}
+async function analiseMesIA(comp = compPadrao()) {
+  const d = dadosDoMes(comp), tot = k => d.por.reduce((s, r) => s + r[k], 0), top = (k, n = 5) => d.por.filter(r => r[k] > 0).sort((a, b) => b[k] - a[k]).slice(0, n);
+  const lista = (l, f) => l.length ? `<ul style="margin:6px 0 0;padding-left:18px">${l.map(f).join('')}</ul>` : '<p class="hint" style="margin:6px 0 0">Nenhum caso.</p>';
+  const comps = [...new Set([compPadrao(), iso(hoje()).slice(0, 7), iso(addD(new Date(hoje().getFullYear(), hoje().getMonth(), 1), -40)).slice(0, 7)])].sort().reverse();
+  const card = (t, v, s) => `<div style="border:1px solid var(--line,#E2E7F1);border-radius:12px;padding:12px 14px"><div style="font-size:24px;font-weight:800">${v}</div><div class="hint">${t}${s ? `<br>${s}` : ''}</div></div>`;
+  const loja = d.lojas.slice().sort((a, b) => b.horasExtras - a.horasExtras)[0];
+  modal('Análise do mês', `<div class="row" style="gap:10px;align-items:center;margin-bottom:12px"><label class="hint" for="ai-c">Mês</label><select class="inp" id="ai-c" style="width:auto">${opts(comps.map(c => [c, mesRot(c)]), comp)}</select><span class="hint">${d.periodo} · ${d.pessoas} funcionário${d.pessoas === 1 ? '' : 's'}</span></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">${card('faltas sem justificativa', tot('faltas'))}${card('atrasos', tot('atrasos'), tot('minAtraso') ? `${tot('minAtraso')} min no total` : '')}${card('intervalos menores que o previsto', tot('intervalosCurtos'))}${card('horas além da jornada', Math.round(tot('minExtras') / 6) / 10 + ' h', loja && loja.horasExtras ? `mais em: ${esc(loja.loja)}` : '')}${card('férias vencendo em 60 dias', d.ferias.length)}${card('pedidos esperando o RH', d.pendentes)}</div>
+    <div id="ai-txt" style="margin-top:16px;border:1px solid #C9D6F2;background:#F5F8FF;border-radius:12px;padding:14px 16px"><b>Resumo da IA</b><p class="hint" style="margin:6px 0 0">Analisando os números do mês…</p></div>
+    <details style="margin-top:14px"><summary style="cursor:pointer;font-weight:700">Detalhes por pessoa</summary><div class="grid" style="margin-top:8px">
+      <div><b>Mais faltas</b>${lista(top('faltas'), r => `<li>${esc(r.nome)}: ${r.faltas}</li>`)}</div><div><b>Mais atrasos</b>${lista(top('atrasos'), r => `<li>${esc(r.nome)}: ${r.atrasos} (${r.minAtraso} min)</li>`)}</div>
+      <div><b>Intervalos curtos</b>${lista(top('intervalosCurtos'), r => `<li>${esc(r.nome)}: ${r.intervalosCurtos}</li>`)}</div><div><b>Férias vencendo</b>${lista(d.ferias.sort((a, b) => a.dias - b.dias), f => `<li>${esc(f.nome)}: limite ${fd(f.limite)} (${f.saldo} dias)</li>`)}</div></div></details>`,
+    { size: 'lg', foot: '<button class="btn sec" data-close>Fechar</button>', onMount: async m => {
+      $('#ai-c', m).onchange = e => analiseMesIA(e.target.value);
+      const enxuto = { mes: mesRot(comp), periodo: d.periodo, funcionarios: d.pessoas, totais: { faltas: tot('faltas'), atrasos: tot('atrasos'), minutosAtraso: tot('minAtraso'), intervalosCurtos: tot('intervalosCurtos'), saidasAntecipadas: tot('saidasAntecipadas'), horasAlemDaJornada: Math.round(tot('minExtras') / 6) / 10, atestados: tot('atestados'), pedidosPendentes: d.pendentes }, porLoja: d.lojas, destaques: d.por.filter(r => r.faltas + r.atrasos + r.intervalosCurtos + r.saidasAntecipadas > 0 || r.minExtras > 120).map(r => ({ nome: r.nome, loja: r.loja, faltas: r.faltas, atrasos: r.atrasos, intervalosCurtos: r.intervalosCurtos, saidasAntecipadas: r.saidasAntecipadas, horasAlemDaJornada: Math.round(r.minExtras / 6) / 10, atestados: r.atestados })).slice(0, 25), feriasVencendo: d.ferias };
+      try { const t = await perguntarIA([{ role: 'user', content: 'Dados do mês (JSON):\n' + JSON.stringify(enxuto) }], 'Você é um analista de RH de uma rede de lojas no Brasil. Escreva em português do Brasil um resumo do mês para o gestor de RH, com no máximo 180 palavras, em três partes com estes títulos em negrito: **Destaques**, **Pontos de atenção** e **Sugestões**. Use somente os números do JSON, sem inventar nada; cite nomes e lojas quando ajudar. Em pontos de atenção, explique o risco trabalhista quando houver: intervalo menor que o previsto (art. 71 da CLT), horas além da jornada frequentes (podem virar horas extras habituais), férias perto do limite (pagamento em dobro, art. 137). Se o mês estiver tranquilo, diga isso. Não use listas longas nem emojis.');
+        const box = $('#ai-txt', m); if (box) box.innerHTML = `<b>Resumo da IA</b><div style="margin-top:6px;line-height:1.55">${mdLeve(t)}</div><p class="hint" style="margin:10px 0 0;font-size:12.5px">Os números acima são calculados pelo sistema; o texto é gerado pela IA a partir deles.</p>`; }
+      catch (e) { const box = $('#ai-txt', m); if (box) box.innerHTML = `<b>Resumo da IA</b><p class="hint" style="margin:6px 0 0">${e.message === 'SEM_CHAVE' ? 'A IA não está configurada.' : 'Não foi possível gerar o resumo agora.'} Os números acima continuam valendo.</p>`; }
+    } });
+}
+
+/* =====================================================================
+   AVALIAÇÃO DE DESEMPENHO (ciclo semestral), com metas, histórico, PDF e ciência no portal
+   ===================================================================== */
+const DES_COMP = [['atendimento', 'Atendimento ao cliente'], ['resultados', 'Resultados e metas'], ['pontualidade', 'Pontualidade e assiduidade'], ['equipe', 'Trabalho em equipe'], ['comunicacao', 'Comunicação'], ['organizacao', 'Organização'], ['iniciativa', 'Iniciativa'], ['tecnico', 'Conhecimento técnico']];
+const DES_NOTA = ['', 'Insatisfatório', 'Abaixo do esperado', 'Atende', 'Bom', 'Excelente'];
+const desCiclo = (d = hoje()) => `${d.getFullYear()}-${d.getMonth() < 6 ? 1 : 2}`, desRot = c => `${c.split('-')[1]}º semestre de ${c.split('-')[0]}`;
+const desPeriodo = c => { const [a, s] = c.split('-').map(Number); return s === 1 ? [`${a}-01-01`, `${a}-06-30`] : [`${a}-07-01`, `${a}-12-31`]; };
+const desClass = m => m >= 4.5 ? ['Supera as expectativas', 'ok'] : m >= 3.5 ? ['Bom desempenho', 'ok'] : m >= 2.75 ? ['Atende às expectativas', ''] : m > 0 ? ['Abaixo do esperado', 'bad'] : ['Sem nota', ''];
+function desPontualidade(c, ciclo) {
+  const [ini, fim0] = desPeriodo(ciclo), fim = fim0 < iso(hoje()) ? fim0 : iso(hoje()), esc = escalaDe(c, S.data.config); let at = 0, fa = 0, dias = 0;
+  const comeco = S.data.ponto.reduce((mn, p) => (p.data && (!mn || p.data < mn)) ? p.data : mn, '');
+  for (let d = new Date(ini + 'T12:00:00'); iso(d) <= fim; d = addD(d, 1)) { const dia = iso(d); if (!comeco || dia < comeco || (c.admissao && dia < c.admissao)) continue; const t = esc && esc.tipo !== '12x36' ? (esc.dias || [])[d.getDay()] : null; if (!t) continue; dias++;
+    const m = ((S.data.ponto.find(x => x.colabId === c.id && x.data === dia) || {}).marc || []).filter(Boolean).sort(); if (!m.length) { if (!S.data.ocorr.some(o => o.colabId === c.id && o.data === dia)) fa++; } else if (minutos(m[0]) - minutos(t.ent) > 5) at++; }
+  return { at, fa, dias };
+}
+function vDesempenho(el) {
+  const ciclo = S.desCiclo || desCiclo(), lista = S.data.desempenho || [], ciclos = [...new Set([desCiclo(), desCiclo(addD(hoje(), -183)), ...lista.map(a => a.ciclo)])].sort().reverse();
+  const at = ativos().filter(c => c.tipo !== 'pj').sort((a, b) => a.nome.localeCompare(b.nome)), feitas = at.filter(c => lista.some(a => a.colabId === c.id && a.ciclo === ciclo)).length;
+  el.innerHTML = `<section class="panel"><div class="row" style="gap:10px;align-items:center;margin-bottom:8px"><h2 style="flex:1;margin:0">Avaliação de desempenho</h2><select class="inp" id="ds-c" style="width:auto">${opts(ciclos.map(c => [c, desRot(c)]), ciclo)}</select></div>
+    <p class="hint" style="margin-top:0">${feitas} de ${at.length} funcionários avaliados em ${desRot(ciclo)}. A avaliação vai para o Portal do Colaborador para o funcionário ler e dar ciência.</p>
+    <div style="height:8px;border-radius:4px;background:var(--line,#E2E7F1);overflow:hidden;margin-bottom:12px"><i style="display:block;height:100%;width:${at.length ? Math.round(feitas / at.length * 100) : 0}%;background:var(--pri,#1F5FE8)"></i></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Funcionário</th><th>Cargo</th><th>Neste ciclo</th><th>Anteriores</th><th></th></tr></thead><tbody>${at.map(c => { const a = lista.find(x => x.colabId === c.id && x.ciclo === ciclo), ant = lista.filter(x => x.colabId === c.id && x.ciclo !== ciclo).sort((x, y) => y.ciclo.localeCompare(x.ciclo)), [cl, k] = a ? desClass(a.media) : ['Pendente', 'warn'];
+      return `<tr><td><b>${esc(c.nome)}</b></td><td>${esc(c.cargo || '')}</td><td><span class="pill ${k}">${a ? `${a.media.toFixed(1).replace('.', ',')} · ${cl}` : cl}</span>${a && a.ciente ? ' <span class="hint">ciente</span>' : ''}</td><td class="hint">${ant.length ? ant.slice(0, 3).map(x => `${x.ciclo.replace('-', '/')}: ${x.media.toFixed(1).replace('.', ',')}`).join(' · ') : '—'}</td><td class="n"><button class="btn ${a ? 'sec' : ''} sm" data-ds="${c.id}">${a ? 'Ver ou editar' : 'Avaliar'}</button></td></tr>`; }).join('')}</tbody></table></div></section>`;
+  $('#ds-c', el).onchange = e => { S.desCiclo = e.target.value; vDesempenho(el); };
+  $$('[data-ds]', el).forEach(b => b.onclick = () => avaliarDesempenho(colabById(b.dataset.ds), ciclo, () => vDesempenho(el)));
+}
+function docDesempenho(c, a) {
+  const e = S.data.config.empresa || {}, [cl] = desClass(a.media);
+  return `${CSS_GUIA}<div class="gx"><div class="topo"><span class="mx">${NX_LOGO_DOC}NEXUM <span style="font-weight:600;opacity:.8">RH</span></span><span class="tt"><b>AVALIAÇÃO DE DESEMPENHO</b><span>${desRot(a.ciclo)}</span></span></div>
+  <div class="faixa"><span>Funcionário <b>${esc(c.nome)}</b></span><span>Cargo <b>${esc(c.cargo || '')}</b></span><span>Avaliado em <b>${new Date(a.em).toLocaleDateString('pt-BR')}</b></span></div>
+  <div class="q">COMPETÊNCIAS (1 A 5)</div><table>${DES_COMP.map(([k, t]) => `<tr><td style="width:55%"><b>${t}</b></td><td><b>${a.notas[k] || '—'}</b> ${a.notas[k] ? `· ${DES_NOTA[a.notas[k]]}` : ''}</td></tr>`).join('')}<tr><td><b>Média geral</b></td><td><b>${a.media.toFixed(1).replace('.', ',')}</b> · ${cl}</td></tr></table>
+  ${a.pont ? `<div class="obs">Referência do período: ${a.pont.at} atraso${a.pont.at === 1 ? '' : 's'} e ${a.pont.fa} falta${a.pont.fa === 1 ? '' : 's'} sem justificativa em ${a.pont.dias} dias de trabalho.</div>` : ''}
+  <div class="q">PONTOS FORTES</div><div class="obs" style="white-space:pre-wrap">${esc(a.fortes || '—')}</div><div class="q">PONTOS A DESENVOLVER</div><div class="obs" style="white-space:pre-wrap">${esc(a.desenvolver || '—')}</div>
+  <div class="q">METAS PARA O PRÓXIMO CICLO</div><table>${(a.metas || []).filter(m => m.t).map(m => `<tr><td style="width:75%">${esc(m.t)}</td><td>${m.prazo ? 'até ' + fdP(m.prazo) : ''}</td></tr>`).join('') || '<tr><td>—</td></tr>'}</table>
+  ${a.obs ? `<div class="q">COMENTÁRIO DO AVALIADOR</div><div class="obs" style="white-space:pre-wrap">${esc(a.obs)}</div>` : ''}
+  <div class="ass"><div>${esc(a.por || '')}<br>Avaliador</div><div>${esc(c.nome)}<br>Ciente em ____/____/______</div></div><div class="rod"><span>Emitido pelo <b>NEXUM RH</b> · ${esc(e.nome || S.tenant.nome || '')}</span><span>Documento interno</span></div></div>`;
+}
+function avaliarDesempenho(c, ciclo, depois) {
+  const lista = S.data.desempenho = S.data.desempenho || [], ex = lista.find(a => a.colabId === c.id && a.ciclo === ciclo), a = ex ? JSON.parse(JSON.stringify(ex)) : { id: uid(), colabId: c.id, ciclo, notas: {}, metas: [{ t: '', prazo: '' }, { t: '', prazo: '' }, { t: '', prazo: '' }] };
+  const pont = desPontualidade(c, ciclo), ant = lista.filter(x => x.colabId === c.id && x.ciclo !== ciclo).sort((x, y) => y.ciclo.localeCompare(x.ciclo));
+  const media = () => { const v = DES_COMP.map(([k]) => +a.notas[k] || 0).filter(Boolean); return v.length ? v.reduce((s, x) => s + x, 0) / v.length : 0; };
+  modal(`Avaliação de desempenho: ${esc(c.nome)}`, `<p class="hint" style="margin-top:0">${esc(c.cargo || '')} · ${desRot(ciclo)}${ant.length ? ` · Anteriores: ${ant.map(x => `${desRot(x.ciclo)} ${x.media.toFixed(1).replace('.', ',')}`).join('; ')}` : ''}</p>
+    <div class="tbl-wrap"><table><thead><tr><th>Competência</th>${[1, 2, 3, 4, 5].map(n => `<th style="text-align:center" title="${DES_NOTA[n]}">${n}</th>`).join('')}</tr></thead><tbody>${DES_COMP.map(([k, t]) => `<tr><td><b>${t}</b>${k === 'pontualidade' ? `<div class="hint" style="font-size:12.5px">No semestre: ${pont.at} atraso${pont.at === 1 ? '' : 's'} e ${pont.fa} falta${pont.fa === 1 ? '' : 's'} sem justificativa</div>` : ''}</td>${[1, 2, 3, 4, 5].map(n => `<td style="text-align:center"><input type="radio" name="dn-${k}" value="${n}" ${+a.notas[k] === n ? 'checked' : ''} aria-label="${t}: ${n}, ${DES_NOTA[n]}"></td>`).join('')}</tr>`).join('')}</tbody></table></div>
+    <p class="hint" style="margin:6px 0 12px">1 Insatisfatório · 2 Abaixo do esperado · 3 Atende · 4 Bom · 5 Excelente</p>
+    <div style="display:flex;gap:12px;align-items:center;border:1px solid var(--line,#E2E7F1);border-radius:12px;padding:10px 14px;margin-bottom:12px"><span class="hint">Média geral</span><b id="dn-m" style="font-size:22px"></b><span class="pill" id="dn-cl"></span></div>
+    <div class="grid"><div class="fld full"><label for="dn-f">Pontos fortes</label><textarea class="inp" id="dn-f" rows="2">${esc(a.fortes || '')}</textarea></div><div class="fld full"><label for="dn-d">Pontos a desenvolver</label><textarea class="inp" id="dn-d" rows="2">${esc(a.desenvolver || '')}</textarea></div></div>
+    <h3 style="margin:8px 0 6px;font-size:15px">Metas para o próximo ciclo</h3>${a.metas.map((m, i) => `<div class="row" style="gap:8px;margin-bottom:6px"><input class="inp" data-mt="${i}" value="${esc(m.t)}" placeholder="Ex.: vender 15 garantias estendidas por mês" style="flex:1"><input class="inp" type="date" data-mp="${i}" value="${m.prazo || ''}" style="width:170px" aria-label="Prazo da meta ${i + 1}"></div>`).join('')}
+    <div class="fld"><label for="dn-o">Comentário do avaliador (opcional)</label><textarea class="inp" id="dn-o" rows="2">${esc(a.obs || '')}</textarea></div>`,
+    { size: 'lg', foot: `<button class="btn sec" id="dn-pdf">Baixar PDF</button><span class="sp"></span><button class="btn sec" data-close>Cancelar</button><button class="btn" id="dn-ok">Salvar e enviar ao portal</button>`, onMount: m => {
+      const atual = () => { DES_COMP.forEach(([k]) => { const r = $(`[name="dn-${k}"]:checked`, m); a.notas[k] = r ? +r.value : 0; }); const md = media(), [cl, kk] = desClass(md); $('#dn-m', m).textContent = md ? md.toFixed(1).replace('.', ',') : '—'; const p = $('#dn-cl', m); p.textContent = cl; p.className = 'pill ' + kk; };
+      m.addEventListener('change', e => { if (e.target.name && e.target.name.startsWith('dn-')) atual(); }); atual();
+      const ler = () => { atual(); a.fortes = $('#dn-f', m).value.trim(); a.desenvolver = $('#dn-d', m).value.trim(); a.obs = $('#dn-o', m).value.trim(); a.metas = a.metas.map((x, i) => ({ t: $(`[data-mt="${i}"]`, m).value.trim(), prazo: $(`[data-mp="${i}"]`, m).value })); a.media = Math.round(media() * 10) / 10; a.pont = pont; a.em = new Date().toISOString(); a.por = S.user.nome; };
+      $('#dn-pdf', m).onclick = () => { ler(); baixarPDF(`Avaliação de desempenho - ${c.nome} - ${desRot(ciclo)}`, docDesempenho(c, a)); };
+      $('#dn-ok', m).onclick = () => { ler(); if (DES_COMP.some(([k]) => !a.notas[k])) return toast('Dê uma nota de 1 a 5 em todas as competências.', true);
+        const i = lista.findIndex(x => x.id === a.id); if (i >= 0) lista[i] = a; else lista.push(a); save('desempenho');
+        try { enviarDoc(c, `Avaliação de desempenho: ${desRot(ciclo)}`, docDesempenho(c, a)); } catch (e) { }
+        audit(`Avaliou o desempenho de ${c.nome} (${desRot(ciclo)})`); closeModal(); toast('Avaliação salva e enviada ao portal para ciência.'); if (depois) depois(); };
+    } });
+}
+
 /* ---------- Pacote para o contador ---------- */
 async function pacoteContador(comp) {
   if (!window.XLSX) await new Promise((ok, err) => { const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; s.onload = ok; s.onerror = err; document.head.appendChild(s); });
@@ -2831,25 +3001,60 @@ function formLoja(l, depois) {
 }
 /* ---------- 8. Encaminhamento de exames ocupacionais ---------- */
 const TIPOS_EXAME = { admissional: 'Admissional', periodico: 'Periódico', retorno: 'Retorno ao trabalho', mudanca: 'Mudança de risco ocupacional', demissional: 'Demissional' };
+/* ---------- Guia de encaminhamento para exame ocupacional (estilo contábil, logo NEXUM) ---------- */
+const NX_LOGO_DOC = '<svg width="34" height="31" viewBox="20 20 580 520" aria-hidden="true"><path d="M30 528V196c0-30 18-48 46-50L226 260v136z" fill="#5AA2FF"/><path d="M404 124 578 30v330H404z" fill="#3B82F6"/><path d="M36 168c8-32 42-56 78-82 26-19 50-44 74-54 22-9 44-4 60 12l316 290c16 15 16 32 2 46l-96 90c-16 15-38 15-54 0L104 166c-18-16-48-20-68 2z" fill="#9CC8FF"/></svg>';
+const CSS_GUIA = `<style>.gx{font-family:Arial,Helvetica,sans-serif;color:#111827;font-size:11.5px;line-height:1.35;max-width:760px;margin:0 auto}
+.gx .topo{display:flex;align-items:center;gap:12px;background:#0B1E4A;color:#fff;padding:12px 16px;border-radius:6px 6px 0 0}.gx .topo .mx{display:flex;align-items:center;gap:8px;font-weight:800;font-size:17px;letter-spacing:.02em}
+.gx .topo .tt{flex:1;text-align:right}.gx .topo .tt b{display:block;font-size:13.5px;letter-spacing:.02em}.gx .topo .tt span{font-size:10.5px;opacity:.85}
+.gx .faixa{display:flex;justify-content:space-between;border:1px solid #0B1E4A;border-top:0;padding:6px 16px;font-size:10.5px;background:#EEF3FB}
+.gx .q{background:#DCE6F5;border:1px solid #9FB3D3;border-bottom:0;padding:4px 8px;font-weight:700;font-size:10.5px;letter-spacing:.04em;margin-top:10px;color:#0B1E4A}
+.gx table{width:100%;border-collapse:collapse}.gx td{border:1px solid #9FB3D3;padding:5px 8px;vertical-align:top}.gx td small{display:block;font-size:9px;color:#4B5B7A;text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px}.gx td b{font-size:12px}
+.gx .tp td{text-align:center;font-size:11px}.gx .tp .x{font-size:15px;color:#0B1E4A}.gx .tp .on{background:#EEF3FB;font-weight:700}
+.gx .obs{border:1px solid #9FB3D3;border-top:0;padding:7px 9px;font-size:10.5px;color:#273449}
+.gx .ass{display:flex;gap:28px;margin-top:34px}.gx .ass div{flex:1;text-align:center;border-top:1px solid #111827;padding-top:5px;font-size:10.5px}
+.gx .rod{display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:7px;border-top:2px solid #0B1E4A;font-size:9.5px;color:#4B5B7A}.gx .rod b{color:#0B1E4A}</style>`;
 function docEncaminhamento(c, tipo, x) {
-  const e = S.data.config.empresa || {}, sst = S.data.config.sst || {};
-  return `${CSS_DOC_PRO}<div class="dp"><table class="cab"><tr><td><b style="font-size:13px">${esc(e.nome || '')}</b><br>CNPJ ${esc(e.cnpj || '—')}<br>${esc([e.endereco, e.cidade].filter(Boolean).join(' · '))}</td><td class="n" style="vertical-align:bottom"><div class="tit">GUIA DE ENCAMINHAMENTO PARA EXAME OCUPACIONAL</div><div style="text-align:right">Nº ${esc(x.num)} · emitida em ${new Date().toLocaleDateString('pt-BR')}</div></td></tr></table>
-    <div class="q">CLÍNICA / MÉDICO DO TRABALHO</div><table><tr>${celP('Clínica', esc(x.clinica || sst.clinica || ''), 2)}${celP('Telefone', esc(x.telClinica || sst.telClinica || ''))}</tr><tr>${celP('Endereço', esc(x.endClinica || sst.endClinica || ''), 2)}${celP('Comparecer até', x.ate ? fdP(x.ate) : '')}</tr></table>
-    <div class="q">TRABALHADOR</div><table><tr>${celP('Nome', esc(c.nome), 2)}${celP('CPF', esc(c.cpf || ''))}${celP('Nascimento', c.nascimento ? fdP(c.nascimento) : '')}</tr><tr>${celP('Cargo', esc(c.cargo || ''))}${celP('CBO', esc(c.cbo || ''))}${celP('Setor', esc(c.depto || ''))}${celP('Admissão', c.admissao ? fdP(c.admissao) : '')}</tr></table>
-    <div class="q">EXAME SOLICITADO</div><table><tr>${Object.entries(TIPOS_EXAME).map(([k, t]) => celP(t, k === tipo ? '☒' : '☐')).join('')}</tr></table>
-    <div class="q">RISCOS OCUPACIONAIS (PGR) E EXAMES COMPLEMENTARES (PCMSO)</div><table><tr>${celP('Riscos a que o trabalhador está ou estará exposto', esc(x.riscos || sst.riscos || 'Ausência de risco ocupacional específico identificado no PGR'), 2)}</tr><tr>${celP('Exames complementares', esc(x.exames || 'Exame clínico (anamnese ocupacional e exame físico e mental)'), 2)}</tr></table>
-    <p style="margin:10px 0 0">Solicitamos a realização do exame ${esc(TIPOS_EXAME[tipo].toLowerCase())} do trabalhador acima, nos termos da NR-7, com a emissão do Atestado de Saúde Ocupacional (ASO).${tipo === 'admissional' ? ' O exame deve ser feito antes do início das atividades.' : tipo === 'demissional' ? ' O exame deve ser feito em até 10 dias do término do contrato.' : tipo === 'retorno' ? ' O exame deve ser feito antes da volta ao trabalho.' : ''} Os custos são da empresa (NR-7, item 7.3.1).</p>
-    <p class="min">Depois do exame, envie a foto do ASO pelo Portal do Colaborador, em Documentos.</p><div class="ass"><div>${esc(e.responsavel || e.nome || '')}<br>Responsável pela empresa</div><div>Recebido pelo trabalhador</div></div></div>`;
+  const e = S.data.config.empresa || {}, sst = S.data.config.sst || {}, cel = (r, v, cs = 1) => `<td colspan="${cs}"><small>${r}</small><b>${v || '&nbsp;'}</b></td>`;
+  const cod = (String(x.num || '') + (c.cpf || '') + tipo).split('').reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7).toString(36).toUpperCase().slice(0, 8);
+  const obsTipo = { admissional: 'Exame obrigatório antes de o trabalhador assumir as atividades.', periodico: 'Exame realizado na periodicidade definida no PCMSO da empresa.', retorno: 'Exame obrigatório no primeiro dia de volta ao trabalho, após afastamento igual ou superior a 30 dias por doença ou acidente.', mudanca: 'Exame obrigatório antes da mudança para atividade com risco ocupacional diferente.', demissional: 'Exame realizado até a data do término do contrato, salvo dispensa prevista na NR-7.' }[tipo] || '';
+  return `${CSS_GUIA}<div class="gx"><div class="topo"><span class="mx">${NX_LOGO_DOC}NEXUM <span style="font-weight:600;opacity:.8">RH</span></span><span class="tt"><b>GUIA DE ENCAMINHAMENTO PARA EXAME OCUPACIONAL</b><span>Atestado de Saúde Ocupacional (ASO), conforme a NR-7</span></span></div>
+  <div class="faixa"><span>Guia nº <b>${esc(x.num || '')}</b></span><span>Emitida em <b>${new Date().toLocaleDateString('pt-BR')}</b></span><span>Comparecer até <b>${x.ate ? fdP(x.ate) : '—'}</b></span></div>
+  <div class="q">EMPREGADOR</div><table><tr>${cel('Razão social', esc(e.nome || S.tenant.nome || ''), 2)}${cel('CNPJ', esc(e.cnpj || S.tenant.cnpj || ''))}</tr><tr>${cel('Endereço', esc([e.endereco, e.cidade].filter(Boolean).join(', ')), 2)}${cel('Responsável', esc(e.responsavel || (S.user && S.user.nome) || ''))}</tr></table>
+  <div class="q">TRABALHADOR</div><table><tr>${cel('Nome', esc(c.nome), 2)}${cel('CPF', esc(c.cpf || ''))}${cel('Nascimento', c.nascimento ? fdP(c.nascimento) : '')}</tr><tr>${cel('Cargo', esc(c.cargo || ''))}${cel('CBO', esc(c.cbo || ''))}${cel('Setor / loja', esc(c.depto || c.loja || ''))}${cel('Admissão', c.admissao ? fdP(c.admissao) : '')}</tr></table>
+  <div class="q">TIPO DE EXAME</div><table class="tp"><tr>${Object.entries(TIPOS_EXAME).map(([k, t]) => `<td class="${k === tipo ? 'on' : ''}"><span class="x">${k === tipo ? '☒' : '☐'}</span> ${t}</td>`).join('')}</tr></table>${obsTipo ? `<div class="obs">${obsTipo}</div>` : ''}
+  <div class="q">CLÍNICA / MÉDICO DO TRABALHO</div><table><tr>${cel('Clínica', esc(x.clinica || sst.clinica || ''), 2)}${cel('Telefone', esc(x.telClinica || sst.telClinica || ''))}</tr><tr>${cel('Endereço', esc(x.endClinica || sst.endClinica || ''), 3)}</tr></table>
+  <div class="q">RISCOS OCUPACIONAIS (PGR) E EXAMES COMPLEMENTARES (PCMSO)</div><table><tr>${cel('Riscos a que o trabalhador está ou estará exposto', esc(x.riscos || sst.riscos || 'Ausência de risco ocupacional específico'))}</tr><tr>${cel('Exames complementares', esc(x.exames || 'Somente exame clínico'))}</tr></table>
+  <div class="obs">Exame custeado pelo empregador, sem nenhum custo para o trabalhador (NR-7). Apresente esta guia e um documento oficial com foto na clínica. Depois do exame, entregue o ASO ao RH ou envie a foto pelo Portal do Colaborador.</div>
+  <div class="ass"><div>${esc(e.responsavel || (S.user && S.user.nome) || 'Responsável pelo RH')}<br>Responsável pelo RH</div><div>${esc(c.nome)}<br>Recebi esta guia em ____/____/______</div></div>
+  <div class="rod"><span>Emitido pelo <b>NEXUM RH</b></span><span>Código de verificação <b>${cod}</b></span></div></div>`;
 }
+/* PDF de verdade (A4) a partir de um documento em HTML */
+let _h2p = null;
+function carregarH2P() { if (window.html2pdf) return Promise.resolve(); if (_h2p) return _h2p; _h2p = new Promise((ok, erro) => { const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js'; s.onload = ok; s.onerror = () => { _h2p = null; erro(new Error('Sem conexão para gerar o PDF.')); }; document.head.appendChild(s); }); return _h2p; }
+async function baixarPDF(nome, html) {
+  try { toast('Gerando o PDF…'); await carregarH2P(); const ov = document.createElement('div'); ov.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#fff;display:flex;align-items:center;justify-content:center;font:600 16px Arial,sans-serif;color:#0B1E4A'; ov.textContent = 'Gerando o PDF…'; document.body.appendChild(ov);
+    const box = document.createElement('div'); box.style.cssText = 'width:700px;background:#fff;padding:0;position:relative'; box.innerHTML = html; document.body.prepend(box); const sy = window.scrollY; window.scrollTo(0, 0); await new Promise(r => setTimeout(r, 80));
+    await window.html2pdf().set({ margin: [10, 10, 12, 10], filename: String(nome).replace(/[\\/:*?"<>|]+/g, '-') + '.pdf', image: { type: 'jpeg', quality: .97 }, html2canvas: { scale: 2, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, pagebreak: { mode: ['css', 'legacy'] } }).from(box).save();
+    box.remove(); ov.remove(); window.scrollTo(0, sy); } catch (e) { document.querySelectorAll('body > div[style*="2147483647"]').forEach(x => x.remove()); toast(e.message || 'Não foi possível gerar o PDF.', true); }
+}
+/* Atalhos visíveis em Saúde e segurança */
+function painelExames(el) {
+  if ($('#ex-p', el)) return;
+  el.insertAdjacentHTML('afterbegin', `<section class="panel" id="ex-p"><h2 style="margin-bottom:4px">Encaminhar para exame ocupacional</h2><p class="hint" style="margin-top:0">Emita a guia, baixe em PDF e envie ao Portal do Colaborador, onde o funcionário também baixa em PDF.</p>
+    <div class="row" style="gap:8px;flex-wrap:wrap">${Object.entries(TIPOS_EXAME).map(([k, t]) => `<button class="btn ${k === 'periodico' ? '' : 'sec'}" data-ex="${k}">${k === 'mudanca' ? 'Mudança de função' : t}</button>`).join('')}</div></section>`);
+  $$('[data-ex]', el).forEach(b => b.onclick = () => modalEncaminhamento(null, b.dataset.ex));
+}
+
 function modalEncaminhamento(cid, tipo = 'periodico', depois) {
   const l = S.data.colab.filter(c => c.status !== 'desligado' || (c.desligamento && diffD(pd(c.desligamento), hoje()) <= 15)).sort((a, b) => a.nome.localeCompare(b.nome)), sst = S.data.config.sst || {};
   modal('Encaminhar para exame ocupacional', `<div class="grid"><div class="fld"><label for="en-c">Funcionário</label><select class="inp" id="en-c">${opts(l.map(c => [c.id, c.nome]), cid || '')}</select></div><div class="fld"><label for="en-t">Exame</label><select class="inp" id="en-t">${opts(Object.entries(TIPOS_EXAME), tipo)}</select></div>
     <div class="fld"><label for="en-cl">Clínica</label><input class="inp" id="en-cl" value="${esc(sst.clinica || '')}"></div><div class="fld"><label for="en-tc">Telefone da clínica</label><input class="inp" id="en-tc" value="${esc(sst.telClinica || '')}"></div><div class="fld full"><label for="en-ec">Endereço da clínica</label><input class="inp" id="en-ec" value="${esc(sst.endClinica || '')}"></div>
     <div class="fld full"><label for="en-r">Riscos ocupacionais (do PGR)</label><input class="inp" id="en-r" value="${esc(sst.riscos || '')}" placeholder="Ex.: ergonômico (postura em pé); acidente (trânsito, para motoboys)"></div><div class="fld full"><label for="en-x">Exames complementares (do PCMSO)</label><input class="inp" id="en-x" placeholder="Em branco = só exame clínico"></div><div class="fld"><label for="en-a">Comparecer até</label><input class="inp" type="date" id="en-a" value="${iso(addD(hoje(), 5))}"></div></div>`,
-    { size: 'lg', foot: '<button class="btn sec" id="en-pr">Visualizar / imprimir</button><button class="btn sec" id="en-wa">WhatsApp</button><button class="btn" id="en-ok">Enviar ao portal</button>', onMount: m => {
+    { size: 'lg', foot: '<button class="btn sec" id="en-pdf">Baixar PDF</button><button class="btn sec" id="en-pr">Visualizar / imprimir</button><button class="btn sec" id="en-wa">WhatsApp</button><button class="btn" id="en-ok">Enviar ao portal</button>', onMount: m => {
       const dados = () => { const c = colabById($('#en-c', m).value), t = $('#en-t', m).value, x = { num: `${new Date().getFullYear()}-${String((S.data.config.encSeq || 0) + 1).padStart(4, '0')}`, clinica: $('#en-cl', m).value.trim(), telClinica: $('#en-tc', m).value.trim(), endClinica: $('#en-ec', m).value.trim(), riscos: $('#en-r', m).value.trim(), exames: $('#en-x', m).value.trim(), ate: $('#en-a', m).value };
         S.data.config.sst = { ...(S.data.config.sst || {}), clinica: x.clinica, telClinica: x.telClinica, endClinica: x.endClinica, riscos: x.riscos || (S.data.config.sst || {}).riscos }; return { c, t, x }; };
       $('#en-pr', m).onclick = () => { const { c, t, x } = dados(); printDoc(`Encaminhamento ${TIPOS_EXAME[t]}`, docEncaminhamento(c, t, x)); };
+      $('#en-pdf', m).onclick = () => { const { c, t, x } = dados(); baixarPDF(`Guia exame ${TIPOS_EXAME[t].toLowerCase()} - ${c.nome}`, docEncaminhamento(c, t, x)); };
       $('#en-wa', m).onclick = () => { const { c, t, x } = dados(), tel = (c.telefone || '').replace(/\D/g, ''); if (!tel) return toast('Funcionário sem telefone.', true); window.open(`https://wa.me/55${tel}?text=${encodeURIComponent(`Olá, ${c.nome.split(' ')[0]}! Você está encaminhado(a) para o exame ${TIPOS_EXAME[t].toLowerCase()}.\nClínica: ${x.clinica}\nEndereço: ${x.endClinica}\nTelefone: ${x.telClinica}\nCompareça até ${fd(x.ate)} com documento com foto. A guia está no Portal do Colaborador. Depois, envie a foto do ASO pelo portal.`)}`, '_blank', 'noopener'); };
       $('#en-ok', m).onclick = () => { const { c, t, x } = dados(); if (!x.clinica) return toast('Informe a clínica.', true); S.data.config.encSeq = (S.data.config.encSeq || 0) + 1; save('config');
         const id = enviarDoc(c, `Encaminhamento: exame ${TIPOS_EXAME[t].toLowerCase()}`, docEncaminhamento(c, t, x), 'exame', false); const d = S.data.docs.find(y => y.id === id); if (d) { d.exame = { tipo: t, ate: x.ate, num: x.num }; save('docs'); }
@@ -3013,9 +3218,10 @@ function extrasFolha(el, f, comp) {
 /* ---------- Painel inicial: atalhos ---------- */
 function atalhosDash(el) {
   if (!podeEditar()) return; el.insertAdjacentHTML('afterbegin', `<section class="panel" style="padding:14px 18px"><div class="row" style="gap:8px"><b style="margin-right:6px">Atalhos</b>
-    <button class="btn sm" data-at="contratos">Contratos e termos</button><button class="btn sec sm" data-at="docs">Documentos enviados</button><button class="btn sec sm" data-at="exame">Encaminhar exame</button><button class="btn sec sm" data-at="folha">Folha e holerites</button><button class="btn sec sm" data-at="novo">Cadastrar funcionário</button></div></section>`);
+    <button class="btn sm" data-at2="ia">Análise do mês</button><button class="btn sec sm" data-at2="fech">Fechamento do mês</button><button class="btn sec sm" data-at="contratos">Contratos e termos</button><button class="btn sec sm" data-at="docs">Documentos enviados</button><button class="btn sec sm" data-at="exame">Encaminhar exame</button><button class="btn sec sm" data-at="folha">Folha e holerites</button><button class="btn sec sm" data-at="novo">Cadastrar funcionário</button></div></section>`);
   $$('[data-at]', el).forEach(b => b.onclick = () => { const k = b.dataset.at;
     if (k === 'contratos') { S.tplAba = 'padrao'; go('docs'); } else if (k === 'docs') modalDocumentos(); else if (k === 'exame') modalEncaminhamento('', 'admissional', () => go('sst')); else if (k === 'folha') go('folha'); else formColab(); });
+  $$('[data-at2]', el).forEach(b => b.onclick = () => b.dataset.at2 === 'ia' ? analiseMesIA() : fechamentoGuiado());
 }
 
 /* ---------- Central do desligamento: carta de dispensa, reativação e 13º ---------- */
@@ -4269,6 +4475,42 @@ function suporteIniciar() {
   if (FB_ON && !S.iaPlat) FB.db.doc('plataforma/ia').get().then(d => { const x = d.data() || {}; S.iaPlat = x.groqKey || ''; S.iaPlatC = { claude: x.claudeKey || '', workspace: x.workspace || '' }; }).catch(() => {});
   supRender();
 }
+
+/* ---------- Avisos da plataforma (Painel do Dono) com ciência do RH ---------- */
+const AV_TIPO = { manutencao: ['Manutenção programada', '#B45309'], bloqueio: ['Aviso de bloqueio', '#C62D46'], geral: ['Comunicado', '#1F5FE8'] };
+const AvisosDB = {
+  ls: k => JSON.parse(localStorage.getItem(k) || '[]'),
+  async lista() { if (FB_ON) { const s = await FB.db.collection('avisosPlataforma').where('ativo', '==', true).get(); return s.docs.map(d => ({ id: d.id, ...d.data() })); } return AvisosDB.ls('nexum:avisosPlat').filter(a => a.ativo); },
+  async aceitos() { const u = supUid(); if (FB_ON) { const s = await FB.db.collection('avisosAceites').where('uid', '==', u).get(); return s.docs.map(d => d.data().avisoId); } return AvisosDB.ls('nexum:avisosAceites').filter(x => x.uid === u).map(x => x.avisoId); },
+  async aceitar(a) { const d = { avisoId: a.id, uid: supUid(), tid: S.tenant.id, empresa: S.tenant.nome, nome: (S.user && S.user.nome) || '', email: (S.user && S.user.email) || '', em: new Date().toISOString() };
+    if (FB_ON) return FB.db.doc(`avisosAceites/${a.id}_${d.uid}`).set(d); const l = AvisosDB.ls('nexum:avisosAceites'); l.push(d); localStorage.setItem('nexum:avisosAceites', JSON.stringify(l)); }
+};
+const avPeriodo = a => a.inicio ? (a.fim && a.fim !== a.inicio ? `De ${fd(a.inicio)} a ${fd(a.fim)}` : `Em ${fd(a.inicio)}`) + (a.hora ? `, ${esc(a.hora)}` : '') : '';
+async function avisosChecar() {
+  if (DEMO || !S.user || !S.tenant || document.getElementById('av-mod')) return;
+  let l = [], ac = []; try { l = await AvisosDB.lista(); ac = await AvisosDB.aceitos(); } catch (e) { return; }
+  const hj = iso(hoje()), meus = l.filter(a => (a.alvo === 'todas' || (a.empresas || []).includes(S.tenant.id)) && (!a.fim || a.fim >= hj));
+  S.avisosAtivos = meus; avisoLembrete();
+  const pend = meus.filter(a => a.exigeAceite !== false && !ac.includes(a.id)).sort((x, y) => (x.criadoEm || '').localeCompare(y.criadoEm || ''));
+  if (pend.length) return avisoJanela(pend[0], true);
+  const vistos = AvisosDB.ls('nexum:avisosVistos'), novo = meus.find(a => a.exigeAceite === false && !vistos.includes(a.id));
+  if (novo) { localStorage.setItem('nexum:avisosVistos', JSON.stringify([...vistos, novo.id].slice(-200))); avisoJanela(novo, false); }
+}
+function avisoJanela(a, exige) {
+  const [rot, cor] = AV_TIPO[a.tipo] || AV_TIPO.geral; if (document.getElementById('av-mod')) return;
+  document.body.insertAdjacentHTML('beforeend', `<div id="av-mod" role="dialog" aria-modal="true" aria-labelledby="av-t" style="position:fixed;inset:0;z-index:2000;background:rgba(6,16,46,.62);display:flex;align-items:center;justify-content:center;padding:18px"><div style="background:#fff;color:#14203D;border-radius:16px;max-width:540px;width:100%;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.4)"><div style="height:5px;background:${cor}"></div><div style="padding:24px 26px">
+    <span style="display:inline-block;font-size:12.5px;font-weight:700;color:${cor};background:${cor}1A;border-radius:999px;padding:4px 10px">${rot}</span><h2 id="av-t" style="margin:12px 0 6px;font-size:21px">${esc(a.titulo)}</h2>${avPeriodo(a) ? `<p style="margin:0 0 12px;font-weight:600;color:#4A5578">${avPeriodo(a)}</p>` : ''}
+    <div style="white-space:pre-wrap;line-height:1.55">${esc(a.texto)}</div>${exige ? '<p style="margin:16px 0 0;font-size:12.5px;color:#6B7392">Enviado pela administração da plataforma NEXUM. Ao confirmar, registramos seu nome, e-mail, data e hora.</p>' : ''}
+    <div style="display:flex;justify-content:flex-end;margin-top:18px"><button class="btn" id="av-ok">${exige ? 'Li e estou ciente' : 'Fechar'}</button></div></div></div></div>`);
+  $('#av-ok').onclick = async () => { if (!exige) return document.getElementById('av-mod').remove(); const b = $('#av-ok'); b.disabled = true;
+    try { await AvisosDB.aceitar(a); document.getElementById('av-mod').remove(); toast('Ciência registrada.'); avisosChecar(); } catch (e) { b.disabled = false; toast('Não foi possível registrar: ' + (e.code || e.message), true); } };
+}
+function avisoLembrete() {
+  const v = document.getElementById('av-fx'); if (v) v.remove(); const a = (S.avisosAtivos || []).find(x => x.tipo !== 'geral'); if (!a) return; const [rot, cor] = AV_TIPO[a.tipo];
+  document.body.insertAdjacentHTML('beforeend', `<button id="av-fx" style="position:fixed;left:20px;bottom:20px;z-index:850;display:flex;align-items:center;gap:8px;background:#fff;color:#14203D;border:1px solid ${cor}55;border-left:4px solid ${cor};border-radius:10px;padding:10px 14px;font:inherit;font-size:13.5px;box-shadow:0 8px 24px rgba(11,30,74,.18);cursor:pointer;max-width:340px;text-align:left"><b style="color:${cor}">${rot}</b><span>${avPeriodo(a) || esc(a.titulo)}</span></button>`);
+  document.getElementById('av-fx').onclick = () => avisoJanela(a, false);
+}
+setInterval(() => { try { avisosChecar(); } catch (e) { } }, 300000);
 
 /* ---------- IA (Groq) ---------- */
 const iaChave = () => localStorage.getItem('nexum:iaKey') || (typeof S !== 'undefined' && S.iaPlat) || NEXUM.ia.groq || '';
