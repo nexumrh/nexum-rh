@@ -1,0 +1,32 @@
+{
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "display": "standalone",
+  "background_color": "#0A1733",
+  "theme_color": "#0A1733",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "name": "NEXUM RH",
+  "short_name": "NEXUM RH",
+  "description": "Gestão de RH: ponto biométrico, folha, férias, admissão e rescisão.",
+  "id": "./?app=rh",
+  "start_url": "./?app=rh",
+  "scope": "./"
+}
