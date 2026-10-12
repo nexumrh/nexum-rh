@@ -96,7 +96,7 @@ textarea.inp{min-height:96px;resize:vertical}
 .main{display:flex;flex-direction:column;min-width:0;height:100%;overflow:hidden}
 .top{display:flex;align-items:center;gap:12px;padding:14px clamp(16px,3vw,32px);background:var(--card);border-bottom:1px solid var(--line)}
 .top h1{font-size:19px;flex:1}
-.content{flex:1;overflow-y:auto;padding:clamp(16px,3vw,32px)}
+.content{flex:1;overflow-y:auto;padding:clamp(16px,3vw,32px);position:relative}
 .wrap{max-width:860px;margin:0 auto}
 .bnav{display:none}
 
@@ -162,8 +162,8 @@ tfoot td{font-weight:700;background:#FAFAFC;border-top:1px solid var(--line)}
 .bar i{display:block;height:100%;background:var(--pri);border-radius:99px}
 .bar i.done{background:var(--ok)}
 .escala{display:flex;gap:6px;flex-wrap:wrap}
-.escala label{flex:1;min-width:44px}
-.escala input{position:absolute;opacity:0}
+.escala label{flex:1;min-width:44px;position:relative}
+.escala input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
 .escala span{display:block;text-align:center;border:1px solid var(--line);border-radius:var(--rs);padding:9px 0;font-weight:700;cursor:pointer}
 .escala input:checked+span{background:var(--pri);color:#fff;border-color:var(--pri)}
 .escala input:focus-visible+span{outline:2px solid var(--pri);outline-offset:2px}
@@ -705,18 +705,43 @@ function closeModal(silencioso) { const f = _onClose; _onClose = null; $('#modal
 function confirmar(msg, ok, label = 'Confirmar') { modal('Confirmar', `<p style="margin:0">${msg}</p>`, { size: 'sm', foot: `<button class="btn sec" data-close>Cancelar</button><button class="btn" id="cf-ok">${esc(label)}</button>`, onMount: m => $('#cf-ok', m).onclick = () => { closeModal(); ok(); } }); }
 function formData(el) { const o = {}; $$('[name]', el).forEach(i => o[i.name] = i.type === 'checkbox' ? i.checked : i.value.trim()); return o; }
 function opts(list, sel) { return list.map(([v, l]) => `<option value="${esc(v)}" ${String(v) === String(sel) ? 'selected' : ''}>${esc(l)}</option>`).join(''); }
+const CSS_NXD = `.nxd{font-family:Arial,Helvetica,sans-serif;color:#111827;font-size:11.5px;line-height:1.4;max-width:780px;margin:0 auto;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.nxb{display:flex;align-items:center;gap:14px;background:linear-gradient(120deg,#0B1E4A,#123A8C);color:#fff;padding:12px 18px;border-radius:8px 8px 0 0}.nxb img{height:34px;width:auto;display:block}
+.nxb .t{flex:1;text-align:right}.nxb .t b{display:block;font-size:14.5px;letter-spacing:.04em;text-transform:uppercase}.nxb .t span{font-size:10.5px;opacity:.85}
+.nxf{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border:1px solid #0B1E4A;border-top:0;padding:6px 18px;font-size:10.5px;background:#EEF3FB;border-radius:0 0 8px 8px}
+.nxq{background:#DCE6F5;border:1px solid #9FB3D3;border-bottom:0;padding:5px 9px;font-weight:700;font-size:10.5px;letter-spacing:.05em;margin-top:12px;color:#0B1E4A;text-transform:uppercase}
+.nxd table{width:100%;border-collapse:collapse}.nxd .nxc td{border:1px solid #9FB3D3;padding:5px 9px;vertical-align:top}.nxd .nxc td small{display:block;font-size:8.5px;color:#4B5B7A;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}.nxd .nxc td b{font-size:12px}
+.nxd .nxt th{background:#0B1E4A;color:#fff;font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;padding:5px 6px;border:1px solid #0B1E4A;text-align:left}.nxd .nxt td{border:1px solid #C9D5EA;padding:4px 6px;font-size:10.5px}
+.nxd .nxt td.n,.nxd .nxt th.n{text-align:right;font-variant-numeric:tabular-nums}.nxd .nxt td.c,.nxd .nxt th.c{text-align:center}.nxd .nxt tr.fs td{background:#F3F6FB;color:#4B5B7A}.nxd .nxt tr.ft td{color:#B42318;font-weight:700}.nxd .nxt tfoot td{background:#EEF3FB;font-weight:700;border-color:#9FB3D3}
+.nxk{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid #9FB3D3;border-top:0}.nxk div{padding:7px 9px;border-right:1px solid #DCE6F5}.nxk div:last-child{border-right:0}.nxk span{display:block;font-size:8.5px;color:#4B5B7A;text-transform:uppercase;letter-spacing:.04em}.nxk b{font-size:14px;color:#0B1E4A}
+.nxo{border:1px solid #9FB3D3;border-top:0;padding:8px 10px;font-size:11px;color:#1F2A44;text-align:justify}.nxo p{margin:0 0 6px}.nxo p:last-child{margin:0}
+.nxs{display:flex;gap:30px;margin-top:40px}.nxs div{flex:1;text-align:center;border-top:1px solid #111827;padding-top:5px;font-size:10.5px}.nxs small{display:block;color:#4B5B7A;font-size:9.5px}
+.nxsel{display:inline-block;border:1.5px solid #0F8A5F;color:#0F8A5F;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;margin-top:10px}
+.nxr{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:18px;padding-top:7px;border-top:2px solid #0B1E4A;font-size:9px;color:#4B5B7A}.nxr b{color:#0B1E4A}
+.nxtag{display:inline-block;padding:2px 8px;border-radius:99px;font-weight:700;font-size:10px}.nxtag.adv{background:#FFF4E5;color:#9A5B00}.nxtag.sus{background:#FDECEC;color:#B42318}`;
+const nxBanda = (tit, sub, faixa) => `<div class="nxb"><img src="${LOGO_MARCA}" alt="NEXUM RH"><div class="t"><b>${tit}</b>${sub ? `<span>${sub}</span>` : ''}</div></div><div class="nxf">${faixa.filter(Boolean).map(x => `<span>${x}</span>`).join('')}</div>`;
+const nxRodape = cod => `<div class="nxr"><span>Documento gerado pelo <b>NEXUM RH</b> · nexumdp.com.br</span><span>${cod ? `Código ${esc(String(cod).slice(0, 24))}… · ` : ''}${new Date().toLocaleString('pt-BR')}</span></div>`;
 function printDoc(titulo, html) {
-  const e = P.cfg.empresa || {}; const w = window.open('', '_blank'); if (!w) return toast('Permita pop-ups para baixar o documento.', true);
+  const e = P.cfg.empresa || {}, proprio = /class="(rp|gx|dp|nxd)/.test(html);
+  const w = window.open('', '_blank');
+  if (!w) { toast('Permita pop-ups para imprimir.', true); return; }
   w.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>${esc(titulo)}</title><style>
-    body{font-family:Georgia,'Times New Roman',serif;color:#111;margin:32px;font-size:13.5px;line-height:1.6}
-    header{display:flex;justify-content:space-between;border-bottom:2px solid #0A1733;padding-bottom:10px;margin-bottom:22px;font-family:Arial,sans-serif}
-    h2{text-align:center;font-family:Arial,sans-serif;font-size:16px;margin:0 0 18px}
-    table{width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;margin:10px 0}th,td{border:1px solid #bbb;padding:5px 7px;text-align:left}td.n,th.n{text-align:right}
-    .ass{margin-top:60px;display:flex;gap:40px}.ass div{flex:1;border-top:1px solid #111;text-align:center;padding-top:4px;font-family:Arial,sans-serif;font-size:12px}
-    footer{margin-top:30px;font-size:10px;color:#777;font-family:Arial,sans-serif}@media print{body{margin:14mm}}</style></head><body>
-    <header><div><b>${esc(e.nome || P.t.nome)}</b><br>CNPJ ${esc(e.cnpj || '—')}</div><div style="text-align:right">${esc(e.cidade || '')}</div></header>
-    ${html}<footer>Emitido pelo Portal do Colaborador NEXUM em ${new Date().toLocaleString('pt-BR')}</footer><script>window.onload=()=>setTimeout(()=>window.print(),250)<\/script></body></html>`);
-  if (html.includes('class="rp"')) w.document.querySelectorAll('body > header, body > footer').forEach(x => x.remove()); w.document.close();
+    @page{size:A4;margin:12mm 12mm 14mm}*{box-sizing:border-box}
+    body{font-family:Arial,Helvetica,sans-serif;color:#1B2436;margin:26px;font-size:12.5px;line-height:1.55;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    header.nxh{display:flex;align-items:center;gap:14px;background:linear-gradient(120deg,#0B1E4A,#123A8C);color:#fff;border-radius:8px;padding:12px 16px;margin-bottom:20px}
+    header.nxh .em{flex:1;display:flex;align-items:center;gap:12px}header.nxh .em img{max-height:42px;max-width:140px;background:#fff;border-radius:6px;padding:3px}header.nxh .em b{font-size:14.5px;display:block}header.nxh .em span{font-size:10.5px;opacity:.85;display:block}
+    header.nxh .mk{text-align:right;font-size:10px;opacity:.9}header.nxh .mk img{height:28px;display:block;margin:0 0 3px auto}
+    h2{text-align:center;font-size:16px;text-transform:uppercase;letter-spacing:.05em;color:#0B1E4A;margin:0 0 16px}
+    h3{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:#0B1E4A;background:#EEF3FB;border-left:4px solid #2E6BE6;padding:5px 9px;margin:16px 0 8px}
+    p{text-align:justify;margin:0 0 9px}
+    table{width:100%;border-collapse:collapse;font-size:11.5px;margin:8px 0 12px}th,td{border:1px solid #C9D5EA;padding:5px 8px;text-align:left;vertical-align:top}th{background:#EEF3FB;color:#0B1E4A}td.n,th.n{text-align:right}
+    .ass{margin-top:56px;display:flex;gap:40px}.ass div{flex:1;border-top:1px solid #1B2436;text-align:center;padding-top:5px;font-size:11.5px}.ass small{color:#5A6680;font-size:10px}
+    .pb{page-break-after:always}footer{margin-top:26px;padding-top:7px;border-top:2px solid #0B1E4A;display:flex;justify-content:space-between;font-size:9.5px;color:#5A6680}
+    ${CSS_NXD}@media print{body{margin:0}}</style></head><body>
+    ${proprio ? '' : `<header class="nxh"><div class="em">${e.logo ? `<img src="${e.logo}" alt="">` : ''}<div><b>${esc(e.nome || P.t.nome)}</b><span>CNPJ ${esc(e.cnpj || '' || '—')}${e.cidade ? ' · ' + esc(e.cidade) : ''}</span></div></div><div class="mk"><img src="${LOGO_MARCA}" alt="NEXUM RH">${new Date().toLocaleDateString('pt-BR')}</div></header>`}
+    ${html}${proprio ? '' : `<footer><span>Emitido pelo Portal do Colaborador NEXUM RH</span><span>${new Date().toLocaleString('pt-BR')}</span></footer>`}
+    <script>window.onload=()=>setTimeout(()=>window.print(),350)<\/script></body></html>`);
+  w.document.close();
 }
 
 /* ---------- ícones ---------- */
@@ -2115,14 +2140,23 @@ function vAgendaP(el) {
   $$('[data-agv]', el).forEach(li => { const f = () => go(li.dataset.agv); li.onclick = f; li.onkeydown = e => { if (e.key === 'Enter') f(); }; });
 }
 /* ---------- Entenda seu holerite (IA) ---------- */
-async function iaPortal(msgs, sistema) {
-  try { const r = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + ATD_IA.groq }, body: JSON.stringify({ model: ATD_IA.modeloGroq, temperature: .2, max_tokens: 1200, messages: [{ role: 'system', content: sistema }, ...msgs] }) });
-    if (r.ok) { const j = await r.json(), t = j.choices && j.choices[0] && j.choices[0].message.content; if (t) return t; } } catch (e) { }
-  try { const ms = msgs.map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: String(m.content) })); while (ms.length && ms[0].role !== 'user') ms.shift();
-    const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'content-type': 'application/json', 'x-api-key': ATD_IA.claude, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true', 'anthropic-workspace-id': ATD_IA.workspace }, body: JSON.stringify({ model: ATD_IA.modeloClaude || 'claude-sonnet-5-5', max_tokens: 1200, system: sistema, messages: ms }) });
-    if (r.ok) { const j = await r.json(), t = (j.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n'); if (t) return t; } } catch (e) { }
+/* chaves da IA: primeiro as cadastradas no Painel do Dono (Dados da plataforma), depois as do código */
+let _iaCh = null;
+function iaChaves() { if (_iaCh) return _iaCh; _iaCh = (async () => { const l = []; try { if (FB_ON && FB.db) { const d = await FB.db.doc('plataforma/ia').get(), x = d.exists ? d.data() : {}; if (x.groqKey || x.claudeKey) l.push({ groq: x.groqKey || '', claude: x.claudeKey || '', workspace: x.workspace || '' }); } } catch (e) { _iaCh = null; } l.push(ATD_IA); return l; })(); return _iaCh; }
+async function iaTentar(msgs, sistema, o = {}) {
+  const lista = await iaChaves(), vistos = new Set(); window.NEXUM_IA_ERRO = '';
+  for (const K of lista) {
+    if (!o.soClaude && K.groq && !vistos.has(K.groq)) { vistos.add(K.groq); try { const r = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + K.groq }, body: JSON.stringify({ model: ATD_IA.modeloGroq, temperature: o.temp ?? .2, max_tokens: o.max || 1200, messages: [{ role: 'system', content: sistema }, ...msgs] }) });
+      if (r.ok) { const j = await r.json(), t = j.choices && j.choices[0] && j.choices[0].message.content; if (t) return t; } else window.NEXUM_IA_ERRO = 'Groq ' + r.status; } catch (e) { window.NEXUM_IA_ERRO = 'Groq sem conexão'; } }
+    if (K.claude && !vistos.has(K.claude)) { vistos.add(K.claude); try { const ms = msgs.map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: String(m.content) })); while (ms.length && ms[0].role !== 'user') ms.shift();
+      const h = { 'content-type': 'application/json', 'x-api-key': K.claude, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' }; if (K.workspace) h['anthropic-workspace-id'] = K.workspace;
+      const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: h, body: JSON.stringify({ model: ATD_IA.modeloClaude || 'claude-sonnet-5-5', max_tokens: o.max || 1200, system: sistema, messages: ms }) });
+      if (r.ok) { const j = await r.json(), t = (j.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n'); if (t) return t; } else window.NEXUM_IA_ERRO = 'Claude ' + r.status; } catch (e) { window.NEXUM_IA_ERRO = 'Claude sem conexão'; } }
+  }
+  if (window.NEXUM_IA_ERRO) console.warn('IA do portal indisponível:', window.NEXUM_IA_ERRO);
   return null;
 }
+async function iaPortal(msgs, sistema) { return iaTentar(msgs, sistema, { max: 1200, temp: .2 }); }
 function resumoHolerite(h) {
   const i = h.item || {}, p = i.ponto || {}, k = folhaItem(i), v = x => Math.round(num(x) * 100) / 100;
   return { mes: mesNome(h.comp), salarioBase: v(i.sal), adicionais: v(num(i.adic) + num(i.adicFix)), horasExtras50: v(p.he50), horasExtras100: v(p.he100), adicionalNoturno: v(p.not), dsrSobreExtras: v(p.dsr), faltas: v(p.faltas), dsrPerdidoPorFalta: v(p.dsrFalta), atrasos: v(p.atraso), afastamento: v(i.afastV),
@@ -2180,9 +2214,9 @@ Object.assign(ICO, {
   descontos: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 15l8-6M9 9h.01M15 15h.01"/>'
 });
 { const i = PNAV.findIndex(n => n[0] === 'holerites'); PNAV.splice(i + 1, 0, ['descontos', 'Meus descontos']);
-  const j = PNAV.findIndex(n => n[0] === 'chat'); PNAV.splice(j, 0, ['elogios', 'Mural de reconhecimento'], ['ranking', 'Ranking de vendas'], ['clube', 'Clube de descontos'], ['carteira', 'Carteirinha digital']);
-  const pg = PGRUPOS.find(x => x[0] === 'Pagamentos'); if (pg) pg[1].push('descontos'); PGRUPOS.splice(PGRUPOS.length - 1, 0, ['Equipe', ['elogios', 'ranking', 'clube', 'carteira']]); }
-['compras', 'consig', 'quebras', 'saidas'].forEach(c => { if (!FB.PROPRIOS.includes(c)) FB.PROPRIOS.push(c); }); ['escdom', 'elogios', 'ranking'].forEach(c => { if (!FB.LIVRES.includes(c)) FB.LIVRES.push(c); });
+  const j = PNAV.findIndex(n => n[0] === 'chat'); PNAV.splice(j, 0, ['clube', 'Clube de descontos'], ['carteira', 'Carteirinha digital']);
+  const pg = PGRUPOS.find(x => x[0] === 'Pagamentos'); if (pg) pg[1].push('descontos'); PGRUPOS.splice(PGRUPOS.length - 1, 0, ['Equipe', ['clube', 'carteira']]); }
+['compras', 'consig', 'quebras', 'saidas'].forEach(c => { if (!FB.PROPRIOS.includes(c)) FB.PROPRIOS.push(c); }); ['escdom'].forEach(c => { if (!FB.LIVRES.includes(c)) FB.LIVRES.push(c); });
 const primeiroP = n => String(n || '').split(' ')[0];
 /* ---------- Carteirinha digital ---------- */
 function vCarteira(el) {
@@ -2403,8 +2437,13 @@ function pdfOcorr(o) {
   const d = o.docId && G('docs').find(x => x.id === o.docId);
   if (d && d.status === 'assinado') return printDoc(d.titulo, d.html + blocoAssin(d));
   const r = respDe('ocorr', o.id), rot = o.tipo === 'suspensao' ? 'Suspensão disciplinar' : 'Advertência disciplinar'; if (!r) return;
-  printDoc(`${rot} ${fd(o.data)}`, `<h2>${rot}</h2><p><b>${esc(P.c.nome)}</b>${P.c.cpf ? `, CPF ${esc(P.c.cpf)}` : ''}${P.c.cargo ? `, ${esc(P.c.cargo)}` : ''}.</p><p><b>Data:</b> ${fd(o.data)}${o.dias ? ` · <b>Dias de suspensão:</b> ${o.dias}` : ''}</p><p style="white-space:pre-wrap">${esc(o.desc || '')}</p>
-    <h3>Ciência do(a) colaborador(a)</h3><p>${r.aceito ? `Ciência registrada pelo Portal do Colaborador em ${fdt(r.em)}${r.metodo === 'facial' ? ', com reconhecimento facial' : ', com foto'}.` : `Recusa registrada em ${fdt(r.em)}. Versão do(a) colaborador(a): ${esc(r.motivo || '')}`}</p>${r.foto ? `<img src="${r.foto}" alt="Foto no momento da ciência" style="width:160px;border-radius:8px">` : ''}<p style="font-size:11px;color:#5F6B85;word-break:break-all">Código de integridade: ${esc(r.hash)}</p>`);
+  const em = P.cfg.empresa || {}, cel = (a, b, cs = 1) => `<td colspan="${cs}"><small>${a}</small><b>${b || '&nbsp;'}</b></td>`;
+  printDoc(`${rot} ${fd(o.data)}`, `<div class="nxd">${nxBanda(rot, 'Registro de ciência pelo Portal do Colaborador', [`Data do fato <b>${fd(o.data)}</b>`, o.dias ? `Suspensão de <b>${o.dias} dia(s)</b>` : '', `Ciência em <b>${fdt(r.em)}</b>`])}
+    <div class="nxq">Empregador</div><table class="nxc"><tr>${cel('Razão social', esc(em.nome || P.t.nome), 2)}${cel('CNPJ', esc(em.cnpj || ''))}</tr></table>
+    <div class="nxq">Colaborador(a)</div><table class="nxc"><tr>${cel('Nome', esc(P.c.nome), 2)}${cel('CPF', esc(P.c.cpf || ''))}${cel('Cargo', esc(P.c.cargo || ''))}</tr></table>
+    <div class="nxq">Descrição</div><div class="nxo"><p style="white-space:pre-wrap">${esc(o.desc || '')}</p></div>
+    <div class="nxq">${r.aceito ? 'Ciência do(a) colaborador(a)' : 'Recusa do(a) colaborador(a)'}</div><div class="nxo" style="display:flex;gap:14px;align-items:flex-start">${r.foto ? `<img src="${r.foto}" alt="Foto no momento da ciência" style="width:120px;border-radius:8px;border:1px solid #9FB3D3">` : ''}<div><p>${r.aceito ? `Ciência registrada pelo Portal do Colaborador em <b>${fdt(r.em)}</b>${r.metodo === 'facial' ? ', com reconhecimento facial e prova de vida' : ', com foto'}. A ciência confirma o recebimento do comunicado, e não a concordância com o seu conteúdo.` : `Recusa registrada em <b>${fdt(r.em)}</b>. Versão do(a) colaborador(a): ${esc(r.motivo || '')}`}</p><p style="font-size:9.5px;color:#4B5B7A;word-break:break-all">Código de integridade (SHA-256): ${esc(r.hash || '')}</p></div></div>
+    ${nxRodape('')}</div>`);
 }
 /* ---------- Ajustes de tela: PDF, meus dados no perfil e chat de quem foi desligado ---------- */
 function ajustesTela() {
@@ -2556,12 +2595,7 @@ Dados do funcionário: nome ${P.c.nome}; cargo ${P.c.cargo || '—'}; admissão 
 Onde ficam as coisas no portal (menu): Início; Ponto (bater o ponto, Meus comprovantes, justificar faltas); Espelho de ponto; Banco de horas; Minha escala; Holerites (ver e assinar); Férias (pedir); Documentos e Meus contratos (ler e assinar); Atestados e ocorrências (enviar atestado); Solicitações (ajuste de ponto, 2ª via, declaração, adiantamento, folga, troca de turno); Horas extras; Comprovantes; Declarações (vínculo e rendimentos, em PDF); Simular férias e 13º; Chat com o RH; Canal de ética; Meus dados (LGPD); Meu perfil. Regras gerais: tolerância de 10 minutos por dia no ponto (CLT, art. 58); atestado entregue em até 48 horas; férias pagas até 2 dias antes do início.`;
 }
 async function atdIA(msgs, soClaude) {
-  const sis = atdSistema();
-  if (!soClaude) { try { const r = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + ATD_IA.groq }, body: JSON.stringify({ model: ATD_IA.modeloGroq, temperature: .3, max_tokens: 1200, messages: [{ role: 'system', content: sis }, ...msgs] }) });
-    if (r.ok) { const j = await r.json(), t = j.choices && j.choices[0] && j.choices[0].message.content; if (t) return t; } } catch (e) { } }
-  try { const ms = msgs.map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: String(m.content) })); while (ms.length && ms[0].role !== 'user') ms.shift();
-    const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'content-type': 'application/json', 'x-api-key': ATD_IA.claude, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true', 'anthropic-workspace-id': ATD_IA.workspace }, body: JSON.stringify({ model: ATD_IA.modeloClaude, max_tokens: 1500, system: sis, messages: ms }) });
-    if (r.ok) { const j = await r.json(), t = (j.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n'); if (t) return t; } } catch (e) { }
+  const t = await iaTentar(msgs, atdSistema(), { soClaude, max: 900, temp: .3 }); if (t) return t;
   const ult = msgs.filter(m => m.role === 'user').pop(); return assistente(ult ? ult.content : '');
 }
 function atdRender() {
