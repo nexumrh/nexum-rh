@@ -3251,6 +3251,7 @@ async function painelTercRH(el) {
   $$('[data-tcc]', w).forEach(b => b.onclick = () => confirmar(`Confirmar a contratação? A NEXUM cobra R$ ${TERC.porContratado} por candidato contratado.`, async () => { const r = await muda(b.dataset.tcc, 'contratado'); if (r) { toast('Contratação registrada. Abra a admissão.'); go('recr'); } }, 'Contratar'));
   $$('[data-tcr]', w).forEach(b => b.onclick = async () => { if (await muda(b.dataset.tcr, 'recusado')) go('recr'); });
   $$('[data-tca]', w).forEach(b => b.onclick = () => { const [, c] = acha(b.dataset.tca); novaAdmissao({ nome: c.nome, telefone: c.telefone || '', email: c.email || '', cargo: c.vaga || '' }); });
+  rhTercPagar(w, l);
 }
 function recrL5(el) {
   const ed = podeEditar(), sel = S.data.vagas.find(v => v.id === S.vagaSel) || S.data.vagas.slice().sort((a, b) => (a.status === 'aberta' ? -1 : 1) - (b.status === 'aberta' ? -1 : 1) || b.criada.localeCompare(a.criada))[0], re = () => vRecr(el);
@@ -5802,12 +5803,14 @@ function supRender() {
     c.innerHTML = `<div class="sp-m bot"><span class="mini">${supN(18)}</span><div class="bb">Olá${S.user ? ', ' + esc(String(S.user.nome).split(' ')[0]) : ''}! Este é o suporte do NEXUM RH. Toque em <b>Iniciar chat</b> para tirar dúvidas com o assistente ou falar com um atendente.</div></div><button class="sp-ini" data-sp="novo">Iniciar chat</button>${SUP.lista.length ? '<button class="sp-ini" data-sp="lista" style="border-color:#C9CFDB;font-weight:500">Meus atendimentos</button>' : ''}`; supEntrada(false); return; }
   $('.sp-h small', p).textContent = `Protocolo ${d.protocolo} · ${SUP_ST[d.status]}`;
   let dia = '', h = ''; (d.msgs || []).forEach(m => { const dd = new Date(m.em).toLocaleDateString('pt-BR'); if (dd !== dia) { dia = dd; h += `<div class="sp-dia">${dd}</div>`; }
-    h += `<div class="sp-m ${m.de}">${m.de !== 'rh' ? `<span class="mini">${supN(18)}</span>` : ''}<div class="bb">${m.de === 'dono' ? '<b style="display:block;font-size:12px;color:#1F5FE8">Atendente NEXUM</b>' : ''}${esc(m.t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')}${m.anexo ? supAnexoChip(d.protocolo, m.anexo) : ''}</div></div><div class="sp-hr">${supHora(m.em)}</div>`; });
+    h += `<div class="sp-m ${m.de}">${m.de !== 'rh' ? `<span class="mini">${supN(18)}</span>` : ''}<div class="bb">${m.de === 'dono' ? `<b style="display:block;font-size:12px;color:#1F5FE8">Atendente NEXUM${m.por && !['NEXUM', 'Proprietária'].includes(m.por) ? ' · ' + esc(String(m.por).split(' ')[0]) : ''}</b>` : ''}${esc(m.t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')}${m.anexo ? supAnexoChip(d.protocolo, m.anexo) : ''}${m.pagamento && m.pagamento.fatura ? supPagCard(m.pagamento) : ''}</div></div><div class="sp-hr">${supHora(m.em)}</div>`; });
   const fechado = ['concluido', 'cancelado'].includes(d.status);
   if (SUP.dig) h += `<div class="sp-m bot"><span class="mini">${supN(18)}</span><div class="bb sp-dig"><i></i><i></i><i></i></div></div>`;
-  else if (fechado) h += `<div class="sp-dia">Atendimento ${SUP_ST[d.status].toLowerCase()}. </div><button class="sp-ini" data-sp="novo">Iniciar novo chat</button>`;
+  else if (fechado) h += `<div class="sp-dia">Atendimento ${SUP_ST[d.status].toLowerCase()}. </div>${d.status === 'concluido' ? (d.avaliacao ? `<div class="sp-av-ok">Você avaliou este atendimento: <b>${'★★★★★'.slice(0, d.avaliacao.nota)}${'☆☆☆☆☆'.slice(0, 5 - d.avaliacao.nota)}</b>. Obrigado!</div>` : `<div class="sp-aval"><b>Como foi o atendimento?</b><div class="sp-est" role="group" aria-label="Nota de 1 a 5">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-spnota="${n}" aria-label="${n} estrela${n > 1 ? 's' : ''}">★</button>`).join('')}</div><textarea id="sp-com" rows="2" maxlength="300" placeholder="Quer deixar um comentário? (opcional)"></textarea><button type="button" class="sp-ini" id="sp-avok" disabled>Enviar avaliação</button></div>`) : ''}<button class="sp-ini" data-sp="novo">Iniciar novo chat</button>`;
   else h += `<div class="sp-ops">${d.status === 'bot' && NEXUM.ia.claude && (d.msgs || []).length > 2 && (d.msgs || []).slice(-1)[0].de === 'bot' ? '<button data-sp="completa">Quero uma resposta mais completa</button>' : ''}${d.status === 'bot' ? '<button data-sp="atendente">Falar com atendente</button>' : ''}<button data-sp="lista">Meus atendimentos</button></div>`;
   c.innerHTML = h; c.scrollTop = c.scrollHeight; supEntrada(!fechado && !SUP.dig); supThumbs(c, d.protocolo);
+  if ($('.sp-aval', c)) { let nota = 0; $$('[data-spnota]', c).forEach(b => { b.onclick = () => { nota = +b.dataset.spnota; $$('[data-spnota]', c).forEach(x => x.classList.toggle('on', +x.dataset.spnota <= nota)); $('#sp-avok', c).disabled = false; }; });
+    $('#sp-avok', c).onclick = async () => { if (!nota) return; const av = { nota, comentario: $('#sp-com', c).value.trim().slice(0, 300), em: new Date().toISOString() }; try { await SupDB.set(d.protocolo, { avaliacao: av }); d.avaliacao = av; supRender(); toast('Obrigado pela avaliação!'); } catch (e) { toast('Não foi possível enviar a avaliação: ' + (e.code || e.message), true); } }; }
 }
 function supEntrada(on) { const t = $('#sp-t'); if (!t) return; t.disabled = !on; t.placeholder = on ? 'Enviar uma mensagem...' : 'Inicie um chat para escrever'; }
 function supAbrir(prot) {
@@ -5823,7 +5826,7 @@ async function supNovo() {
 async function supEnviar() {
   const t = $('#sp-t'), txt = t.value.trim(), d = SUP.doc; if (!txt || !d || ['concluido', 'cancelado'].includes(d.status)) return; t.value = ''; t.style.height = '';
   const m = supMsg('rh', txt); d.msgs = [...(d.msgs || []), m]; supRender();
-  try { await SupDB.add(d.protocolo, m, d.status === 'analise' ? { naoLidoDono: true } : {}); } catch (e) { return toast('Mensagem não enviada: ' + (e.code || e.message), true); }
+  try { await SupDB.add(d.protocolo, m, d.status === 'analise' ? { naoLidoDono: true } : {}); } catch (e) { d.msgs = d.msgs.filter(x => x !== m); supRender(); t.value = txt; return toast(e.code === 'permission-denied' ? 'Mensagem não enviada: a sua sessão mudou (outra conta entrou em outra aba?). Recarregue a página e envie de novo.' : 'Mensagem não enviada: ' + (e.code || e.message), true); }
   if (d.status !== 'bot') return;
   SUP.dig = true; supRender(); let resp;
   try { const hist = d.msgs.slice(-12).map(x => ({ role: x.de === 'rh' ? 'user' : 'assistant', content: x.t })); resp = await perguntarIA(hist, supSistema()); }
@@ -5867,7 +5870,7 @@ function supAnexoAbrir(data, nome) {
   const url = URL.createObjectURL(new Blob([u], { type: mime })), a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener'; if (!/^image\/|pdf/.test(mime)) a.download = nome || 'anexo'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 180000);
 }
 document.addEventListener('click', async e => { const b = e.target.closest && e.target.closest('[data-spanx]'); if (!b) return; const [prot, id] = b.dataset.spanx.split('|'); try { const x = await supAnexoBuscar(prot, id); supAnexoAbrir(x.data, x.nome); } catch (er) { toast(er.message || 'Não foi possível abrir o anexo.', true); } });
-document.head.insertAdjacentHTML('beforeend', '<style>.sp-anxc{display:inline-flex;align-items:center;gap:6px;margin-top:6px;padding:6px 10px;border-radius:8px;border:1px solid rgba(0,0,0,.12);background:rgba(255,255,255,.8);color:#14203D;font:inherit;font-size:13px;font-weight:600;cursor:pointer;max-width:100%}.sp-anxc img{width:150px;max-height:150px;object-fit:cover;border-radius:6px;display:block}#sp-anx{flex:none}</style>');
+document.head.insertAdjacentHTML('beforeend', '<style>.sp-aval{background:#fff;border:1px solid #E1E6F0;border-radius:12px;padding:12px;margin:8px 0;text-align:center}.sp-aval textarea{width:100%;border:1px solid #D5DBEA;border-radius:8px;padding:8px;font:inherit;font-size:14px;margin:8px 0 0;resize:none}.sp-est{display:flex;justify-content:center;gap:4px;margin-top:6px}.sp-est button{border:0;background:none;font-size:30px;line-height:1;color:#CBD2E1;cursor:pointer;padding:2px}.sp-est button.on{color:#F59E0B}.sp-av-ok{text-align:center;font-size:13.5px;color:#4A5578;margin:8px 0}.sp-av-ok b{color:#F59E0B}.sp-anxc{display:inline-flex;align-items:center;gap:6px;margin-top:6px;padding:6px 10px;border-radius:8px;border:1px solid rgba(0,0,0,.12);background:rgba(255,255,255,.8);color:#14203D;font:inherit;font-size:13px;font-weight:600;cursor:pointer;max-width:100%}.sp-anxc img{width:150px;max-height:150px;object-fit:cover;border-radius:6px;display:block}#sp-anx{flex:none}</style>');
 function suporteIniciar() {
   if (DEMO || !S.user || !S.tenant || document.getElementById('sup-b')) return;
   document.body.insertAdjacentHTML('beforeend', `<div id="sup-p" role="dialog" aria-label="Suporte NEXUM RH"><div class="sp-h"><span class="sp-av">${supN(22)}</span><b>Suporte NEXUM RH<small>IA 24h · humano seg–sex 9h–18h, sáb 9h–13h</small></b><button data-sp="lista" title="Meus atendimentos" aria-label="Meus atendimentos">☰</button><button id="sp-x" aria-label="Minimizar">×</button></div><div class="sp-c"></div>
@@ -7797,7 +7800,9 @@ document.documentElement.dataset.theme = localStorage.getItem('nexum:tema') || (
 })();
 (function limparDemo() { try { if (Store.tenants().some(t => t.id === 'demo')) { Store.wipe('demo'); Store.saveTenants(Store.tenants().filter(t => t.id !== 'demo')); } } catch (e) { } })();
 (function init() {
-  if (FB_ON) { renderAuth(); FB.auth.onAuthStateChanged(u => { if (FB.criando) return; if (u && !S.user) fbEntrarRH(u); else if (!u && S.user) { S.tenant = S.user = null; FB.fechar(); renderAuth(); } }); return; }
+  if (FB_ON) { renderAuth(); FB.auth.onAuthStateChanged(u => { if (FB.criando) return; if (u && !S.user) fbEntrarRH(u); else if (!u && S.user) { S.tenant = S.user = null; FB.fechar(); renderAuth(); }
+    /* outra aba entrou com outra conta neste mesmo endereço: esta aba passaria a gravar como a outra conta (permission-denied) */
+    else if (u && S.user && (S.user.uid || S.user.id) && u.uid !== (S.user.uid || S.user.id)) { toast('Outra conta entrou no NEXUM RH em outra aba. Recarregando para continuar com a conta certa…', true); setTimeout(() => location.reload(), 1800); } }); return; }
   try {
     const s = JSON.parse(sessionStorage.getItem('nexum:sess') || 'null');
     if (s) { const t = Store.tenants().find(x => x.id === s.t); const u = t && Store.get(t.id, 'users', []).find(x => x.id === s.u && x.ativo !== false); if (u) return entrar(t, u); }
@@ -7805,6 +7810,86 @@ document.documentElement.dataset.theme = localStorage.getItem('nexum:tema') || (
   if (DEMO) return iniciarDemo();
   renderAuth();
 })();
+/* =====================================================================
+   LOTE 17: pagamento do plano pelo Asaas (PIX, boleto ou cartão) com
+   liberação automática; links de pagamento enviados pelo suporte.
+   ===================================================================== */
+const PAY = { url: null, prom: null, preco: { essencial: 99, profissional: 299, empresa: 499, recrutamento: 289 } };
+function payURL() { if (!FB_ON) return Promise.resolve(''); if (PAY.url !== null) return Promise.resolve(PAY.url);
+  return PAY.prom = PAY.prom || Promise.all([FB.db.doc('plataforma/publico').get().catch(() => null), FB.db.doc('plataforma/asaas').get().catch(() => null)]).then(([p, a]) => { const ad = a && a.exists ? a.data() : {}; if (ad.precos) Object.assign(PAY.preco, ad.precos); PAY.url = String((p && p.exists && p.data().asaasUrl) || (ad.ativo && ad.conector) || '').replace(/\/+$/, ''); return PAY.url; }); }
+async function payCall(body) {
+  const u = await payURL(); if (!u) throw new Error('O pagamento on-line ainda não está disponível. Fale com a NEXUM.');
+  const tk = FB.auth.currentUser ? await FB.auth.currentUser.getIdToken() : ''; let r;
+  try { r = await fetch(u + '/api/cobrar', { method: 'POST', headers: { 'Content-Type': 'application/json', ...(tk ? { Authorization: 'Bearer ' + tk } : {}) }, body: JSON.stringify(body) }); } catch (e) { throw new Error('Sem conexão com o pagamento agora. Tente de novo em instantes.'); }
+  const j = await r.json().catch(() => ({})); if (!r.ok) { const e = new Error(j.erro || 'Não foi possível gerar o pagamento.'); e.codigo = j.codigo; throw e; } return j;
+}
+async function paySituacao(id) { try { const u = await payURL(), r = await fetch(u + '/api/cobranca?id=' + encodeURIComponent(id)); return r.ok ? r.json() : null; } catch (e) { return null; } }
+function payCopiar(t, ok) { (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast(ok)).catch(() => prompt('Copie:', t)); }
+/* tela do pagamento: QR do PIX, copia e cola, boleto/cartão e confirmação automática */
+function payTela(c, titulo) {
+  modal(titulo || 'Pagamento', `<div class="pay-box"><div class="pay-v"><span>Valor</span><b>${brl(+c.valor || 0)}</b><small>vence em ${fd(c.vencimento)}</small></div>
+    ${c.pix && c.pix.img ? `<div class="pay-qr"><img src="data:image/png;base64,${c.pix.img}" alt="QR Code do PIX" width="220" height="220"><p class="hint" style="margin:6px 0 0">Abra o app do banco, escolha <b>PIX &gt; Ler QR Code</b>.</p></div>` : ''}
+    ${c.pix && c.pix.copia ? `<div class="fld" style="margin-top:10px"><label for="py-c">PIX copia e cola</label><div class="row" style="gap:6px"><input class="inp" id="py-c" readonly value="${esc(c.pix.copia)}"><button class="btn" id="py-cc">Copiar</button></div></div>` : ''}
+    <div class="row" style="gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px"><a class="btn sec" href="${esc(c.fatura)}" target="_blank" rel="noopener">Pagar com cartão ou boleto</a></div>
+    <p class="pay-st" id="py-st" role="status"><span class="pay-dot"></span> Aguardando o pagamento. A liberação é automática: no PIX, leva poucos segundos.</p></div>`,
+    { foot: '<button class="btn sec" data-close>Fechar</button>', onMount: m => {
+      const cc = $('#py-cc', m); if (cc) cc.onclick = () => payCopiar(c.pix.copia, 'PIX copia e cola copiado. Cole no app do banco.');
+      let n = 0; const ver = async () => { if (!document.body.contains(m) || n++ > 360) return; const s = await paySituacao(c.id);
+        if (s && s.pago) { const st = $('#py-st', m); if (st) { st.className = 'pay-st ok'; st.innerHTML = '✅ Pagamento confirmado! Obrigado. O plano já foi renovado.'; } toast('Pagamento confirmado. Obrigado!'); try { audit(`Pagamento confirmado pelo Asaas: ${brl(+c.valor || 0)}`); } catch (e) { } return; }
+        setTimeout(ver, 5000); }; setTimeout(ver, 4000); } });
+}
+function pagarPlano(pre = {}) {
+  if (!FB_ON || !S.tenant) return; const P = PAY.preco, cur = ['essencial', 'profissional', 'empresa'].includes(S.tenant.plano) ? S.tenant.plano : 'essencial', semDoc = String(S.tenant.cnpj || '').replace(/\D/g, '').length < 11;
+  modal('Pagar o NEXUM RH', `<p class="hint" style="margin-top:0">Escolha o plano e o período. Você paga com <b>PIX, boleto ou cartão</b>, e a liberação é automática assim que o pagamento é confirmado.</p>
+    <div class="grid"><div class="fld"><label for="pp-p">Plano</label><select class="inp" id="pp-p">${opts(['essencial', 'profissional', 'empresa'].map(k => [k, `${NEXUM.planos[k].nome} · ${brl(P[k])}/mês`]), pre.plano || cur)}</select></div>
+    <div class="fld"><label for="pp-m">Período</label><select class="inp" id="pp-m">${opts([[1, '1 mês'], [3, '3 meses'], [6, '6 meses'], [12, '12 meses']], pre.meses || 1)}</select></div></div>
+    <label class="row" style="gap:8px"><input type="checkbox" id="pp-rs" ${S.tenant.recrutamento ? 'checked' : ''}> + Recrutamento e Seleção (${brl(P.recrutamento)}/mês)</label>
+    <div class="fld" id="pp-dw" ${semDoc ? '' : 'hidden'} style="margin-top:10px"><label for="pp-d">CNPJ (ou CPF) da empresa</label><input class="inp" id="pp-d" inputmode="numeric" placeholder="Obrigatório para emitir a cobrança"></div>
+    <div class="pay-tot"><span>Total</span><b id="pp-t"></b></div><p class="hint" id="pp-x" style="margin:0"></p>`,
+    { foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="pp-ok">Gerar pagamento</button>', onMount: m => {
+      const tot = () => { const me = +$('#pp-m', m).value, v = (P[$('#pp-p', m).value] + ($('#pp-rs', m).checked ? P.recrutamento : 0)) * me; $('#pp-t', m).textContent = brl(v); const ex = S.tenant.trial ? '' : pd(S.tenant.expira) >= hoje() ? `O novo período começa em ${addD(pd(S.tenant.expira), 1).toLocaleDateString('pt-BR')}, depois do vencimento atual.` : 'O novo período começa no dia do pagamento.'; $('#pp-x', m).textContent = ex; };
+      ['#pp-p', '#pp-m', '#pp-rs'].forEach(s => $(s, m).onchange = tot); tot();
+      $('#pp-ok', m).onclick = async () => { const b = $('#pp-ok', m), doc = ($('#pp-d', m).value || '').replace(/\D/g, '');
+        if (!$('#pp-dw', m).hidden && ![11, 14].includes(doc.length)) return toast('Informe o CNPJ ou CPF da empresa.', true);
+        b.disabled = true; b.textContent = 'Gerando…';
+        try { const body = { tipo: 'rh', tid: S.tenant.id, plano: $('#pp-p', m).value, meses: +$('#pp-m', m).value, rs: $('#pp-rs', m).checked, ...(doc ? { doc } : {}) }, r = await payCall(body);
+          if (doc) S.tenant.cnpj = doc; audit(`Gerou o pagamento do plano (${NEXUM.planos[body.plano].nome}, ${body.meses} mês(es)) · ${brl(r.valor)}`); closeModal(); payTela(r, 'Pagar o NEXUM RH');
+        } catch (e) { b.disabled = false; b.textContent = 'Gerar pagamento'; if (e.codigo === 'sem_doc') { $('#pp-dw', m).hidden = false; $('#pp-d', m).focus(); } toast(e.message, true); } };
+    } });
+}
+/* aba Plano: o Asaas entra no lugar dos links do Mercado Pago quando estiver conectado */
+{ const _pmp = painelMP; painelMP = async function (el) {
+  if (!FB_ON || !S.tenant || S.user.contador || S.user.role !== 'admin' || $('#mp-p', el)) return; const u = await payURL(); if (!u) return _pmp(el); if ($('#mp-p', el)) return;
+  const cf = $('#cf', el) || el; let ab = [];
+  try { ab = (await FB.db.collection('cobrancas').where('tid', '==', S.tenant.id).get()).docs.map(d => ({ id: d.id, ...d.data() })).filter(c => ['PENDING', 'OVERDUE'].includes(c.status)).sort((a, b) => (b.criadaEm || '').localeCompare(a.criadaEm || '')); } catch (e) { }
+  if ($('#mp-p', el)) return;
+  cf.insertAdjacentHTML('afterbegin', `<section class="panel" id="mp-p" style="border-color:var(--pri)"><div class="row" style="gap:10px;flex-wrap:wrap"><div style="flex:1;min-width:240px"><b>Pague com PIX, boleto ou cartão</b><div class="hint">A liberação é automática assim que o pagamento é confirmado (no PIX, em segundos). Sem precisar mandar comprovante.</div></div><button class="btn" id="mp-go">Pagar agora</button></div>
+    ${ab.length ? `<div style="margin-top:10px">${ab.map(c => `<div class="row" style="gap:8px;padding:8px 0;border-top:1px solid var(--line);flex-wrap:wrap"><span style="flex:1;min-width:200px">${esc(c.descricao || 'Cobrança')}<div class="hint">${brl(+c.valor || 0)} · vence em ${fd(c.vencimento)}${c.status === 'OVERDUE' ? ' · <b style="color:var(--bad)">vencida</b>' : ''}</div></span><a class="btn sec sm" href="${esc(c.fatura)}" target="_blank" rel="noopener">Pagar esta</a></div>`).join('')}</div>` : ''}</section>`);
+  $('#mp-go', cf).onclick = () => pagarPlano(); }; }
+/* tela de bloqueio por falta de pagamento: paga ali mesmo */
+{ const _tb = telaBloqueio; telaBloqueio = function (lic) { _tb(lic); if (lic.manual || !can('admin') || !FB_ON) return;
+  payURL().then(u => { if (!u) return; const a = $$('#root a.btn').find(x => /Pagar agora/.test(x.textContent)), h = '<button class="btn" id="bq-pay">Pagar agora (PIX, boleto ou cartão)</button>';
+    if (a) a.outerHTML = h; else { const r = $('#root .row'); if (r) r.insertAdjacentHTML('afterbegin', h); } const b = $('#bq-pay'); if (b) b.onclick = () => pagarPlano(); }); }; }
+/* suporte: cartão do link de pagamento enviado pelo atendente */
+function supPagCard(pg) { return `<div class="sp-pg"><b>💳 ${brl(+pg.valor || 0)}</b><span>vence em ${fd(pg.vencimento)}</span><div class="sp-pg-b"><a href="${esc(pg.fatura)}" target="_blank" rel="noopener">Pagar agora</a>${pg.pix ? `<button type="button" data-sppix="${esc(pg.pix)}">Copiar PIX</button>` : ''}</div></div>`; }
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-sppix]'); if (b) payCopiar(b.dataset.sppix, 'PIX copia e cola copiado. Cole no app do banco.'); });
+/* seleção terceirizada: pagar o valor em aberto */
+function rhTercPagar(w, l) {
+  payURL().then(u => { if (!u || !can('admin', 'rh')) return; l.forEach(p => { const cs = p.candidatos || [], ap = cs.filter(c => c.status !== 'contratado').length, ct = cs.filter(c => c.status === 'contratado').length, tot = ap * TERC.porCandidato + ct * TERC.porContratado, pg = (p.pagamentos || []).reduce((s, x) => s + (+x.valor || 0), 0), ab = tot - pg;
+    const box = $$('div', w).find(d => d.parentElement === w && d.textContent.includes(p.numero || '§§')); if (!box || ab < 5 || box.querySelector('[data-tpg]')) return;
+    box.insertAdjacentHTML('beforeend', `<div class="row" style="gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center"><span class="hint" style="flex:1">Valor em aberto desta seleção: <b>${brl(ab)}</b></span><button class="btn sm" data-tpg="${p.id}">Pagar ${brl(ab)}</button></div>`); });
+    $$('[data-tpg]', w).forEach(b => b.onclick = async () => { b.disabled = true; try { const r = await payCall({ tipo: 'rst', id: b.dataset.tpg }); payTela(r, 'Pagar a seleção terceirizada'); } catch (e) { if (e.codigo === 'sem_doc') { const d = prompt('Informe o CNPJ ou CPF da empresa (obrigatório para a cobrança):'); if (d) try { payTela(await payCall({ tipo: 'rst', id: b.dataset.tpg, doc: d }), 'Pagar a seleção terceirizada'); } catch (e2) { toast(e2.message, true); } } else toast(e.message, true); } b.disabled = false; }); });
+}
+document.head.insertAdjacentHTML('beforeend', `<style>
+.pay-box{text-align:center}.pay-v{display:flex;flex-direction:column;align-items:center;margin-bottom:10px}.pay-v span{font-size:13px;color:var(--muted,#6B7280)}.pay-v b{font-size:30px;letter-spacing:-.5px}.pay-v small{color:var(--muted,#6B7280)}
+.pay-box .row .inp{flex:1;min-width:0}.pay-box .row{flex-wrap:nowrap}
+.pay-qr img{border:1px solid var(--line);border-radius:14px;padding:8px;background:#fff;max-width:100%;height:auto}.pay-box .fld{text-align:left}
+.pay-st{margin:14px 0 0;padding:10px 12px;border-radius:10px;background:#F3F5FB;font-size:14px;display:flex;gap:8px;align-items:center;justify-content:center}.pay-st.ok{background:#E8F8F0;color:#0F5132;font-weight:600}
+.pay-dot{width:9px;height:9px;border-radius:50%;background:#F59E0B;animation:payp 1.2s infinite}@keyframes payp{50%{opacity:.25}}
+.pay-tot{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding:12px 14px;border-radius:10px;background:#F3F5FB}.pay-tot b{font-size:22px}
+.sp-pg{margin-top:8px;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid #C9D6F2;display:flex;flex-direction:column;gap:2px;white-space:normal}.sp-pg span{font-size:12.5px;color:#6B7280}
+.sp-pg-b{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}.sp-pg-b a,.sp-pg-b button{flex:1;text-align:center;padding:8px 10px;border-radius:9px;font-weight:700;font-size:13.5px;text-decoration:none;cursor:pointer;border:1px solid #1F5FE8}.sp-pg-b a{background:#1F5FE8;color:#fff}.sp-pg-b button{background:#fff;color:#1F5FE8}
+</style>`);
 </script>
 </body>
 </html>
