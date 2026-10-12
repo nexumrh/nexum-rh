@@ -3109,7 +3109,8 @@ window.addEventListener('storage', e => {
 });
 
 (function init() {
-  if (FB_ON) { renderLogin(); FB.auth.onAuthStateChanged(u => { if (u && !P.c) fbEntrarPortal(u); else if (!u && P.c) { P.t = P.c = null; FB.fechar(); renderLogin(); } }); return; }
+  if (FB_ON) { renderLogin(); FB.auth.onAuthStateChanged(u => { if (u && !P.c) { window.__pUid = u.uid; fbEntrarPortal(u); } else if (!u && P.c) { P.t = P.c = null; FB.fechar(); renderLogin(); }
+    else if (u && P.c && window.__pUid && u.uid !== window.__pUid) { toast('Outra conta entrou no portal em outra aba. Recarregando…', true); setTimeout(() => location.reload(), 1800); } }); return; }
   try {
     const s = JSON.parse(sessionStorage.getItem('nexum:psess') || 'null');
     if (s) { const t = Store.tenants().find(x => x.id === s.t); const c = t && Store.get(t.id, 'colab', []).find(x => x.id === s.c && x.portal && x.portal.ativo && acessoDesligOk(x)); if (c) return entrar(t, c); }
