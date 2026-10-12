@@ -863,23 +863,28 @@ function masks(root) {
   }));
 }
 function printDoc(titulo, html) {
-  const e = S.data.config.empresa || {};
+  const e = S.data.config.empresa || {}, proprio = /class="(rp|gx|dp|nxd)/.test(html);
   const w = window.open('', '_blank');
   if (!w) { toast('Permita pop-ups para imprimir.', true); return; }
   w.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>${esc(titulo)}</title><style>
-    body{font-family:Georgia,'Times New Roman',serif;color:#111;margin:32px;font-size:13.5px;line-height:1.6}
-    header{display:flex;justify-content:space-between;border-bottom:2px solid #0A1733;padding-bottom:10px;margin-bottom:22px;font-family:Arial,sans-serif}
-    header b{font-size:16px}h2{text-align:center;font-family:Arial,sans-serif;font-size:16px;margin:0 0 18px}
-    table{width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;margin:10px 0}
-    th,td{border:1px solid #bbb;padding:5px 7px;text-align:left}td.n,th.n{text-align:right}
-    .ass{margin-top:60px;display:flex;gap:40px}.ass div{flex:1;border-top:1px solid #111;text-align:center;padding-top:4px;font-family:Arial,sans-serif;font-size:12px}
-    h3{font-family:Arial,sans-serif;font-size:14px;margin:18px 0 8px}.ass small{color:#555;font-size:10.5px}p{text-align:justify}.pb{page-break-after:always}footer{margin-top:30px;font-size:10px;color:#777;font-family:Arial,sans-serif}
-    @media print{body{margin:14mm}}</style></head><body>
-    <header><div style="display:flex;gap:14px;align-items:center">${e.logo ? `<img src="${e.logo}" alt="" style="max-height:52px;max-width:170px">` : ''}<div><b>${esc(e.nome || S.tenant.nome)}</b><br>CNPJ ${esc(e.cnpj || S.tenant.cnpj || '—')}</div></div><div style="text-align:right">${esc(e.cidade || '')}<br>${new Date().toLocaleDateString('pt-BR')}</div></header>
-    ${html}<footer>Gerado pelo NEXUM RH em ${new Date().toLocaleString('pt-BR')}</footer>
-    <script>window.onload=()=>setTimeout(()=>window.print(),250)<\/script></body></html>`);
-  if (html.includes('class="rp"')) w.document.querySelectorAll('body > header, body > footer').forEach(x => x.remove()); w.document.close();
+    @page{size:A4;margin:12mm 12mm 14mm}*{box-sizing:border-box}
+    body{font-family:Arial,Helvetica,sans-serif;color:#1B2436;margin:26px;font-size:12.5px;line-height:1.55;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    header.nxh{display:flex;align-items:center;gap:14px;background:linear-gradient(120deg,#0B1E4A,#123A8C);color:#fff;border-radius:8px;padding:12px 16px;margin-bottom:20px}
+    header.nxh .em{flex:1;display:flex;align-items:center;gap:12px}header.nxh .em img{max-height:42px;max-width:140px;background:#fff;border-radius:6px;padding:3px}header.nxh .em b{font-size:14.5px;display:block}header.nxh .em span{font-size:10.5px;opacity:.85;display:block}
+    header.nxh .mk{text-align:right;font-size:10px;opacity:.9}header.nxh .mk img{height:28px;display:block;margin:0 0 3px auto}
+    h2{text-align:center;font-size:16px;text-transform:uppercase;letter-spacing:.05em;color:#0B1E4A;margin:0 0 16px}
+    h3{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:#0B1E4A;background:#EEF3FB;border-left:4px solid #2E6BE6;padding:5px 9px;margin:16px 0 8px}
+    p{text-align:justify;margin:0 0 9px}
+    table{width:100%;border-collapse:collapse;font-size:11.5px;margin:8px 0 12px}th,td{border:1px solid #C9D5EA;padding:5px 8px;text-align:left;vertical-align:top}th{background:#EEF3FB;color:#0B1E4A}td.n,th.n{text-align:right}
+    .ass{margin-top:56px;display:flex;gap:40px}.ass div{flex:1;border-top:1px solid #1B2436;text-align:center;padding-top:5px;font-size:11.5px}.ass small{color:#5A6680;font-size:10px}
+    .pb{page-break-after:always}footer{margin-top:26px;padding-top:7px;border-top:2px solid #0B1E4A;display:flex;justify-content:space-between;font-size:9.5px;color:#5A6680}
+    ${CSS_NXD}@media print{body{margin:0}}</style></head><body>
+    ${proprio ? '' : `<header class="nxh"><div class="em">${e.logo ? `<img src="${e.logo}" alt="">` : ''}<div><b>${esc(e.nome || S.tenant.nome)}</b><span>CNPJ ${esc(e.cnpj || S.tenant.cnpj || '—')}${e.cidade ? ' · ' + esc(e.cidade) : ''}</span></div></div><div class="mk"><img src="${LOGO_MARCA}" alt="NEXUM RH">${new Date().toLocaleDateString('pt-BR')}</div></header>`}
+    ${html}${proprio ? '' : `<footer><span>Documento gerado pelo NEXUM RH · nexumdp.com.br</span><span>${new Date().toLocaleString('pt-BR')}</span></footer>`}
+    <script>window.onload=()=>setTimeout(()=>window.print(),350)<\/script></body></html>`);
+  w.document.close();
 }
+
 function baixar(nome, conteudo, tipo) {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([conteudo], { type: tipo }));
@@ -1034,22 +1039,33 @@ function renderAuth(aba = location.hash === '#criar' ? 'criar' : 'entrar') {
     body.innerHTML = `
       <h2 style="font-size:24px;margin-bottom:6px">Comece seu teste grátis</h2>
       <p class="hint" style="margin:0 0 22px">${NEXUM.trialDias} dias com todos os recursos. Sem cartão.</p>
+      <div class="cs-passos" aria-label="Etapas do cadastro"><span class="on" id="cs-p1"><i>1</i>Empresa</span><b></b><span id="cs-p2"><i>2</i>Seu acesso</span></div>
       <form id="f-criar" novalidate>
+        <div id="cs1">
         <div class="fld"><label for="c-emp">Nome da empresa</label><input class="inp" id="c-emp" name="empresa" required></div>
-        <div class="fld"><label for="c-cnpj">CNPJ</label><input class="inp" id="c-cnpj" name="cnpj" data-mask="cnpj" inputmode="numeric"></div>
+        <div class="fld"><label for="c-cnpj">CNPJ <span class="hint">(opcional)</span></label><input class="inp" id="c-cnpj" name="cnpj" data-mask="cnpj" inputmode="numeric"></div>
         <div class="fld"><label for="c-tel">WhatsApp</label><input class="inp" id="c-tel" name="telefone" data-mask="tel" inputmode="tel" autocomplete="tel" required></div>
+        <div class="fld"><label for="c-plano">Plano</label><select class="inp" id="c-plano" name="plano">${opts(Object.entries(NEXUM.planos).map(([k, p]) => [k, `${p.nome} — até ${p.limite > 9999 ? 'ilimitados' : p.limite} colaboradores — ${brl(p.preco)}/mês`]), 'profissional')}</select></div>
+        <button class="btn block" type="button" id="cs-seg">Continuar</button>
+        </div>
+        <div id="cs2" hidden>
         <div class="fld"><label for="c-nome">Seu nome</label><input class="inp" id="c-nome" name="nome" autocomplete="name" required></div>
         <div class="fld"><label for="c-email">Seu e-mail</label><input class="inp" id="c-email" name="email" type="email" autocomplete="email" required></div>
         <div class="fld"><label for="c-senha">Senha</label><input class="inp" id="c-senha" name="senha" type="password" minlength="6" autocomplete="new-password" required><span class="hint">Mínimo de 6 caracteres.</span></div>
         <label class="check-row" style="margin:4px 0 12px"><input type="checkbox" id="c-termos"> <span class="hint">Li e aceito os <a href="termos.html" target="_blank" rel="noopener">Termos de Uso</a> e a <a href="privacidade.html" target="_blank" rel="noopener">Política de Privacidade</a>.</span></label>
-        <div class="fld"><label for="c-plano">Plano</label><select class="inp" id="c-plano" name="plano">${opts(Object.entries(NEXUM.planos).map(([k, p]) => [k, `${p.nome} — até ${p.limite > 9999 ? 'ilimitados' : p.limite} colaboradores — ${brl(p.preco)}/mês`]), 'profissional')}</select></div>
-        <button class="btn block" type="submit">Criar empresa</button>
+        <div class="row" style="gap:8px"><button class="btn sec" type="button" id="cs-vol">Voltar</button><button class="btn" style="flex:1" type="submit">Criar empresa</button></div>
+        </div>
       </form>`;
     masks(body);
+    if (!document.getElementById('cs-css')) document.head.insertAdjacentHTML('beforeend', '<style id="cs-css">.cs-passos{display:flex;align-items:center;gap:8px;margin:0 0 18px;font-size:13px;font-weight:600;color:#8A93AB}.cs-passos span{display:flex;align-items:center;gap:6px}.cs-passos i{font-style:normal;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;border:2px solid #C9D2E8;font-size:12px}.cs-passos b{flex:1;height:2px;background:#DDE3F0}.cs-passos .on{color:var(--pri,#2563EB)}.cs-passos .on i{background:var(--pri,#2563EB);border-color:var(--pri,#2563EB);color:#fff}.cs-passos .ok i{background:#0F8A5F;border-color:#0F8A5F;color:#fff}</style>');
+    const passo = n => { $('#cs1').hidden = n !== 1; $('#cs2').hidden = n !== 2; $('#cs-p1').className = n === 1 ? 'on' : 'ok'; $('#cs-p2').className = n === 2 ? 'on' : ''; $('#cs-p1 i').textContent = n === 2 ? '✓' : '1'; const f = $(n === 1 ? '#c-emp' : '#c-nome'); if (f) f.focus(); };
+    $('#cs-seg').onclick = () => { if (!$('#c-emp').value.trim()) return toast('Informe o nome da empresa.', true); if ($('#c-tel').value.replace(/\D/g, '').length < 10) return toast('Informe um WhatsApp com DDD.', true); const cn = $('#c-cnpj').value.replace(/\D/g, ''); if (cn && cn.length !== 14) return toast('O CNPJ precisa ter 14 números (ou deixe em branco).', true); passo(2); };
+    $('#cs-vol').onclick = () => passo(1);
+    $('#cs1').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); $('#cs-seg').click(); } });
     $('#f-criar').onsubmit = async e => {
-      e.preventDefault(); const d = formData(e.target);
-      if (!d.empresa || !d.nome || !/^\S+@\S+\.\S+$/.test(d.email)) return toast('Preencha empresa, nome e um e-mail válido.', true);
-      if ((d.telefone || '').replace(/\D/g, '').length < 10) return toast('Informe um WhatsApp com DDD.', true);
+      e.preventDefault(); if ($('#cs2').hidden) return $('#cs-seg').click(); const d = formData(e.target);
+      if (!d.empresa || (d.telefone || '').replace(/\D/g, '').length < 10) { passo(1); return toast('Confira o nome da empresa e o WhatsApp com DDD.', true); }
+      if (!d.nome || !/^\S+@\S+\.\S+$/.test(d.email)) return toast('Preencha seu nome e um e-mail válido.', true);
       if (!$('#c-termos').checked) return toast('Para criar a conta, aceite os Termos de Uso e a Política de Privacidade.', true);
       if (d.senha.length < 6) return toast('A senha precisa ter ao menos 6 caracteres.', true);
       if (FB_ON) return fbCriarEmpresa(d, e.target);
@@ -1484,7 +1500,7 @@ function vPonto(el, dia = iso(hoje()), aba = 'dia') {
     }
     const html = `<table><thead><tr><th>Dia</th><th>Marcações</th><th class="n">Horas</th></tr></thead><tbody>${linhas.join('')}</tbody><tfoot><tr><td colspan="2">Total no mês</td><td class="n">${hm(tot)}</td></tr></tfoot></table>`;
     $('#e-tab', body).innerHTML = `<div class="tbl-wrap">${html}</div>`;
-    $('#e-print', body).onclick = () => { const c = colabById(cid); printDoc('Espelho de ponto', `<h2>Espelho de ponto — ${mesNome(comp)}</h2><p><b>${esc(c.nome)}</b> · ${esc(c.cargo)} · CPF ${esc(c.cpf || '—')}</p>${html}<div class="ass"><div>Colaborador</div><div>Empregador</div></div>`); };
+    $('#e-print', body).onclick = () => { const c = colabById(cid); printDoc(`Espelho de ponto ${comp} · ${c.nome}`, espelhoProf(c, comp)); };
   }
 }
 
@@ -2666,7 +2682,7 @@ function vDesempenho(el) {
 }
 function docDesempenho(c, a) {
   const e = S.data.config.empresa || {}, [cl] = desClass(a.media);
-  return `${CSS_GUIA}<div class="gx"><div class="topo"><span class="mx">${NX_LOGO_DOC}NEXUM <span style="font-weight:600;opacity:.8">RH</span></span><span class="tt"><b>AVALIAÇÃO DE DESEMPENHO</b><span>${desRot(a.ciclo)}</span></span></div>
+  return `${CSS_GUIA}<div class="gx"><div class="topo"><span class="mx"><img src="${LOGO_MARCA}" alt="NEXUM RH" style="height:34px;display:block"></span><span class="tt"><b>AVALIAÇÃO DE DESEMPENHO</b><span>${desRot(a.ciclo)}</span></span></div>
   <div class="faixa"><span>Funcionário <b>${esc(c.nome)}</b></span><span>Cargo <b>${esc(c.cargo || '')}</b></span><span>Avaliado em <b>${new Date(a.em).toLocaleDateString('pt-BR')}</b></span></div>
   <div class="q">COMPETÊNCIAS (1 A 5)</div><table>${DES_COMP.map(([k, t]) => `<tr><td style="width:55%"><b>${t}</b></td><td><b>${a.notas[k] || '—'}</b> ${a.notas[k] ? `· ${DES_NOTA[a.notas[k]]}` : ''}</td></tr>`).join('')}<tr><td><b>Média geral</b></td><td><b>${a.media.toFixed(1).replace('.', ',')}</b> · ${cl}</td></tr></table>
   ${a.pont ? `<div class="obs">Referência do período: ${a.pont.at} atraso${a.pont.at === 1 ? '' : 's'} e ${a.pont.fa} falta${a.pont.fa === 1 ? '' : 's'} sem justificativa em ${a.pont.dias} dias de trabalho.</div>` : ''}
@@ -2774,7 +2790,7 @@ setInterval(() => { try {
   if (typeof S === 'undefined' || !S.user || !S.tenant || !S.data || !S.data.admRec || S.user.contador) return;
   const n = S.data.admRec.filter(x => !x.teste).length, b = document.getElementById('bdg-adm');
   if (b) b.textContent = (S.data.admis.filter(p => p.status === 'andamento').length + n) || '';
-  if (n > (S.admRecN == null ? n : S.admRecN)) { toast(`Novo aprovado chegou do Recrutamento (${n} aguardando admissão).`); if (S.view === 'adm' && !$('#modal-root').innerHTML) go('adm'); }
+  if (n > (S.admRecN == null ? n : S.admRecN)) { if (S.view === 'adm' && !$('#modal-root').innerHTML) go('adm'); }
   S.admRecN = n;
 } catch (e) { } }, 4000);
 
@@ -3165,14 +3181,15 @@ function pedirTercRH(depois) {
     <div class="fld"><span class="lbl">Quais vagas?</span>${abertas.length ? `<div style="display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:10px;padding:10px;max-height:200px;overflow:auto">${abertas.map(v => `<label class="row" style="gap:8px"><input type="checkbox" data-tv="${v.id}" ${abertas.length === 1 ? 'checked' : ''}> <span><b>${esc(v.titulo)}</b>${v.loja ? ' · ' + esc(v.loja) : ''}${v.salario ? ' · ' + brl(v.salario) : ''}</span></label>`).join('')}</div>` : '<p class="hint" style="margin:0">Nenhuma vaga aberta. Descreva abaixo o cargo, a loja e a quantidade (ou crie a vaga antes).</p>'}</div>
     <div class="grid"><div class="fld"><label for="tr-r">Responsável</label><input class="inp" id="tr-r" value="${esc(S.user.nome || '')}"></div><div class="fld"><label for="tr-w">WhatsApp</label><input class="inp" id="tr-w" data-mask="tel" value="${esc(S.tenant.telefone || '')}"></div>
       <div class="fld full"><label for="tr-o">Outras vagas, horário e perfil desejado</label><textarea class="inp" id="tr-o" maxlength="1500"></textarea></div></div>
-    <label class="check-row"><input type="checkbox" id="tr-ac"> <span class="hint">Concordo com R$ ${TERC.porCandidato} por candidato apresentado e R$ ${TERC.porContratado} por candidato contratado, cobrados após cada entrega.</span></label>`,
-    { size: 'lg', foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="tr-ok">Enviar pedido à NEXUM</button>', onMount: m => { masks(m); $('#tr-ok', m).onclick = async () => {
+    <p class="hint" style="margin:0">No próximo passo você lê o contrato, assina com o dedo ou o mouse e baixa o PDF.</p>`,
+    { size: 'lg', foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="tr-ok">Continuar para o contrato</button>', onMount: m => { masks(m); $('#tr-ok', m).onclick = async () => {
       const vs = $$('[data-tv]:checked', m).map(x => S.data.vagas.find(v => v.id === x.dataset.tv)).map(v => ({ cargo: String(v.titulo).slice(0, 80), loja: String(v.loja || '').slice(0, 80), qtd: 1, salario: v.salario ? brl(v.salario) : '' })), obs = $('#tr-o', m).value.trim(), wa = $('#tr-w', m).value.replace(/\D/g, '');
-      if (!vs.length && obs.length < 5) return toast('Escolha uma vaga ou descreva a vaga.', true); if (wa.length < 10) return toast('Informe o WhatsApp com DDD.', true); if (!$('#tr-ac', m).checked) return toast('Aceite as condições para enviar.', true);
+      if (!vs.length && obs.length < 5) return toast('Escolha uma vaga ou descreva a vaga.', true); if (wa.length < 10) return toast('Informe o WhatsApp com DDD.', true);
       if (!FB_ON) return toast('A seleção terceirizada precisa do sistema on-line.', true); const b = $('#tr-ok', m); b.disabled = true;
       try { const num = 'RS-' + Date.now().toString(36).toUpperCase().slice(-6), ag = new Date().toISOString();
-        await FB.db.collection('rsTerceirizado').add({ numero: num, origem: 'rh', tid: S.tenant.id, empresa: String(e.nome || S.tenant.nome || '').slice(0, 160), cnpj: String(e.cnpj || '').replace(/\D/g, '').slice(0, 14), responsavel: $('#tr-r', m).value.trim().slice(0, 120), whatsapp: wa.slice(0, 13), email: String(S.user.email || '').slice(0, 160), cidade: String(e.cidade || '').slice(0, 80), obs: obs.slice(0, 1500), vagas: vs.slice(0, 10), aceite: true, aceiteEm: ag, em: ag, status: 'novo', candidatos: [] });
-        audit(`Pediu a seleção terceirizada da NEXUM (${num})`); closeModal(); toast(`Pedido ${num} enviado. A NEXUM chama você no WhatsApp.`); depois && depois(); } catch (er) { b.disabled = false; FB.falhou(er); } }; } });
+        const d = { numero: num, origem: 'rh', tid: S.tenant.id, empresa: String(e.nome || S.tenant.nome || '').slice(0, 160), cnpj: String(e.cnpj || '').replace(/\D/g, '').slice(0, 14), responsavel: $('#tr-r', m).value.trim().slice(0, 120), whatsapp: wa.slice(0, 13), email: String(S.user.email || '').slice(0, 160), cidade: String(e.cidade || '').slice(0, 80), obs: obs.slice(0, 1500), vagas: vs.slice(0, 10), aceite: true, aceiteEm: ag, em: ag, status: 'novo', candidatos: [] };
+        let pub = {}; try { const sp = await FB.db.doc('plataforma/publico').get(); pub = sp.exists ? sp.data() : {}; } catch (x) { }
+        closeModal(); assinarContratoTerc({ ...d, precos: TERC }, pub, async contrato => { await FB.db.collection('rsTerceirizado').add({ ...d, aceiteEm: contrato.em, contrato }); audit(`Pediu a seleção terceirizada da NEXUM e assinou o contrato (${num})`); toast(`Pedido ${num} enviado com o contrato assinado. A NEXUM chama você no WhatsApp.`); depois && depois(); }); } catch (er) { b.disabled = false; FB.falhou(er); } }; } });
 }
 const TERC_ST = { novo: ['warn', 'Recebido'], andamento: ['pri', 'Em seleção'], concluido: ['ok', 'Concluído'], cancelado: ['', 'Cancelado'] }, CAND_ST = { apresentado: ['pri', 'Apresentado'], contratado: ['ok', 'Contratado'], recusado: ['', 'Não aprovado'] };
 async function painelTercRH(el) {
@@ -3219,8 +3236,8 @@ Object.assign(ICO, {
 });
 { const ins = (ap, ...it) => { const i = NAV.findIndex(n => n[0] === ap); NAV.splice(i + 1, 0, ...it); };
   ins('planfer', ['escdom', 'Escala de domingos e feriados', R_EQ, 'EQUIPE'], ['patri', 'Uniformes e aparelhos', R_RH, 'EQUIPE']);
-  ins('comis', ['ranking', 'Ranking de vendas', R_EQ, 'FINANCEIRO'], ['compras', 'Compras com desconto em folha', R_RH, 'FINANCEIRO'], ['consig', 'Crédito do Trabalhador', R_RH, 'FINANCEIRO'], ['quebra', 'Quebra de caixa', R_RH, 'FINANCEIRO'], ['expcont', 'Exportar para a contabilidade', R_RH, 'FINANCEIRO']);
-  ins('etica', ['elogios', 'Mural de reconhecimento', R_RH, 'COMUNICAÇÃO'], ['clube', 'Clube de descontos', R_RH, 'COMUNICAÇÃO']); }
+  ins('comis', ['compras', 'Compras com desconto em folha', R_RH, 'FINANCEIRO'], ['consig', 'Crédito do Trabalhador', R_RH, 'FINANCEIRO'], ['expcont', 'Exportar para a contabilidade', R_RH, 'FINANCEIRO']);
+  ins('etica', ['clube', 'Clube de descontos', R_RH, 'COMUNICAÇÃO']); }
 const compAdd = (comp, n) => iso(addM(new Date(+comp.slice(0, 4), +comp.slice(5, 7) - 1, 1), n)).slice(0, 7);
 const compDiff = (a, b) => (+b.slice(0, 4) - +a.slice(0, 4)) * 12 + (+b.slice(5, 7) - +a.slice(5, 7));
 const ultimaFechada = () => (S.data.folhas.filter(f => !f.tipo && f.fechada).map(f => f.comp).sort().pop() || '');
@@ -3481,6 +3498,178 @@ async function painelMP(el) {
 }
 { const _vc2 = vConfig; vConfig = function (el, aba) { _vc2(el, aba); try { const on = $('.tabs button.on', el); if (on && on.dataset.a === 'plano') painelMP(el); } catch (e) { } }; }
 
+
+/* =====================================================================
+   DOCUMENTOS PROFISSIONAIS COM A MARCA NEXUM RH (faixa com a logo,
+   seções, resumo e rodapé). Usados no espelho, advertência, suspensão,
+   TRCT, guia de exame e guia de pagamento.
+   ===================================================================== */
+const CSS_NXD = `.nxd{font-family:Arial,Helvetica,sans-serif;color:#111827;font-size:11.5px;line-height:1.4;max-width:780px;margin:0 auto;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.nxb{display:flex;align-items:center;gap:14px;background:linear-gradient(120deg,#0B1E4A,#123A8C);color:#fff;padding:12px 18px;border-radius:8px 8px 0 0}.nxb img{height:34px;width:auto;display:block}
+.nxb .t{flex:1;text-align:right}.nxb .t b{display:block;font-size:14.5px;letter-spacing:.04em;text-transform:uppercase}.nxb .t span{font-size:10.5px;opacity:.85}
+.nxf{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border:1px solid #0B1E4A;border-top:0;padding:6px 18px;font-size:10.5px;background:#EEF3FB;border-radius:0 0 8px 8px}
+.nxq{background:#DCE6F5;border:1px solid #9FB3D3;border-bottom:0;padding:5px 9px;font-weight:700;font-size:10.5px;letter-spacing:.05em;margin-top:12px;color:#0B1E4A;text-transform:uppercase}
+.nxd table{width:100%;border-collapse:collapse}.nxd .nxc td{border:1px solid #9FB3D3;padding:5px 9px;vertical-align:top}.nxd .nxc td small{display:block;font-size:8.5px;color:#4B5B7A;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}.nxd .nxc td b{font-size:12px}
+.nxd .nxt th{background:#0B1E4A;color:#fff;font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;padding:5px 6px;border:1px solid #0B1E4A;text-align:left}.nxd .nxt td{border:1px solid #C9D5EA;padding:4px 6px;font-size:10.5px}
+.nxd .nxt td.n,.nxd .nxt th.n{text-align:right;font-variant-numeric:tabular-nums}.nxd .nxt td.c,.nxd .nxt th.c{text-align:center}.nxd .nxt tr.fs td{background:#F3F6FB;color:#4B5B7A}.nxd .nxt tr.ft td{color:#B42318;font-weight:700}.nxd .nxt tfoot td{background:#EEF3FB;font-weight:700;border-color:#9FB3D3}
+.nxk{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid #9FB3D3;border-top:0}.nxk div{padding:7px 9px;border-right:1px solid #DCE6F5}.nxk div:last-child{border-right:0}.nxk span{display:block;font-size:8.5px;color:#4B5B7A;text-transform:uppercase;letter-spacing:.04em}.nxk b{font-size:14px;color:#0B1E4A}
+.nxo{border:1px solid #9FB3D3;border-top:0;padding:8px 10px;font-size:11px;color:#1F2A44;text-align:justify}.nxo p{margin:0 0 6px}.nxo p:last-child{margin:0}
+.nxs{display:flex;gap:30px;margin-top:40px}.nxs div{flex:1;text-align:center;border-top:1px solid #111827;padding-top:5px;font-size:10.5px}.nxs small{display:block;color:#4B5B7A;font-size:9.5px}
+.nxsel{display:inline-block;border:1.5px solid #0F8A5F;color:#0F8A5F;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;margin-top:10px}
+.nxr{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:18px;padding-top:7px;border-top:2px solid #0B1E4A;font-size:9px;color:#4B5B7A}.nxr b{color:#0B1E4A}
+.nxtag{display:inline-block;padding:2px 8px;border-radius:99px;font-weight:700;font-size:10px}.nxtag.adv{background:#FFF4E5;color:#9A5B00}.nxtag.sus{background:#FDECEC;color:#B42318}`;
+const nxBanda = (tit, sub, faixa) => `<div class="nxb"><img src="${LOGO_MARCA}" alt="NEXUM RH"><div class="t"><b>${tit}</b>${sub ? `<span>${sub}</span>` : ''}</div></div><div class="nxf">${faixa.filter(Boolean).map(x => `<span>${x}</span>`).join('')}</div>`;
+const nxCel = (r, v, cs = 1) => `<td colspan="${cs}"><small>${r}</small><b>${v == null || v === '' ? '&nbsp;' : v}</b></td>`;
+const nxCodigo = txt => String(txt).split('').reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7).toString(36).toUpperCase().slice(0, 8);
+const nxRodape = cod => `<div class="nxr"><span>Documento gerado pelo <b>NEXUM RH</b> · nexumdp.com.br</span><span>${cod ? `Código de controle <b>${cod}</b> · ` : ''}${new Date().toLocaleString('pt-BR')}</span></div>`;
+function nxEmpregador() { const e = S.data.config.empresa || {}; return `<div class="nxq">Empregador</div><table class="nxc"><tr>${nxCel('Razão social', esc(e.nome || S.tenant.nome || ''), 2)}${nxCel('CNPJ', esc(e.cnpj || S.tenant.cnpj || ''))}</tr><tr>${nxCel('Endereço', esc([e.endereco, e.cidade].filter(Boolean).join(', ')), 2)}${nxCel('Responsável', esc(e.responsavel || ''))}</tr></table>`; }
+function nxTrabalhador(c) { return `<div class="nxq">Trabalhador</div><table class="nxc"><tr>${nxCel('Nome', esc(c.nome || ''), 2)}${nxCel('CPF', esc(c.cpf || ''))}${nxCel('PIS', esc(c.pis || ''))}</tr><tr>${nxCel('Cargo', esc(c.cargo || ''))}${nxCel('Admissão', c.admissao ? fd(c.admissao) : '')}${nxCel('Loja / setor', esc(c.loja ? ((S.data.config.lojas || []).find(l => l.id === c.loja) || {}).nome || '' : c.depto || ''))}${nxCel('Escala', esc((escalaDe(c, S.data.config) || {}).nome || ''))}</tr></table>`; }
+
+/* ---------- Espelho de ponto ---------- */
+function espelhoProf(c, comp) {
+  const cfg = S.data.config, [a, mm] = comp.split('-').map(Number), nd = new Date(a, mm, 0).getDate(), p = pontoDoMes(c, comp), h = hoje(), adm = pd(c.admissao);
+  let trabT = 0, prevT = 0; const rows = [];
+  for (let d = 1; d <= nd; d++) {
+    const dt = new Date(a, mm - 1, d), ds = iso(dt), r = regDia(c.id, ds), m = r ? r.marc.slice().sort() : [], tur = turnoDia(c, dt, cfg), fer = feriado(ds, cfg), ef = emFolga(c, ds), conta = dt < h && !(adm && adm > dt);
+    const ok = m.length && !(m.length % 2), trab = ok ? horasTrab(m) : 0, prev = conta && tur && !ef ? turnoMin(tur) : 0; trabT += trab; prevT += prev;
+    let oc = fer ? 'Feriado: ' + fer : ef || (!tur ? (dt.getDay() === 0 ? 'Descanso semanal' : 'Folga') : '');
+    if (!oc && conta && tur && !m.length) oc = 'Falta'; if (m.length % 2) oc = 'Marcação incompleta';
+    const sal = ok && prev ? trab - prev : ok && !prev ? trab : 0, extra = m.length > 4 ? ' · +' + m.slice(4).join(' ') : '';
+    rows.push(`<tr class="${!tur || fer || dt.getDay() === 0 ? 'fs' : ''}${oc === 'Falta' ? ' ft' : ''}"><td class="c">${String(d).padStart(2, '0')}</td><td>${dt.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '')}</td>${[0, 1, 2, 3].map(i => `<td class="c">${m[i] || ''}</td>`).join('')}<td class="n">${trab ? hm(trab) : ''}</td><td class="n">${sal ? (sal > 0 ? '+' : '') + hm(sal) : ''}</td><td>${esc(oc + extra)}</td></tr>`);
+  }
+  const ass = espelhoAssinado(c.id, comp), cod = nxCodigo(c.id + comp + trabT);
+  return `<div class="nxd">${nxBanda('Espelho de ponto', 'Registro eletrônico de jornada · Portaria MTP nº 671/2021', [`Competência <b>${mesNome(comp)}</b>`, `Período <b>01/${String(mm).padStart(2, '0')}/${a} a ${nd}/${String(mm).padStart(2, '0')}/${a}</b>`, `Emitido em <b>${new Date().toLocaleDateString('pt-BR')}</b>`])}
+    ${nxEmpregador()}${nxTrabalhador(c)}
+    <div class="nxq">Marcações do mês</div><table class="nxt"><thead><tr><th class="c" style="width:30px">Dia</th><th style="width:38px"></th><th class="c">Entrada</th><th class="c">Saída</th><th class="c">Entrada</th><th class="c">Saída</th><th class="n">Trabalhadas</th><th class="n">Saldo</th><th>Ocorrência</th></tr></thead><tbody>${rows.join('')}</tbody>
+    <tfoot><tr><td colspan="6">Totais do mês</td><td class="n">${hm(trabT)}</td><td class="n">${(trabT - prevT > 0 ? '+' : '') + hm(trabT - prevT)}</td><td></td></tr></tfoot></table>
+    <div class="nxq">Resumo</div><div class="nxk"><div><span>Dias trabalhados</span><b>${p.dias}</b></div><div><span>Horas trabalhadas</span><b>${hm(trabT)}</b></div><div><span>Horas previstas</span><b>${hm(prevT)}</b></div><div><span>Horas extras 50%</span><b>${hm(p.he50)}</b></div><div><span>Horas extras 100%</span><b>${hm(p.he100)}</b></div>
+      <div><span>Adicional noturno</span><b>${hm(p.not)}</b></div><div><span>Atrasos</span><b>${hm(p.atraso)}</b></div><div><span>Faltas</span><b>${p.faltas}</b></div><div><span>Pendências</span><b>${p.pend}</b></div><div><span>Saldo do mês</span><b>${(trabT - prevT > 0 ? '+' : '') + hm(trabT - prevT)}</b></div></div>
+    <div class="nxq">Declaração</div><div class="nxo"><p>Declaro que as marcações deste espelho correspondem à jornada efetivamente cumprida no período, registradas pelo ponto eletrônico NEXUM RH com reconhecimento facial e localização. Eventuais divergências devem ser comunicadas ao RH para ajuste antes da assinatura.</p></div>
+    ${ass ? `<div class="nxsel">Assinado eletronicamente pelo(a) colaborador(a) no Portal em ${new Date(ass.em).toLocaleString('pt-BR')}${ass.metodo === 'facial' ? ' com reconhecimento facial' : ''}</div>` : ''}
+    <div class="nxs"><div>${esc(c.nome)}<small>Colaborador(a)</small></div><div>${esc((S.data.config.empresa || {}).nome || S.tenant.nome)}<small>Empregador</small></div></div>${nxRodape(cod)}</div>`;
+}
+
+/* ---------- Advertência e suspensão ---------- */
+function docOcorr(o) {
+  const c = colabById(o.colabId) || {}, e = S.data.config.empresa || {}, susp = o.tipo === 'suspensao', m = MOTIVOS_DISC[o.motivo];
+  const ini = o.inicio || iso(addD(pd(o.data), 1)), n = o.dias || 1, fim = iso(addD(pd(ini), n - 1)), ret = iso(addD(pd(ini), n)), num = `${String(o.num || 1).padStart(3, '0')}/${o.data.slice(0, 4)}`;
+  return `<div class="nxd">${nxBanda(susp ? 'Comunicado de suspensão disciplinar' : 'Advertência disciplinar por escrito', 'Medida disciplinar · CLT, arts. 2º, 474 e 482', [`Nº <b>${num}</b>`, `Data do fato <b>${fd(o.data)}${o.hora ? ' às ' + o.hora : ''}</b>`, `Emitido em <b>${new Date().toLocaleDateString('pt-BR')}</b>`])}
+    ${nxEmpregador()}${nxTrabalhador(c)}
+    <div class="nxq">Ocorrência</div><table class="nxc"><tr>${nxCel('Tipo', `<span class="nxtag ${susp ? 'sus' : 'adv'}">${susp ? 'Suspensão' : 'Advertência'}</span>`)}${nxCel('Motivo', esc(m ? m.t : TIPOS_OCORR[o.tipo]), 2)}${susp ? nxCel('Período', `${fd(ini)} a ${fd(fim)}`) : nxCel('Base legal', m && m.a ? `CLT, art. 482, "${m.a}"` : 'Regimento interno')}</tr></table>
+    <div class="nxq">1. Descrição dos fatos</div><div class="nxo"><p style="white-space:pre-wrap">${esc(o.desc || '')}</p></div>
+    <div class="nxq">2. Medida aplicada</div><div class="nxo">${susp ? `<p>Fica V.Sa. <b>SUSPENSO(A)</b> de suas atividades por <b>${n} dia${n > 1 ? 's' : ''}</b>, de ${fd(ini)} a ${fd(fim)}, devendo retornar ao trabalho em <b>${fd(ret)}</b>, no seu horário normal. Os dias de suspensão não são remunerados e podem refletir no descanso semanal remunerado da semana correspondente (Lei 605/1949, art. 6º). A medida respeita o limite de 30 dias consecutivos do art. 474 da CLT.</p>` : '<p>Fica V.Sa. <b>ADVERTIDO(A)</b> por escrito, com o objetivo de orientar e evitar a repetição da conduta.</p>'}</div>
+    <div class="nxq">3. Fundamentação</div><div class="nxo"><p>A medida é aplicada no exercício do poder diretivo e disciplinar do empregador (CLT, art. 2º)${m && m.a ? `, considerando que a conduta caracteriza, em tese, ${ALINEAS[m.a]} (CLT, art. 482, alínea "${m.a}")` : ''}, e com base no regimento interno, observadas a proporcionalidade e a imediatidade.</p></div>
+    <div class="nxq">4. Orientação</div><div class="nxo"><p>Solicitamos que a conduta não se repita. A reincidência poderá levar a medidas mais severas, inclusive à dispensa por justa causa, nos termos do art. 482 da CLT.</p></div>
+    <div class="nxq">5. Manifestação do(a) empregado(a)</div><div class="nxo"><p>Se quiser, registre abaixo a sua versão dos fatos. A assinatura confirma apenas o recebimento deste comunicado, e não a concordância com o seu conteúdo.</p><p style="border-bottom:1px solid #9FB3D3;height:22px"></p><p style="border-bottom:1px solid #9FB3D3;height:22px"></p></div>
+    <p style="margin:14px 0 0">${dataExt(e)}.</p>
+    <div class="nxs"><div>${empNome(e)}<small>${e.responsavel ? esc(e.responsavel) : 'Empregador(a)'}</small></div><div>${esc(c.nome || '')}<small>Ciente em ____/____/________</small></div></div>
+    <p style="font-size:10px;color:#4B5B7A;margin-top:16px">Se o(a) empregado(a) se recusar a assinar, duas testemunhas confirmam que o comunicado foi lido e entregue na data acima.</p>
+    <div class="nxs" style="margin-top:34px"><div>Testemunha 1<small>Nome e CPF</small></div><div>Testemunha 2<small>Nome e CPF</small></div></div>${nxRodape(nxCodigo(o.id + o.data))}</div>`;
+}
+
+/* ---------- Guia de pagamento para o financeiro ---------- */
+function guiaPagamento(comp) {
+  const f = S.data.folhas.find(x => !x.tipo && x.comp === comp); if (!f) return toast(`Gere a folha de ${mesNome(comp)} primeiro.`, true);
+  const l = f.itens.map(i => { const c = colabById(i.colabId) || {}, k = folhaItem(i); return { c, i, liq: r2(k.liq) }; }).filter(x => x.liq > 0).sort((a, b) => (a.c.nome || a.i.nome).localeCompare(b.c.nome || b.i.nome));
+  const tot = r2(l.reduce((s, x) => s + x.liq, 0)), semPix = l.filter(x => !x.c.pix && !x.c.banco).length, venc = (() => { const [a, m] = comp.split('-').map(Number); let d = new Date(a, m, 1), n = 0; while (n < 5) { if (d.getDay() !== 0 && d.getDay() !== 6) n++; if (n < 5) d = addD(d, 1); } return d; })();
+  const conta = c => c.pix ? `<b>PIX</b> ${esc(c.pix)}${c.pixTipo ? ` <span style="color:#4B5B7A">(${esc(c.pixTipo)})</span>` : ''}` : c.banco ? `${esc(c.banco)}${c.agencia ? ' · ag. ' + esc(c.agencia) : ''}${c.conta ? ' · cc ' + esc(c.conta) : ''}` : '<span style="color:#B42318">Sem PIX nem conta cadastrados</span>';
+  printDoc(`Guia de pagamento ${comp}`, `<div class="nxd">${nxBanda('Guia de pagamento de salários', 'Para o financeiro efetuar os pagamentos', [`Competência <b>${mesNome(comp)}</b>`, `Pagar até <b>${venc.toLocaleDateString('pt-BR')}</b> (5º dia útil)`, `${l.length} pagamento(s)`])}
+    ${nxEmpregador()}
+    <div class="nxq">Valores a pagar</div><table class="nxt"><thead><tr><th style="width:24px" class="c">#</th><th>Funcionário</th><th>CPF</th><th>Chave PIX ou conta</th><th class="n">Líquido a pagar</th><th class="c" style="width:48px">Pago</th></tr></thead><tbody>
+    ${l.map((x, k) => `<tr><td class="c">${k + 1}</td><td><b>${esc(x.c.nome || x.i.nome)}</b><div style="color:#4B5B7A;font-size:9.5px">${esc(x.c.cargo || '')}</div></td><td>${esc(x.c.cpf || '')}</td><td>${conta(x.c)}</td><td class="n"><b>${brl(x.liq)}</b></td><td class="c">☐</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td colspan="4">Total a pagar</td><td class="n">${brl(tot)}</td><td></td></tr></tfoot></table>
+    ${semPix ? `<div class="nxo" style="color:#B42318"><b>${semPix} funcionário(s) sem chave PIX ou conta bancária.</b> Cadastre em Funcionários antes de pagar.</div>` : ''}
+    <div class="nxq">Orientações</div><div class="nxo"><p>Os valores são o líquido do holerite de cada funcionário (salário, adicionais e descontos já calculados). Confira o nome do favorecido no app do banco antes de confirmar cada PIX e guarde os comprovantes: eles podem ser enviados ao funcionário pelo NEXUM RH em Holerites › Pago.</p><p>Prazo legal: até o 5º dia útil do mês seguinte ao trabalhado (CLT, art. 459, § 1º).</p></div>
+    <div class="nxs"><div>${esc(S.user.nome || '')}<small>RH · conferido em ${new Date().toLocaleDateString('pt-BR')}</small></div><div>&nbsp;<small>Financeiro · pago em ____/____/________</small></div></div>${nxRodape(nxCodigo(comp + tot))}</div>`);
+  audit(`Gerou a guia de pagamento de ${mesNome(comp)} (${brl(tot)})`);
+}
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('#fi-gp'); if (b && !b.disabled) guiaPagamento(S.finComp || iso(hoje()).slice(0, 7)); });
+/* ---------- abas: a aba escolhida fica visível (a barra não volta para a esquerda) ---------- */
+(function abasVisiveis() { let p = 0; const aj = () => { p = 0; document.querySelectorAll('.tabs').forEach(t => { if (t.scrollWidth <= t.clientWidth) return; const on = t.querySelector('button.on'); if (!on || t.dataset.sx === (on.dataset.a || on.textContent)) return; t.dataset.sx = on.dataset.a || on.textContent; const alvo = on.offsetLeft - t.offsetLeft - (t.clientWidth - on.offsetWidth) / 2; t.scrollLeft = Math.max(0, alvo); }); };
+  new MutationObserver(() => { if (!p) p = requestAnimationFrame(aj); }).observe(document.body, { childList: true, subtree: true }); })();
+
+/* ---------- Demissão: lista de desligados com "Reativar" ---------- */
+function painelDesligados(el) {
+  if (!el || $('#dl-rt', el)) return; const l = S.data.colab.filter(c => c.status === 'desligado').sort((a, b) => (b.desligamento || '').localeCompare(a.desligamento || '')); if (!l.length) return;
+  el.insertAdjacentHTML('beforeend', `<section class="panel" id="dl-rt"><div class="row" style="margin-bottom:8px"><h2 style="margin:0;flex:1">Reativar funcionários desligados (${l.length})</h2><button class="btn ghost sm" id="dl-ex">Ver ex-funcionários</button></div><p class="hint" style="margin-top:0">Para recontratar alguém que já foi desligado, use "Reativar": abre um novo contrato e mantém o histórico do anterior.</p>
+    <ul class="list">${l.slice(0, 15).map(c => `<li><div class="t"><div><b>${esc(c.nome)}</b> · ${esc(c.cargo || '')}</div><div>Desligado em ${fd(c.desligamento)} · ${esc(MOTIVOS[c.motivoDeslig] || 'motivo não informado')}</div></div>${podeEditar() ? `<button class="btn sec sm" data-rtv="${c.id}">Reativar</button>` : ''}</li>`).join('')}</ul>${l.length > 15 ? '<p class="hint">Mostrando os 15 mais recentes. Os demais estão em Ex-funcionários.</p>' : ''}</section>`);
+  $('#dl-ex', el).onclick = () => go('exfunc');
+  $$('[data-rtv]', el).forEach(b => b.onclick = () => { modalReativar(); setTimeout(() => { const s = $('#ra-c'); if (s) { s.value = b.dataset.rtv; s.dispatchEvent(new Event('change')); } }, 30); });
+}
+{ const _gr = go; go = function (v) { const r = _gr.apply(this, arguments); try { if (v === 'resc') painelDesligados($('#view')); if (v === 'portal') painelQRPortal($('#view')); } catch (e) { } return r; }; }
+
+/* ---------- QR Code do Portal do Colaborador (para imprimir e colar na loja) ---------- */
+function painelQRPortal(el) {
+  if (!el || $('#qr-pt', el) || !S.tenant) return; const u = linkPortal();
+  el.insertAdjacentHTML('afterbegin', `<section class="panel" id="qr-pt"><div class="row" style="gap:16px;flex-wrap:wrap;align-items:center"><div style="width:96px;flex:none">${pixQR(u, 3)}</div><div style="flex:1;min-width:220px"><h2 style="margin:0 0 4px">QR Code do Portal do Colaborador</h2><p class="hint" style="margin:0 0 6px">A equipe aponta a câmera do celular e o portal abre já com a sua empresa. Imprima o cartaz e cole perto do ponto, no caixa ou na copa.</p><code style="font-size:12px;word-break:break-all">${esc(u)}</code></div><div class="row" style="gap:8px"><button class="btn sec" id="qr-cp">Copiar link</button><button class="btn" id="qr-pr">Imprimir cartaz</button></div></div></section>`);
+  $('#qr-cp', el).onclick = () => navigator.clipboard.writeText(u).then(() => toast('Link copiado.'), () => toast('Copie o link manualmente.', true));
+  $('#qr-pr', el).onclick = () => { const e = S.data.config.empresa || {};
+    printDoc('Cartaz do Portal do Colaborador', `<div class="nxd" style="text-align:center;max-width:640px">${nxBanda('Portal do Colaborador', esc(e.nome || S.tenant.nome), ['Ponto, holerites e documentos no celular'])}
+      <h2 style="font-size:28px;text-transform:none;letter-spacing:0;margin:34px 0 6px;color:#0B1E4A">Aponte a câmera do celular</h2><p style="text-align:center;font-size:15px;color:#4B5B7A;margin:0 0 20px">e entre com o seu CPF e a senha enviada pelo RH</p>
+      <div style="width:330px;margin:0 auto;border:8px solid #0B1E4A;border-radius:18px;padding:12px">${pixQR(u, 8)}</div>
+      <p style="text-align:center;font-size:12px;color:#4B5B7A;margin:16px 0 4px">ou acesse</p><p style="text-align:center;font-size:14px;font-weight:700;word-break:break-all;color:#0B1E4A">${esc(u)}</p>
+      <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:22px;margin:26px 0 8px;font-size:13px;color:#1F2A44"><span>✓ Bater o ponto</span><span>✓ Ver e assinar holerites</span><span>✓ Pedir férias</span><span>✓ Falar com o RH</span></div>${nxRodape('')}</div>`); };
+}
+
+
+/* =====================================================================
+   CONTRATO DA SELEÇÃO TERCEIRIZADA: assinatura com o dedo/mouse e PDF
+   ===================================================================== */
+const TERC_CONTRATO_VERSAO = '1.0 (11/10/2026)';
+function contratoTercHTML(d, pub = {}) {
+  const e = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const c = d.contrato || {}, vagas = d.vagas || [], quando = c.em ? new Date(c.em).toLocaleString('pt-BR') : '', pc = (d.precos || {}), ap = pc.porCandidato || 200, ct = pc.porContratado || 400;
+  const cel = (k, v, cs = 1) => `<td colspan="${cs}"><small>${k}</small><b>${e(v) || '&nbsp;'}</b></td>`;
+  return `<div class="ctc"><style>.ctc{font-family:Arial,Helvetica,sans-serif;color:#111827;font-size:11px;line-height:1.5;max-width:780px;margin:0 auto;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .ctc .b{display:flex;align-items:center;gap:14px;background:linear-gradient(120deg,#0B1E4A,#123A8C);color:#fff;padding:12px 16px;border-radius:8px 8px 0 0}.ctc .b img{height:32px}.ctc .b .t{flex:1;text-align:right}.ctc .b .t b{display:block;font-size:13.5px;letter-spacing:.04em;text-transform:uppercase}.ctc .b .t span{font-size:10px;opacity:.85}
+  .ctc .f{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;border:1px solid #0B1E4A;border-top:0;padding:5px 16px;font-size:10px;background:#EEF3FB;border-radius:0 0 8px 8px}
+  .ctc .q{background:#DCE6F5;border:1px solid #9FB3D3;border-bottom:0;padding:4px 8px;font-weight:700;font-size:10px;letter-spacing:.05em;margin-top:10px;color:#0B1E4A;text-transform:uppercase}
+  .ctc table{width:100%;border-collapse:collapse}.ctc td,.ctc th{border:1px solid #9FB3D3;padding:5px 8px;vertical-align:top;text-align:left;font-size:11px}.ctc td small{display:block;font-size:8px;color:#4B5B7A;text-transform:uppercase;margin-bottom:1px}.ctc td b{font-size:11px}.ctc th{background:#0B1E4A;color:#fff;font-size:9px;text-transform:uppercase}
+  .ctc .o{border:1px solid #9FB3D3;border-top:0;padding:7px 10px;text-align:justify}.ctc .o p{margin:0 0 5px}.ctc .o p:last-child{margin:0}
+  .ctc .ass{display:flex;gap:26px;margin-top:16px;align-items:flex-end}.ctc .ass>div{flex:1;text-align:center;font-size:10px}.ctc .ass img{max-height:70px;max-width:260px;display:block;margin:0 auto -4px}.ctc .ass .ln{border-top:1px solid #111827;padding-top:4px;margin-top:6px}.ctc .ass small{display:block;color:#4B5B7A;font-size:9px}
+  .ctc .sel{border:1.5px solid #0F8A5F;border-radius:6px;padding:6px 10px;color:#0F5D41;font-size:9.5px;margin-top:10px}.ctc .h{font-family:"Courier New",monospace;font-size:8.5px;word-break:break-all;color:#4B5B7A;margin-top:6px}
+  .ctc .r{display:flex;justify-content:space-between;margin-top:12px;padding-top:6px;border-top:2px solid #0B1E4A;font-size:8.5px;color:#4B5B7A}</style>
+  <div class="b">${typeof LOGO_MARCA !== 'undefined' ? `<img src="${LOGO_MARCA}" alt="NEXUM RH">` : '<b style="font-size:18px">NEXUM RH</b>'}<div class="t"><b>Contrato de prestação de serviços</b><span>Recrutamento e seleção terceirizados · versão ${e(c.versao || TERC_CONTRATO_VERSAO)}</span></div></div>
+  <div class="f"><span>Pedido <b>${e(d.numero || '')}</b></span><span>Assinado em <b>${e(quando || '—')}</b></span><span>${vagas.length} vaga(s)</span></div>
+  <div class="q">1. Partes</div><table><tr>${cel('Contratada', pub.razao || 'NEXUM RH', 2)}${cel('CNPJ', pub.cnpj || '')}</tr><tr>${cel('Contratante', d.empresa, 2)}${cel('CNPJ', d.cnpj)}</tr><tr>${cel('Responsável', c.nome || d.responsavel)}${cel('CPF do responsável', c.cpf)}${cel('Cidade/UF', d.cidade)}</tr><tr>${cel('E-mail', d.email, 2)}${cel('WhatsApp', d.whatsapp)}</tr></table>
+  <div class="q">2. Objeto e vagas</div><div class="o"><p>A CONTRATADA prestará à CONTRATANTE o serviço de recrutamento e seleção de candidatos para as vagas abaixo, com divulgação, triagem, testes e entrevistas (inclusive por vídeo), apresentando os candidatos com o perfil pedido e um parecer de cada um.</p></div>
+  ${vagas.length ? `<table><tr><th>Cargo</th><th>Loja</th><th>Quantidade</th><th>Salário</th></tr>${vagas.map(v => `<tr><td>${e(v.cargo)}</td><td>${e(v.loja)}</td><td>${e(v.qtd || 1)}</td><td>${e(v.salario)}</td></tr>`).join('')}</table>` : ''}${d.obs ? `<div class="o"><p><b>Perfil e observações:</b> ${e(d.obs)}</p></div>` : ''}
+  <div class="q">3. Preço e definições</div><div class="o"><p><b>R$ ${ap},00 por candidato apresentado</b> e <b>R$ ${ct},00 por candidato contratado</b>. Não há mensalidade, taxa de adesão nem fidelidade.</p><p>Candidato <b>apresentado</b> é o enviado à CONTRATANTE com currículo e parecer. Candidato <b>contratado</b> é o apresentado que for admitido pela CONTRATANTE, ou por empresa do mesmo grupo, em qualquer cargo, em até 90 dias da apresentação.</p></div>
+  <div class="q">4. Pagamento</div><div class="o"><p>Os valores dos apresentados são cobrados após a apresentação, e o do contratado, após a admissão, com vencimento em 5 dias úteis da cobrança, por PIX ou link de pagamento. Atrasos ficam sujeitos a multa de 2% e juros de 1% ao mês. A CONTRATANTE informará à CONTRATADA a admissão de candidato apresentado.</p></div>
+  <div class="q">5. Obrigações</div><div class="o"><p><b>CONTRATANTE:</b> informar dados verdadeiros da vaga (cargo, loja, salário, horário e benefícios); dar retorno sobre os candidatos em até 5 dias úteis; usar os dados dos candidatos só para este processo; não praticar discriminação (Lei nº 9.029/1995).</p><p><b>CONTRATADA:</b> conduzir a seleção com ética e sem discriminação; proteger os dados pessoais dos candidatos (Lei nº 13.709/2018); manter a CONTRATANTE informada do andamento. O anúncio pode mostrar o nome e a foto da loja; o endereço só é passado ao candidato aprovado, no fim, para falar com o gerente.</p></div>
+  <div class="q">6. Vínculo, vigência e encerramento</div><div class="o"><p>A decisão de contratar é sempre da CONTRATANTE, única empregadora do candidato contratado. A CONTRATADA não garante a permanência nem o desempenho do contratado e não responde pelas obrigações do contrato de trabalho. Este contrato vale até o preenchimento das vagas e pode ser encerrado pela CONTRATANTE a qualquer momento, pagando apenas o que já foi entregue. Aplicam-se, no que couber, o Contrato de Prestação de Serviços e a Política de Privacidade publicados em nexumdp.com.br. Fica eleito o foro da comarca da sede da CONTRATADA, ressalvado o direito do consumidor de propor ação no seu domicílio.</p></div>
+  <div class="q">7. Assinatura eletrônica</div><div class="o"><p>As partes reconhecem a validade da assinatura eletrônica deste contrato, nos termos dos arts. 107 e 425 do Código Civil e do art. 10, § 2º, da MP nº 2.200-2/2001. Foram registrados a data e a hora, os dados acima, a assinatura desenhada e o código de integridade abaixo.</p></div>
+  <div class="ass"><div>${c.assinatura ? `<img src="${c.assinatura}" alt="Assinatura">` : '<div style="height:60px"></div>'}<div class="ln">${e(c.nome || d.responsavel || '')}<small>CONTRATANTE · ${e(d.empresa || '')}${c.cpf ? ' · CPF ' + e(c.cpf) : ''}</small></div></div><div><div style="height:60px;display:flex;align-items:flex-end;justify-content:center;font-size:9.5px;color:#0F5D41">Aceite registrado pela plataforma</div><div class="ln">${e(pub.razao || 'NEXUM RH')}<small>CONTRATADA${pub.cnpj ? ' · CNPJ ' + e(pub.cnpj) : ''}</small></div></div></div>
+  ${c.em ? `<div class="sel">✓ Assinado eletronicamente em ${e(quando)}${c.navegador ? ' · ' + e(String(c.navegador).slice(0, 90)) : ''}</div>` : ''}${c.hash ? `<div class="h">Código de integridade (SHA-256): ${e(c.hash)}</div>` : ''}
+  <div class="r"><span>NEXUM RH · nexumdp.com.br</span><span>Gerado em ${new Date().toLocaleString('pt-BR')}</span></div></div>`;
+}
+function quadroAssinatura(cv) {
+  const x = cv.getContext('2d'); let des = false, usou = false; const ajusta = () => { const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1; cv.width = r.width * dpr; cv.height = r.height * dpr; x.setTransform(dpr, 0, 0, dpr, 0, 0); x.lineWidth = 2.2; x.lineCap = 'round'; x.lineJoin = 'round'; x.strokeStyle = '#0B1E4A'; };
+  ajusta(); const pos = ev => { const r = cv.getBoundingClientRect(); return [ev.clientX - r.left, ev.clientY - r.top]; };
+  cv.onpointerdown = ev => { ev.preventDefault(); cv.setPointerCapture(ev.pointerId); des = true; const [a, b] = pos(ev); x.beginPath(); x.moveTo(a, b); };
+  cv.onpointermove = ev => { if (!des) return; const [a, b] = pos(ev); x.lineTo(a, b); x.stroke(); usou = true; };
+  cv.onpointerup = cv.onpointercancel = () => { des = false; };
+  return { limpar: () => { x.clearRect(0, 0, cv.width, cv.height); usou = false; }, vazio: () => !usou, imagem: () => { const t = document.createElement('canvas'), w = 520, h = Math.round(w * cv.height / cv.width); t.width = w; t.height = h; const tx = t.getContext('2d'); tx.fillStyle = '#fff'; tx.fillRect(0, 0, w, h); tx.drawImage(cv, 0, 0, w, h); return t.toDataURL('image/jpeg', .8); } };
+}
+const cpfOk = v => { const s = String(v).replace(/\D/g, ''); if (s.length !== 11 || /^(\d)\1+$/.test(s)) return false; const dv = n => { let t = 0; for (let i = 0; i < n; i++) t += +s[i] * (n + 1 - i); const r = (t * 10) % 11; return r === 10 ? 0 : r; }; return dv(9) === +s[9] && dv(10) === +s[10]; };
+function assinarContratoTerc(d, pub, enviar) {
+  const prev = () => contratoTercHTML({ ...d, contrato: { nome: d.responsavel, versao: TERC_CONTRATO_VERSAO } }, pub);
+  modal('Contrato da seleção terceirizada', `<div style="max-height:44vh;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff">${prev()}</div>
+    <div class="grid" style="margin-top:12px"><div class="fld"><label for="ct-n">Nome de quem assina</label><input class="inp" id="ct-n" value="${String(d.responsavel || '').replace(/"/g, '&quot;')}"></div><div class="fld"><label for="ct-c">CPF de quem assina</label><input class="inp" id="ct-c" inputmode="numeric" placeholder="000.000.000-00"></div></div>
+    <div class="fld"><span class="lbl">Assine abaixo com o dedo ou o mouse</span><canvas id="ct-cv" style="width:100%;height:150px;border:1.5px dashed var(--line);border-radius:12px;background:#FAFBFE;touch-action:none;cursor:crosshair"></canvas><div class="row" style="margin-top:4px"><span class="hint" style="flex:1">A assinatura vai no contrato em PDF, junto com a data, a hora e um código de integridade.</span><button type="button" class="btn ghost sm" id="ct-l">Limpar</button></div></div>
+    <label class="row" style="gap:8px;align-items:flex-start"><input type="checkbox" id="ct-ac" style="margin-top:4px"> <span class="hint">Li e concordo com o contrato acima, inclusive com os valores de R$ ${(d.precos || {}).porCandidato || 200} por candidato apresentado e R$ ${(d.precos || {}).porContratado || 400} por candidato contratado.</span></label>`,
+    { size: 'lg', foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="ct-ok">Assinar, enviar e baixar o PDF</button>', onMount: m => {
+      const q = quadroAssinatura($('#ct-cv', m)); $('#ct-l', m).onclick = () => q.limpar();
+      $('#ct-c', m).oninput = ev => { const s = ev.target.value.replace(/\D/g, '').slice(0, 11); ev.target.value = s.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2'); };
+      $('#ct-ok', m).onclick = async () => { const nome = $('#ct-n', m).value.trim(), cpf = $('#ct-c', m).value.trim();
+        if (nome.length < 5) return toast('Informe o nome completo de quem assina.', true); if (!cpfOk(cpf)) return toast('Confira o CPF de quem assina.', true); if (q.vazio()) return toast('Faça a assinatura no quadro.', true); if (!$('#ct-ac', m).checked) return toast('Marque que leu e concorda com o contrato.', true);
+        const b = $('#ct-ok', m); b.disabled = true; b.textContent = 'Enviando…';
+        const contrato = { versao: TERC_CONTRATO_VERSAO, nome: nome.slice(0, 120), cpf, em: new Date().toISOString(), navegador: navigator.userAgent.slice(0, 160), assinatura: q.imagem() };
+        try { const base = JSON.stringify({ numero: d.numero, empresa: d.empresa, cnpj: d.cnpj, vagas: d.vagas, nome: contrato.nome, cpf: contrato.cpf, em: contrato.em, versao: contrato.versao, assinatura: contrato.assinatura.length });
+          contrato.hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(base)))).map(x => x.toString(16).padStart(2, '0')).join('');
+          await enviar(contrato); closeModal(); await baixarPDF(`Contrato seleção terceirizada ${d.numero}`, contratoTercHTML({ ...d, contrato }, pub)); }
+        catch (er) { b.disabled = false; b.textContent = 'Assinar, enviar e baixar o PDF'; toast('Não foi possível enviar: ' + (er.code || er.message), true); } }; } });
+}
 /* =====================================================================
    LOTE 8: Riscos psicossociais (NR-1), Quanto custa demitir hoje,
    Ex-funcionários e Sugestões com votação.
@@ -3516,7 +3705,7 @@ const NR1_DIMS = [
   ['clareza', 'Clareza de papel e mudanças', 2, ['Sei exatamente o que se espera de mim no trabalho.', 'Quando algo muda (regras, metas, horários), sou avisado(a) com antecedência e entendo o porquê.'],
     ['Entregar a descrição do cargo para cada funcionário', 'Avisar mudanças pelo portal com antecedência e explicar o motivo']],
   ['reconhecimento', 'Reconhecimento e justiça', 2, ['Sinto que o meu esforço é reconhecido.', 'As regras, folgas e oportunidades são aplicadas de forma justa para todos.'],
-    ['Usar o Mural de reconhecimento e elogiar resultados em público', 'Publicar critérios claros para promoções, folgas e comissões']],
+    ['Elogiar resultados em público e agradecer o esforço da equipe nas reuniões', 'Publicar critérios claros para promoções, folgas e comissões']],
   ['bemestar', 'Bem-estar e desgaste', 3, ['Saio do trabalho sem me sentir esgotado(a) na maior parte dos dias.', 'Consigo me desligar do trabalho quando estou em casa.'],
     ['Acompanhar de perto quem tem muitas horas extras ou banco de horas alto', 'Divulgar canais de apoio (CVV 188, UBS, convênio) e permitir saída para consultas']]
 ];
@@ -3892,7 +4081,7 @@ function alertasNovos() {
    MODELOS PROFISSIONAIS (iguais no RH e no portal): holerite e TRCT
    ===================================================================== */
 const CSS_DOC_PRO = `<style>.dp{font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#111}.dp table{width:100%;border-collapse:collapse}.dp td,.dp th{border:1px solid #444;padding:4px 6px;vertical-align:top;text-align:left}.dp th{background:#E9ECF2;font-size:10px;text-transform:uppercase;letter-spacing:.03em}
-.dp .cab td{border:0;padding:0}.dp .tit{font-size:14px;font-weight:700;text-align:center;letter-spacing:.04em}.dp .n{text-align:right;white-space:nowrap}.dp .q{background:#14203D;color:#fff;font-weight:700;font-size:10.5px;letter-spacing:.05em;padding:4px 6px;margin-top:8px}
+.dp .cab td{border:0;padding:0}.dp .tit{font-size:14px;font-weight:700;text-align:center;letter-spacing:.04em}.dp .n{text-align:right;white-space:nowrap}.dp .q{background:#0B1E4A;color:#fff;border-radius:3px;font-weight:700;font-size:10.5px;letter-spacing:.05em;padding:4px 6px;margin-top:8px}
 .dp .lb{display:block;font-size:8.5px;color:#555;text-transform:uppercase}.dp .vl{font-size:11.5px;font-weight:600}.dp .tot td{font-weight:700;background:#F4F6FA}.dp .liq{font-size:14px;font-weight:800}.dp .ass{display:flex;gap:40px;margin-top:34px}.dp .ass div{flex:1;border-top:1px solid #111;text-align:center;padding-top:4px;font-size:10.5px}.dp .min{font-size:9.5px;color:#444;margin-top:8px}</style>`;
 const celP = (lb, vl, span = 1) => `<td colspan="${span}"><span class="lb">${lb}</span><span class="vl">${vl == null || vl === '' ? '&nbsp;' : vl}</span></td>`;
 const brlP = v => (+v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -3945,7 +4134,7 @@ const fdP = s => s ? new Date(String(s).length > 10 ? s : s + 'T12:00').toLocale
 const COD_AFAST = { sjc: ['02', 'Rescisão sem justa causa por iniciativa do empregador'], pd: ['07', 'Rescisão por iniciativa do empregado'], jc: ['01', 'Rescisão com justa causa por iniciativa do empregador'], acordo: ['33', 'Rescisão por acordo entre as partes (art. 484-A)'], fimexp: ['06', 'Término do contrato a termo (experiência)'], antexp_emp: ['03', 'Rescisão antecipada do contrato a termo pelo empregador (art. 479)'], antexp_col: ['04', 'Rescisão antecipada do contrato a termo pelo empregado (art. 480)'] };
 function trctProf(c, e, p, r, extra = {}) {
   const ca = COD_AFAST[p.motivo] || ['', ''], prov = r.prov || [], desc = r.desc || [], mx = Math.max(prov.length, desc.length, 8);
-  return `${CSS_DOC_PRO}<div class="dp"><div class="tit" style="margin-bottom:2px">TERMO DE RESCISÃO DO CONTRATO DE TRABALHO</div><div style="text-align:center;font-size:9.5px;margin-bottom:6px">Nos moldes do Anexo I da Portaria MTE nº 1.621/2010 · Código do motivo conforme a Tabela 19 do eSocial</div>
+  return `${CSS_DOC_PRO}<style>${CSS_NXD}</style><div class="dp" style="max-width:780px;margin:0 auto">${nxBanda('Termo de Rescisão do Contrato de Trabalho', 'Anexo I da Portaria MTE nº 1.621/2010 · motivo conforme a Tabela 19 do eSocial', [`Trabalhador <b>${esc(c.nome)}</b>`, `Afastamento <b>${fdP(p.dem)}</b>`, `Emitido em <b>${new Date().toLocaleDateString('pt-BR')}</b>`])}<div style="height:4px"></div>
     <div class="q">IDENTIFICAÇÃO DO EMPREGADOR</div><table><tr>${celP('01 CNPJ/CEI', esc(e.cnpj || ''))}${celP('02 Razão social / nome', esc(e.nome || ''), 3)}</tr><tr>${celP('03 Endereço', esc(e.endereco || ''), 2)}${celP('04 Município/UF', esc(e.cidade || ''))}${celP('05 Responsável', esc(e.responsavel || ''))}</tr></table>
     <div class="q">IDENTIFICAÇÃO DO TRABALHADOR</div><table><tr>${celP('10 PIS/PASEP', esc(c.pis || ''))}${celP('11 Nome', esc(c.nome), 3)}</tr><tr>${celP('12 Endereço', esc(c.endereco || ''), 2)}${celP('13 Município/UF', esc(c.cidade || ''))}${celP('14 CEP', esc(c.cep || ''))}</tr><tr>${celP('15 CPF', esc(c.cpf || ''))}${celP('16 Data de nascimento', c.nascimento ? fdP(c.nascimento) : '')}${celP('17 Nome da mãe', esc(c.mae || ''), 2)}</tr></table>
     <div class="q">DADOS DO CONTRATO</div><table><tr>${celP('21 Tipo de contrato', esc(p.tipoContrato || 'Prazo indeterminado'))}${celP('22 Causa do afastamento', esc(ca[1]), 2)}${celP('23 Remuneração p/ fins rescisórios', brlP(p.sal))}</tr>
@@ -3958,7 +4147,7 @@ function trctProf(c, e, p, r, extra = {}) {
     <div class="q">QUITAÇÃO</div><p style="margin:6px 0">Foi realizada a rescisão do contrato de trabalho do trabalhador acima qualificado, nos termos do art. 477 da CLT, com o pagamento dos valores discriminados neste termo no prazo de 10 (dez) dias contados do término do contrato (art. 477, § 6º). A quitação refere-se exclusivamente aos valores e às parcelas aqui discriminados (Súmula 330 do TST).</p>
     <p style="margin:6px 0">${esc(e.cidade || '')}, ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}.</p>
     ${extra.assinatura || `<div class="ass"><div>${esc(e.nome || 'Empregador')}<br>Empregador ou preposto</div><div>${esc(c.nome)}<br>Trabalhador</div></div>`}
-    <p class="min">Documento gerado pelo NEXUM RH. Os depósitos do FGTS e a multa rescisória são recolhidos pela guia do FGTS Digital; as guias do seguro-desemprego, quando cabíveis, são comunicadas pelo Empregador Web.</p></div>`;
+    ${nxRodape(nxCodigo((c.cpf || c.id) + p.dem + r.liq))}<p class="min">Os depósitos do FGTS e a multa rescisória são recolhidos pela guia do FGTS Digital; as guias do seguro-desemprego, quando cabíveis, são comunicadas pelo Empregador Web.</p></div>`;
 }
 /* ---------- Sala de reunião por vídeo (WebRTC). Sinalização: Firestore, ou localStorage sem Firebase ---------- */
 const ICE_R = { iceServers: [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }] };
@@ -4165,7 +4354,7 @@ function docEncaminhamento(c, tipo, x) {
   const e = S.data.config.empresa || {}, sst = S.data.config.sst || {}, cel = (r, v, cs = 1) => `<td colspan="${cs}"><small>${r}</small><b>${v || '&nbsp;'}</b></td>`;
   const cod = (String(x.num || '') + (c.cpf || '') + tipo).split('').reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7).toString(36).toUpperCase().slice(0, 8);
   const obsTipo = { admissional: 'Exame obrigatório antes de o trabalhador assumir as atividades.', periodico: 'Exame realizado na periodicidade definida no PCMSO da empresa.', retorno: 'Exame obrigatório no primeiro dia de volta ao trabalho, após afastamento igual ou superior a 30 dias por doença ou acidente.', mudanca: 'Exame obrigatório antes da mudança para atividade com risco ocupacional diferente.', demissional: 'Exame realizado até a data do término do contrato, salvo dispensa prevista na NR-7.' }[tipo] || '';
-  return `${CSS_GUIA}<div class="gx"><div class="topo"><span class="mx">${NX_LOGO_DOC}NEXUM <span style="font-weight:600;opacity:.8">RH</span></span><span class="tt"><b>GUIA DE ENCAMINHAMENTO PARA EXAME OCUPACIONAL</b><span>Atestado de Saúde Ocupacional (ASO), conforme a NR-7</span></span></div>
+  return `${CSS_GUIA}<div class="gx"><div class="topo"><span class="mx"><img src="${LOGO_MARCA}" alt="NEXUM RH" style="height:34px;display:block"></span><span class="tt"><b>GUIA DE ENCAMINHAMENTO PARA EXAME OCUPACIONAL</b><span>Atestado de Saúde Ocupacional (ASO), conforme a NR-7</span></span></div>
   <div class="faixa"><span>Guia nº <b>${esc(x.num || '')}</b></span><span>Emitida em <b>${new Date().toLocaleDateString('pt-BR')}</b></span><span>Comparecer até <b>${x.ate ? fdP(x.ate) : '—'}</b></span></div>
   <div class="q">EMPREGADOR</div><table><tr>${cel('Razão social', esc(e.nome || S.tenant.nome || ''), 2)}${cel('CNPJ', esc(e.cnpj || S.tenant.cnpj || ''))}</tr><tr>${cel('Endereço', esc([e.endereco, e.cidade].filter(Boolean).join(', ')), 2)}${cel('Responsável', esc(e.responsavel || (S.user && S.user.nome) || ''))}</tr></table>
   <div class="q">TRABALHADOR</div><table><tr>${cel('Nome', esc(c.nome), 2)}${cel('CPF', esc(c.cpf || ''))}${cel('Nascimento', c.nascimento ? fdP(c.nascimento) : '')}</tr><tr>${cel('Cargo', esc(c.cargo || ''))}${cel('CBO', esc(c.cbo || ''))}${cel('Setor / loja', esc(c.depto || c.loja || ''))}${cel('Admissão', c.admissao ? fdP(c.admissao) : '')}</tr></table>
@@ -4557,23 +4746,6 @@ function formDisc(m, t) {
     try { x.value = (await perguntarIA([{ role: 'user', content: x.value }], 'Você revisa descrições de fatos para advertências e suspensões trabalhistas no Brasil. Reescreva o texto em português formal, objetivo e impessoal, em terceira pessoa, sem adjetivos ofensivos, sem opiniões e SEM acrescentar fatos, datas, nomes ou artigos de lei que não estejam no texto. Mantenha as referências legais já existentes. Responda só com o texto final, em um parágrafo.')).trim(); }
     catch (e) { toast(e.message === 'SEM_CHAVE' ? 'Configure a IA em Configurações > Integrações.' : e.message, true); } ia.disabled = false; ia.textContent = 'Revisar texto com IA'; };
 }
-function docOcorr(o) {
-  const c = colabById(o.colabId) || {}, e = S.data.config.empresa || {}, susp = o.tipo === 'suspensao', m = MOTIVOS_DISC[o.motivo];
-  const ini = o.inicio || iso(addD(pd(o.data), 1)), n = o.dias || 1, fim = iso(addD(pd(ini), n - 1)), ret = iso(addD(pd(ini), n));
-  return `<h2>${susp ? 'Comunicado de suspensão disciplinar' : 'Advertência disciplinar por escrito'}</h2>
-    <p style="text-align:center;margin-top:-12px;font-family:Arial,sans-serif;font-size:12px">Nº ${String(o.num || 1).padStart(3, '0')}/${o.data.slice(0, 4)}</p>
-    <table><tr><th>Empregado(a)</th><td>${esc(c.nome || '—')}</td><th>CPF</th><td>${esc(c.cpf || '—')}</td></tr><tr><th>Cargo</th><td>${esc(c.cargo || '—')}</td><th>Admissão</th><td>${c.admissao ? fd(c.admissao) : '—'}</td></tr><tr><th>Data do fato</th><td>${fd(o.data)}${o.hora ? ` às ${o.hora}` : ''}</td><th>Motivo</th><td>${esc(m ? m.t : TIPOS_OCORR[o.tipo])}</td></tr></table>
-    <h3>1. Descrição dos fatos</h3><p>${esc(o.desc)}</p>
-    <h3>2. Medida aplicada</h3>${susp ? `<p>Fica V.Sa. <b>SUSPENSO(A)</b> de suas atividades por <b>${n} dia${n > 1 ? 's' : ''}</b>, de ${fd(ini)} a ${fd(fim)}, devendo retornar ao trabalho em <b>${fd(ret)}</b>, no seu horário normal. Os dias de suspensão não serão remunerados e podem refletir no descanso semanal remunerado da semana correspondente (Lei 605/1949, art. 6º). A medida respeita o limite de 30 (trinta) dias consecutivos do art. 474 da CLT.</p>` : '<p>Fica V.Sa. <b>ADVERTIDO(A)</b> por escrito, com o objetivo de orientar e evitar a repetição da conduta.</p>'}
-    <h3>3. Fundamentação</h3><p>A medida é aplicada no exercício do poder diretivo e disciplinar do empregador (CLT, art. 2º)${m && m.a ? `, considerando que a conduta caracteriza, em tese, ${ALINEAS[m.a]} (CLT, art. 482, alínea "${m.a}")` : ''}, e com base no regimento interno, observadas a proporcionalidade e a imediatidade.</p>
-    <h3>4. Orientação</h3><p>Solicitamos que a conduta não se repita. A reincidência poderá levar a medidas mais severas, inclusive à dispensa por justa causa, nos termos do art. 482 da CLT.</p>
-    <h3>5. Manifestação do(a) empregado(a)</h3><p>Se quiser, registre abaixo a sua versão dos fatos. A assinatura confirma apenas o recebimento deste comunicado, e não a concordância com o seu conteúdo.</p><p style="border-bottom:1px solid #999;height:24px;margin:0"></p><p style="border-bottom:1px solid #999;height:24px;margin:0 0 10px"></p>
-    <p style="margin-top:18px">${dataExt(e)}.</p>
-    <div class="ass"><div>${empNome(e)}${e.responsavel ? `<br><small>${esc(e.responsavel)}</small>` : '<br><small>Empregador(a)</small>'}</div><div>${esc(c.nome || '')}<br><small>Ciente em ____/____/________</small></div></div>
-    <p style="font-family:Arial,sans-serif;font-size:11px;color:#555;margin-top:20px">Se o(a) empregado(a) se recusar a assinar, duas testemunhas confirmam que o comunicado foi lido e entregue na data acima.</p>
-    <div class="ass" style="margin-top:40px"><div>Testemunha 1<br><small>Nome e CPF</small></div><div>Testemunha 2<br><small>Nome e CPF</small></div></div>`;
-}
-
 /* ---------- Documentos ---------- */
 const MODELOS = {
   experiencia: { t: 'Contrato de trabalho por experiência', f: (c, e) => `<h2>Contrato de trabalho por prazo de experiência</h2>
@@ -5610,7 +5782,7 @@ async function supAcao(a) {
 }
 function suporteIniciar() {
   if (DEMO || !S.user || !S.tenant || document.getElementById('sup-b')) return;
-  document.body.insertAdjacentHTML('beforeend', `<div id="sup-p" role="dialog" aria-label="Suporte NEXUM RH"><div class="sp-h"><span class="sp-av">${supN(22)}</span><b>Suporte NEXUM RH<small>Estamos aqui para ajudar</small></b><button data-sp="lista" title="Meus atendimentos" aria-label="Meus atendimentos">☰</button><button id="sp-x" aria-label="Minimizar">×</button></div><div class="sp-c"></div>
+  document.body.insertAdjacentHTML('beforeend', `<div id="sup-p" role="dialog" aria-label="Suporte NEXUM RH"><div class="sp-h"><span class="sp-av">${supN(22)}</span><b>Suporte NEXUM RH<small>IA 24h · humano seg–sex 9h–18h, sáb 9h–13h</small></b><button data-sp="lista" title="Meus atendimentos" aria-label="Meus atendimentos">☰</button><button id="sp-x" aria-label="Minimizar">×</button></div><div class="sp-c"></div>
     <div class="sp-in"><textarea id="sp-t" rows="1" placeholder="Enviar uma mensagem..." aria-label="Mensagem"></textarea><button id="sp-env" aria-label="Enviar"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 20.5 21.5 12 3 3.5 3.1 10 15 12 3.1 14z"/></svg></button></div>
     <div class="sp-pw">Powered by ${supN(16)} <b>NEXUM RH</b></div></div>
     <button id="sup-b" aria-label="Abrir o chat de suporte" title="Suporte NEXUM RH"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 6.5h14a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H10.5L7 20.5v-3H5A1.5 1.5 0 0 1 3.5 16V8A1.5 1.5 0 0 1 5 6.5z"/><path d="M20.5 11.5H27a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 27 22.5h-2v3l-3.5-3H14a1.5 1.5 0 0 1-1.5-1.5v-3.5"/></svg><span class="dot"></span></button>`);
@@ -5659,6 +5831,92 @@ function avisoLembrete() {
   document.getElementById('av-fx').onclick = () => avisoJanela(a, false);
 }
 setInterval(() => { try { avisosChecar(); } catch (e) { } }, 300000);
+
+/* ---------- Avisos ao vivo no RH: ações da NEXUM (dono da plataforma) e aprovados do Recrutamento ---------- */
+const NOTIF = { tid: null, un: [], ten: null, sup: {} };
+if (!document.getElementById('nt-css')) document.head.insertAdjacentHTML('beforeend', '<style id="nt-css">#nt-pilha{position:fixed;top:72px;right:18px;z-index:1900;display:flex;flex-direction:column;gap:10px;width:min(360px,calc(100vw - 32px))}.nt-card{background:#fff;color:#14203D;border:1px solid #DDE3F0;border-left:5px solid #1F5FE8;border-radius:12px;padding:12px 14px;box-shadow:0 14px 36px rgba(11,30,74,.22);animation:ntIn .28s ease;transition:opacity .25s,transform .25s}.nt-card.sai{opacity:0;transform:translateX(30px)}.nt-h{display:flex;align-items:center;justify-content:space-between;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em}.nt-x{border:0;background:none;font-size:20px;line-height:1;cursor:pointer;color:#8A93AB}.nt-t{font-weight:700;margin:4px 0 2px;font-size:14.5px}.nt-tx{font-size:13px;color:#4A5578;white-space:pre-wrap}.nt-b{margin-top:8px}@keyframes ntIn{from{opacity:0;transform:translateY(-10px)}}#b-notif.nt-on{color:#1F5FE8;border-color:#1F5FE8}@media(max-width:600px){#nt-pilha{top:auto;bottom:84px;right:16px}}</style>');
+const NOTIF_COR = { nexum: '#1F5FE8', rec: '#0F8A5F', nf: '#7C3AED', alerta: '#C62D46', sug: '#B45309', sup: '#0E7490' };
+const notifKey = () => `nexum:notif:${S.tenant && S.tenant.id}`;
+function notifLista() { try { return JSON.parse(localStorage.getItem(notifKey()) || '[]'); } catch (e) { return []; } }
+function notifGrava(l) { try { localStorage.setItem(notifKey(), JSON.stringify(l.slice(0, 60))); } catch (e) { } }
+function notificar({ id, tipo = 'nexum', titulo, texto = '', rota = '', botao = '' }) {
+  if (!S.tenant) return; const l = notifLista(); if (id && l.some(x => x.id === id)) return;
+  const n = { id: id || uid(), tipo, titulo, texto: String(texto || '').slice(0, 300), rota, botao, em: new Date().toISOString(), lida: false };
+  notifGrava([n, ...l]); notifSino(); notifCard(n);
+  try { if (document.hidden && 'Notification' in window && Notification.permission === 'granted') new Notification('NEXUM RH · ' + titulo, { body: n.texto, tag: n.id }); } catch (e) { }
+}
+function notifAcao(n) {
+  if (!n || !n.rota) return; if (n.rota === 'sup') { const b = document.getElementById('sup-b'); if (b && !(document.getElementById('sup-p') || {}).classList?.contains('on')) b.click(); return; }
+  if (n.rota === 'aviso') { const a = (S.avisosAtivos || []).find(x => 'av_' + x.id === n.id); if (a) return avisoJanela(a, false); return; }
+  S.view = n.rota; try { go(n.rota); } catch (e) { }
+}
+function notifCard(n) {
+  let p = document.getElementById('nt-pilha'); if (!p) { document.body.insertAdjacentHTML('beforeend', '<div id="nt-pilha" aria-live="polite"></div>'); p = document.getElementById('nt-pilha'); }
+  const cor = NOTIF_COR[n.tipo] || NOTIF_COR.nexum, el = document.createElement('div'); el.className = 'nt-card'; el.style.borderLeftColor = cor;
+  el.innerHTML = `<div class="nt-h"><b style="color:${cor}">${n.tipo === 'rec' ? 'Recrutamento' : n.tipo === 'nf' ? 'Nota fiscal' : n.tipo === 'sug' ? 'Sugestões' : n.tipo === 'sup' ? 'Suporte NEXUM' : n.tipo === 'alerta' ? 'Atenção' : 'NEXUM'}</b><button class="nt-x" aria-label="Fechar aviso">×</button></div><div class="nt-t">${esc(n.titulo)}</div>${n.texto ? `<div class="nt-tx">${esc(n.texto)}</div>` : ''}${n.botao ? `<button class="btn sm nt-b">${esc(n.botao)}</button>` : ''}`;
+  p.prepend(el); while (p.children.length > 4) p.lastChild.remove();
+  const fecha = () => { el.classList.add('sai'); setTimeout(() => el.remove(), 250); }, marca = () => { notifGrava(notifLista().map(x => x.id === n.id ? { ...x, lida: true } : x)); notifSino(); };
+  el.querySelector('.nt-x').onclick = () => { fecha(); };
+  const b = el.querySelector('.nt-b'); if (b) b.onclick = () => { marca(); fecha(); notifAcao(n); };
+  let tm = setTimeout(fecha, 25000); el.onmouseenter = () => clearTimeout(tm); el.onmouseleave = () => { tm = setTimeout(fecha, 12000); };
+}
+function notifSino() {
+  const top = document.querySelector('header.top'); if (!top || !S.tenant) return;
+  let b = document.getElementById('b-notif');
+  if (!b) { const ref = document.getElementById('b-aten'); const h = '<button class="tb" id="b-notif" title="Avisos da NEXUM e do Recrutamento" aria-label="Avisos"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg> <span class="bdg" id="bdg-notif"></span></button>';
+    if (ref) ref.insertAdjacentHTML('beforebegin', h); else top.insertAdjacentHTML('beforeend', h); b = document.getElementById('b-notif'); b.onclick = notifPainel; }
+  const n = notifLista().filter(x => !x.lida).length, d = document.getElementById('bdg-notif'); if (d) d.textContent = n || '';
+  b.classList.toggle('nt-on', n > 0);
+}
+function notifPainel() {
+  const l = notifLista(), podeNav = 'Notification' in window && Notification.permission === 'default';
+  modal('Avisos', `${podeNav ? '<div class="row" style="gap:8px;align-items:center;margin-bottom:10px;background:var(--pri-s,#EEF3FF);border-radius:10px;padding:10px 12px"><span style="flex:1;font-size:13.5px">Receba os avisos mesmo com o NEXUM em outra aba.</span><button class="btn sm" id="nt-perm">Ativar notificações</button></div>' : ''}
+    ${l.length ? `<ul class="list">${l.map(n => `<li style="border-left:3px solid ${NOTIF_COR[n.tipo] || NOTIF_COR.nexum};padding-left:10px;${n.lida ? 'opacity:.72' : ''}"><div class="t"><div><b>${esc(n.titulo)}</b>${n.lida ? '' : ' <span class="pill" style="font-size:11px">novo</span>'}</div><div>${esc(n.texto || '')}</div><div class="hint" style="font-size:12px">${new Date(n.em).toLocaleString('pt-BR').slice(0, 17)}</div></div>${n.botao ? `<button class="btn sec sm" data-nt="${esc(n.id)}">${esc(n.botao)}</button>` : ''}</li>`).join('')}</ul>` : '<p class="hint" style="margin:0">Nenhum aviso por enquanto. Aqui aparecem os avisos da NEXUM, as respostas do suporte, as notas fiscais e os aprovados que chegam do Recrutamento.</p>'}`,
+    { foot: `${l.length ? '<button class="btn ghost" id="nt-limpa">Limpar lista</button>' : ''}<button class="btn" data-close>Fechar</button>`, onMount: m => {
+      notifGrava(l.map(x => ({ ...x, lida: true }))); notifSino();
+      $$('[data-nt]', m).forEach(b => b.onclick = () => { closeModal(); notifAcao(l.find(x => x.id === b.dataset.nt)); });
+      const lp = $('#nt-limpa', m); if (lp) lp.onclick = () => { notifGrava([]); notifSino(); closeModal(); };
+      const pm = $('#nt-perm', m); if (pm) pm.onclick = async () => { try { await Notification.requestPermission(); } catch (e) { } closeModal(); notifPainel(); };
+    } });
+}
+const NOTIF_TEN = { plano: 'Plano', expira: 'Validade', suspenso: 'Suspensão', bloqueado: 'Bloqueio', trial: 'Teste grátis', limite: 'Limite' };
+function notifTenant(n) {
+  const a = NOTIF.ten; NOTIF.ten = JSON.parse(JSON.stringify(n)); if (!a) return; const pl = k => (NEXUM.planos[k] || {}).nome || k;
+  if (n.plano !== a.plano) notificar({ id: `pl_${n.plano}_${Date.now()}`, titulo: 'Seu plano foi alterado', texto: `A NEXUM mudou o plano de ${pl(a.plano)} para ${pl(n.plano)}.`, rota: 'config', botao: 'Ver plano' });
+  if (n.expira !== a.expira && n.expira > (a.expira || '')) notificar({ id: `ex_${n.expira}`, titulo: 'Licença renovada', texto: `Pagamento confirmado pela NEXUM. Sua licença vale até ${fd(n.expira)}.`, rota: 'config', botao: 'Ver plano' });
+  if (a.trial && !n.trial) notificar({ id: `tr_${Date.now()}`, titulo: 'Assinatura ativada', texto: 'O teste grátis virou assinatura. Obrigado por escolher o NEXUM!' });
+  if (!!n.suspenso !== !!a.suspenso) notificar({ id: `su_${Date.now()}`, tipo: n.suspenso ? 'alerta' : 'nexum', titulo: n.suspenso ? 'Acesso suspenso pela NEXUM' : 'Acesso reativado', texto: n.suspenso ? 'O sistema ficou somente para consulta. Fale com o suporte.' : 'O sistema voltou a funcionar normalmente.', rota: n.suspenso ? 'sup' : '', botao: n.suspenso ? 'Falar com o suporte' : '' });
+  if (!!n.bloqueado !== !!a.bloqueado && !n.bloqueado) notificar({ id: `bl_${Date.now()}`, titulo: 'Acesso desbloqueado', texto: 'A NEXUM liberou o acesso da sua empresa.' });
+  if (n.limite && n.limite !== a.limite) notificar({ id: `li_${n.limite}_${Date.now()}`, titulo: 'Limite de funcionários atualizado', texto: `Agora são até ${n.limite > 9999 ? 'ilimitados' : n.limite} funcionários.` });
+  if (JSON.stringify(n.implantacao || null) !== JSON.stringify(a.implantacao || null) && n.implantacao) notificar({ id: `im_${Date.now()}`, titulo: 'A equipe NEXUM atualizou a sua implantação', texto: 'Confira os próximos passos da configuração.', rota: 'painel', botao: 'Ver painel' });
+}
+function notifRec() {
+  if (!S.data || !S.data.admRec || S.user.contador || !S.tenant) return; const k = `nexum:recVistos:${S.tenant.id}`; let vis;
+  try { vis = new Set(JSON.parse(localStorage.getItem(k) || '[]')); } catch (e) { vis = new Set(); }
+  const l = S.data.admRec.filter(x => !x.teste && !vis.has(x.id)); if (!l.length) return;
+  l.forEach(x => vis.add(x.id)); try { localStorage.setItem(k, JSON.stringify([...vis].slice(-300))); } catch (e) { }
+  if (l.length > 2) return notificar({ id: 'recg_' + Date.now(), tipo: 'rec', titulo: `${l.length} aprovados do Recrutamento aguardam admissão`, texto: l.slice(0, 5).map(x => x.nome).join(', ') + (l.length > 5 ? '…' : ''), rota: 'adm', botao: 'Abrir admissões' });
+  l.forEach(x => notificar({ id: 'rec_' + x.id, tipo: 'rec', titulo: 'Novo candidato aprovado para admissão', texto: `${x.nome}${x.cargo ? ' · ' + x.cargo : ''}${x.loja ? ' · ' + x.loja : ''}. Veio do NEXUM Recrutamento e Seleção.`, rota: 'adm', botao: 'Abrir admissão' }));
+}
+function notifParar() { NOTIF.un.forEach(f => { try { f(); } catch (e) { } }); NOTIF.un = []; NOTIF.tid = null; NOTIF.ten = null; NOTIF.sup = {}; }
+function notifIniciar() {
+  if (typeof S === 'undefined' || !S.user || !S.tenant || DEMO) { if (NOTIF.tid) notifParar(); return; }
+  notifSino(); try { notifRec(); } catch (e) { }
+  if (NOTIF.tid === S.tenant.id || !FB_ON || S.user.contador) return; notifParar(); NOTIF.tid = S.tenant.id; const tid = S.tenant.id, db = FB.db;
+  const prim = {}, ouve = (k, q, fn) => { try { NOTIF.un.push(q.onSnapshot(s => { const p = !prim[k]; prim[k] = true; try { fn(s, p); } catch (e) { } }, () => { })); } catch (e) { } };
+  ouve('av', db.collection('avisosPlataforma').where('ativo', '==', true), (s, p) => { if (p) return; let tem = false;
+    s.docChanges().forEach(c => { if (c.type !== 'added') return; const a = { id: c.doc.id, ...c.doc.data() }; if (!(a.alvo === 'todas' || (a.empresas || []).includes(tid))) return; tem = true; notificar({ id: 'av_' + a.id, tipo: a.tipo === 'bloqueio' ? 'alerta' : 'nexum', titulo: `Novo aviso da NEXUM: ${a.titulo || ''}`, texto: a.texto || '', rota: 'aviso', botao: 'Ler aviso' }); });
+    if (tem) setTimeout(() => { try { avisosChecar(); } catch (e) { } }, 300); });
+  ouve('ten', db.doc(`tenants/${tid}`), s => { if (s.exists) notifTenant({ ...s.data(), ...FB.tenant(s) }); });
+  ouve('nf', db.collection('notasFiscais').where('tid', '==', tid), (s, p) => { if (p) return; s.docChanges().forEach(c => { const n = c.doc.data();
+    if (c.type === 'added') notificar({ id: 'nf_' + c.doc.id, tipo: 'nf', titulo: `Nota fiscal disponível: NFS-e nº ${n.numero || ''}`, texto: `Valor ${brl(+n.valor || 0)}${n.competencia ? ' · ' + n.competencia : ''}. A NEXUM emitiu a nota do seu pagamento.`, rota: 'config', botao: 'Ver notas' });
+    else if (c.type === 'modified' && n.pdf) notificar({ id: 'nfp_' + c.doc.id, tipo: 'nf', titulo: `PDF da NFS-e nº ${n.numero || ''} disponível`, texto: 'Você já pode baixar a nota em Configurações > Plano.', rota: 'config', botao: 'Baixar' }); }); });
+  ouve('sug', db.collection('sugestoes').where('tid', '==', tid), (s, p) => { if (p) return; s.docChanges().forEach(c => { if (c.type !== 'modified') return; const x = c.doc.data(); const st = { analise: 'em análise', planejada: 'planejada', feita: 'feita', recusada: 'não será feita agora' }[x.status];
+    if (st) notificar({ id: `sg_${c.doc.id}_${x.status}_${(x.resposta || '').length}`, tipo: 'sug', titulo: `Sua sugestão está ${st}`, texto: `"${x.titulo || ''}"${x.resposta ? ' · Resposta da NEXUM: ' + x.resposta : ''}`, rota: 'sug', botao: 'Ver sugestões' }); }); });
+  try { const u = supUid(); if (u) ouve('sup', db.collection('suporte').where('uid', '==', u), (s, p) => { s.docs.forEach(d => { const x = d.data(), ant = NOTIF.sup[d.id]; NOTIF.sup[d.id] = !!x.naoLidoRh;
+    if (!p && x.naoLidoRh && !ant && !SUP.aberto) { const ul = (x.msgs || []).slice(-1)[0] || {}; notificar({ id: `sp_${d.id}_${(x.msgs || []).length}`, tipo: 'sup', titulo: 'A equipe NEXUM respondeu seu atendimento', texto: `Protocolo ${x.protocolo || d.id}${ul.t ? ': ' + String(ul.t).slice(0, 140) : ''}`, rota: 'sup', botao: 'Abrir conversa' }); } }); }); } catch (e) { }
+}
+setInterval(() => { try { notifIniciar(); } catch (e) { } }, 2500);
 
 /* ---------- IA (Groq) ---------- */
 const iaChave = () => localStorage.getItem('nexum:iaKey') || (typeof S !== 'undefined' && S.iaPlat) || NEXUM.ia.groq || '';
@@ -5968,8 +6226,7 @@ function vBio(el, aba = S.bioAba || 'hoje') {
       ${lin.map(x => `<tr><td><b>${esc(x.c.nome)}</b></td><td class="n">${x.dias}</td><td class="n">${hm(x.trab)}</td><td class="n">${hm(x.prev)}</td><td class="n" style="color:${x.saldo > 0 ? 'var(--ok)' : x.saldo < 0 ? 'var(--bad)' : 'inherit'}">${x.saldo > 0 ? '+' : ''}${hm(x.saldo)}</td><td class="n">${x.falt || ''}</td><td class="n">${x.imp + x.rev ? `<span class="pill warn">${x.imp + x.rev}</span>` : ''}</td><td>${espelhoAssinado(x.c.id, comp) ? '<span class="pill ok">Assinado</span>' : fech ? '<span class="pill warn">Pendente</span>' : '<span class="hint">após fechar</span>'}</td></tr>`).join('')}</tbody></table></div>
       <p class="note">Fechar o mês trava os ajustes de ponto do período. Resolva as pendências (marcações ímpares e revisões) antes de fechar.</p>`;
     $('#bm-c', bi).onchange = e => { S.bioComp = e.target.value; re(); };
-    $('#bm-pr', bi).onclick = () => printDoc(`Espelhos ${comp}`, lin.map(x => { const rows = []; for (let d = 1; d <= nd; d++) { const dt = new Date(a, mm - 1, d), r = regDia(x.c.id, iso(dt)), m = r ? r.marc.slice().sort() : []; rows.push(`<tr><td>${dt.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit' })}</td><td>${m.join(' · ') || emFolga(x.c, iso(dt)) || ''}</td><td class="n">${m.length && !(m.length % 2) ? hm(horasTrab(m)) : ''}</td></tr>`); }
-      return `<h2>Espelho de ponto — ${mesNome(comp)}</h2><p><b>${esc(x.c.nome)}</b> · ${esc(x.c.cargo || '')} · CPF ${esc(x.c.cpf || '—')}</p><table><tr><th>Dia</th><th>Marcações</th><th class="n">Horas</th></tr>${rows.join('')}<tr><th colspan="2">Total · saldo ${hm(x.saldo)}</th><th class="n">${hm(x.trab)}</th></tr></table><div class="ass"><div>Colaborador</div><div>Empregador</div></div><div class="pb"></div>`; }).join(''));
+    $('#bm-pr', bi).onclick = () => printDoc(`Espelhos ${comp}`, lin.map(x => espelhoProf(x.c, comp)).join('<div class="pb"></div>'));
     const fe = $('#bm-fe', bi); if (fe) fe.onclick = () => confirmar(`${pend ? `<b>Há ${pend} pendência(s) no mês.</b> ` : ''}Fechar o ponto de ${mesNome(comp)}? Os ajustes ficam travados.`, () => { cfg.fechamentos = { ...(cfg.fechamentos || {}), [comp]: { em: new Date().toISOString(), por: S.user.nome } }; save('config'); audit(`Fechou o ponto de ${mesNome(comp)}`); try { const lc = lin.map(x => x.c).filter(c => c.portal && c.portal.ativo && !espelhoAssinado(c.id, comp)); lc.forEach(c => S.data.chat.push({ id: uid(), colabId: c.id, de: 'rh', texto: `Olá, ${c.nome.split(' ')[0]}! O espelho de ponto de ${mesNome(comp)} foi fechado e está pronto para você conferir e assinar no portal, em "Espelho de ponto".`, em: new Date().toISOString(), por: S.user.nome, lido: false })); if (lc.length) { save('chat'); toast(`Espelho enviado para assinatura de ${lc.length} funcionário(s).`); } } catch (e) { } re(); }, 'Fechar mês');
     const co = $('#bm-co', bi); if (co) co.onclick = () => cobrarEspelhos(comp, lin.map(x => x.c));
     const ra = $('#bm-ra', bi); if (ra) ra.onclick = () => { const f = { ...(cfg.fechamentos || {}) }; delete f[comp]; cfg.fechamentos = f; save('config'); audit(`Reabriu o ponto de ${mesNome(comp)}`); re(); };
@@ -6107,7 +6364,7 @@ function vFin(el, comp = S.finComp || iso(hoje()).slice(0, 7)) {
   const mx = Math.max(1, ...Object.values(deps));
   el.innerHTML = `<div class="row" style="margin-bottom:16px"><input class="inp" type="month" id="fi-c" value="${comp}" style="width:auto" aria-label="Mês">
       <select class="inp" id="fi-r" style="width:auto" aria-label="Regime tributário" ${podeEditar() && can('admin') ? '' : 'disabled'}>${opts([['simples', 'Simples Nacional (anexos I a III)'], ['normal', 'Lucro Presumido ou Real']], regime)}</select><span class="sp"></span>
-      <span class="hint">${folha ? `Valores da folha de ${mesNome(comp)}` : 'Sem folha gerada: usando salários base'}</span></div>
+      <span class="hint">${folha ? `Valores da folha de ${mesNome(comp)}` : 'Sem folha gerada: usando salários base'}</span><button class="btn" id="fi-gp" ${folha ? '' : 'disabled title="Gere a folha do mês primeiro"'}>Guia de pagamento</button></div>
     <div class="kpis"><div class="kpi"><b style="font-size:22px">${brl(T2('bruto'))}</b><span>folha bruta CLT</span></div><div class="kpi"><b style="font-size:22px">${brl(T2('fgts') + T2('patr'))}</b><span>encargos do mês</span></div><div class="kpi"><b style="font-size:22px">${brl(T2('prov'))}</b><span>provisão férias e 13º</span></div><div class="kpi"><b style="font-size:22px">${brl(custo)}</b><span>custo total com pessoal</span></div></div>
     <div class="cols"><section class="panel"><h2>Custo por colaborador</h2><div class="tbl-wrap"><table><thead><tr><th>Colaborador</th><th class="n">Bruto</th><th class="n">Encargos</th><th class="n">Provisões</th><th class="n">Custo</th></tr></thead><tbody>${lin.map(x => `<tr><td>${esc(x.c.nome)}</td><td class="n">${brl(x.bruto)}</td><td class="n">${brl(x.fgts + x.patr)}</td><td class="n">${brl(x.prov)}</td><td class="n"><b>${brl(x.custo)}</b></td></tr>`).join('')}${pj ? `<tr><td>Prestadores PJ</td><td class="n">${brl(pj)}</td><td></td><td></td><td class="n"><b>${brl(pj)}</b></td></tr>` : ''}</tbody></table></div></section>
       <div><section class="panel"><h2>Por setor</h2>${Object.entries(deps).sort((a, b) => b[1] - a[1]).map(([d, v]) => `<div style="margin-bottom:10px"><div class="row"><span>${esc(d)}</span><span class="sp"></span><b>${brl(v)}</b></div><div class="bar"><i style="width:${v / mx * 100}%"></i></div></div>`).join('') || '<p class="hint">Sem dados.</p>'}</section>
@@ -6937,10 +7194,7 @@ const RELATORIOS = [
 function gerarRelatorio(k, comp, ano) {
   const at = ativos().slice().sort((a, b) => a.nome.localeCompare(b.nome)), tab = (cab, linhas, pe = '') => `<table><tr>${cab.map(h => `<th${/^[#R$]|Horas|Saldo|Salário|Líquido|INSS|IRRF|FGTS|Proventos|Descontos|Faltas|Avos|Total|parcela|Taxa/i.test(h) ? ' class="n"' : ''}>${h}</th>`).join('')}</tr>${linhas.join('')}${pe}</table>`;
   const td = (v, n) => `<td${n ? ' class="n"' : ''}>${v}</td>`, mesTxt = comp ? mesNome(comp) : '';
-  if (k === 'espelho') { const [a, mm] = comp.split('-').map(Number), nd = new Date(a, mm, 0).getDate();
-    return printDoc(`Espelhos ${comp}`, at.filter(c => c.tipo !== 'pj').map(c => { let tot = 0; const rows = []; for (let d = 1; d <= nd; d++) { const dt = new Date(a, mm - 1, d), ds = iso(dt), r = regDia(c.id, ds), m = r ? r.marc.slice().sort() : [], t = m.length && !(m.length % 2) ? horasTrab(m) : 0; tot += t;
-        rows.push(`<tr>${td(dt.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit' }))}${td(m.join(' · ') || feriado(ds, S.data.config) || emFolga(c, ds) || (turnoDia(c, dt, S.data.config) ? '' : 'Folga'))}${td(t ? hm(t) : '', 1)}</tr>`); }
-      return `<h2>Espelho de ponto — ${mesTxt}</h2><p><b>${esc(c.nome)}</b> · ${esc(c.cargo || '')} · CPF ${esc(c.cpf || '—')} · Escala: ${esc(escalaDe(c, S.data.config).nome)}</p>${tab(['Dia', 'Marcações', 'Horas'], rows, `<tr><th colspan="2">Total trabalhado</th><th class="n">${hm(tot)}</th></tr>`)}<div class="ass"><div>Colaborador</div><div>Empregador</div></div><div class="pb"></div>`; }).join('')); }
+  if (k === 'espelho') return printDoc(`Espelhos ${comp}`, at.filter(c => c.tipo !== 'pj').map(c => espelhoProf(c, comp)).join('<div class="pb"></div>'));
   if (k === 'folha') { const f = S.data.folhas.find(x => !x.tipo && x.comp === comp); if (!f) return toast(`A folha de ${mesTxt} ainda não foi gerada.`, true);
     const tot = { bruto: 0, dBase: 0, inss: 0, irrf: 0, liq: 0, fgts: 0 };
     const rows = f.itens.map(i => { const v = folhaItem(i); Object.keys(tot).forEach(x => tot[x] += v[x]); return `<tr>${td(esc(i.nome))}${td(brl(v.bruto), 1)}${td(brl(v.dBase + num(i.desc)), 1)}${td(brl(v.inss), 1)}${td(brl(v.irrf), 1)}${td(brl(v.liq), 1)}${td(brl(v.fgts), 1)}</tr>`; });
@@ -7129,7 +7383,7 @@ async function carregarPlataforma() {
   try {
     const [px, pb] = await Promise.all([FB.db.doc('plataforma/pix').get(), FB.db.doc('plataforma/publico').get()]);
     if (px.exists && px.data().chave) NEXUM.pix = { ...NEXUM.pix, ...px.data() };
-    if (pb.exists && pb.data().whatsapp) NEXUM.suporte = String(pb.data().whatsapp).replace(/\D/g, '');
+    if (pb.exists && (pb.data().whatsRH || pb.data().whatsapp)) NEXUM.suporte = String(pb.data().whatsRH || pb.data().whatsapp).replace(/\D/g, '');
     if (S.view === 'config' && (S.cfgAba || '') === 'plano') go('config');
   } catch (e) { console.warn('[NEXUM] plataforma', e.code || e); }
 }
