@@ -542,7 +542,7 @@ const NEXUM = {
   trialDias: 14,
   linkAssinatura: '', // cole aqui o link de pagamento (ex.: Mercado Pago)
   suporte: '45998524338', // seu WhatsApp de suporte com DDD
-  site: 'https://nexumdp.com.br/', // endereço do site de vendas (usado no link de indicação)
+  site: 'https://vendas.nexumdp.com.br/', // endereço do site de vendas (usado no link de indicação)
   /* Chaves de IA embutidas por decisão do dono da plataforma (ficam visíveis no código do site).
      Ordem de uso: chave do próprio cliente > chave salva no Painel do Dono > estas. */
   ia: { groq: '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', claude: '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', workspace: 'wrkspc_01YArvhE44tmUyNbKgyKBTn7', modeloClaude: 'claude-sonnet-5-5' },
@@ -1004,7 +1004,7 @@ function redeLogin() {
 function ajustaZoomLogin(raiz, card) {
   const f = () => { const r = document.querySelector(raiz), c = r && r.querySelector(card); if (!r || !c) return removeEventListener('resize', f);
     r.style.setProperty('--z', '1'); if (innerWidth <= 960) return;
-    const cs = getComputedStyle(r), pad = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom), z = Math.max(.45, Math.min(1, (innerHeight - pad - 8) / c.offsetHeight, innerWidth / 1500)); r.style.setProperty('--z', z.toFixed(3)); };
+    const cs = getComputedStyle(r), pad = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom), z = Math.max(.86, Math.min(1, (innerHeight - pad - 8) / c.offsetHeight, innerWidth / 1440)); r.style.setProperty('--z', z.toFixed(3)); };
   f(); setTimeout(f, 80); addEventListener('resize', f);
   const ab = document.querySelector(raiz + ' #auth-body'); if (ab && window.MutationObserver) new MutationObserver(() => setTimeout(f, 0)).observe(ab, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden'] });
 }
@@ -1044,7 +1044,7 @@ function renderAuth(aba = location.hash === '#criar' ? 'criar' : 'entrar') {
 .rhl .pz-lk,.rhl #b-esq{color:#3F9BFF}.rhl #auth-body .pz-lk{text-align:center;margin:20px 0 0}.rhl #auth-body .pz-lk button{background:none;border:0;color:#3F9BFF;text-decoration:underline;text-underline-offset:4px;font:inherit;font-size:16px;cursor:pointer}
 .rhl-alt{text-align:center;color:#AEBBD8;font-size:15px;margin:14px 0 0}.rhl-alt button{background:none;border:0;color:#48A2FF;font:inherit;font-weight:600;text-decoration:underline;cursor:pointer}
 .rhl-seg{display:flex;gap:20px;align-items:center;border-top:1px solid rgba(143,170,230,.28);margin-top:26px;padding-top:24px}.rhl-seg svg{width:42px;height:42px;color:#3F93FF;flex:none}.rhl-seg b{display:block;font-size:15px;font-weight:600;color:#fff}.rhl-seg span{font-size:13.5px;color:#AEBBD8;line-height:1.45}.rhl-seg a{color:#AEBBD8}
-@media(max-width:960px){.rhl{grid-template-columns:minmax(0,1fr);padding:26px 16px;gap:20px;background-position:42% center}.rhl>*{zoom:1}.rhl-art .rhl-mk svg{width:58px;height:auto}.rhl-mk{gap:12px}.rhl-art .rhl-mk b{font-size:30px}.rhl-art .rhl-mk small{font-size:10.5px;letter-spacing:.3em}.rhl-art .rhl-mk>i{display:none}
+@media(max-height:820px) and (min-width:961px){.rhl{padding:3vh 3vw 3vh 5.5vw}.rhl-card{padding:30px 44px 22px;width:510px}.rhl-card .rhl-mk{margin-bottom:22px}.rhl-card .rhl-mk b{font-size:34px}.rhl-card .rhl-mk svg{width:62px;height:auto}.rhl-card h2{font-size:27px;margin-bottom:6px}.rhl-p{font-size:15.5px;margin-bottom:18px}.rhl .lx-in{margin-bottom:12px}.rhl .lx-in .inp{height:52px;font-size:16.5px}.rhl .lx-ent{height:56px;font-size:19px}.rhl #auth-body .pz-lk{margin-top:12px}.rhl-alt{margin-top:8px}.rhl-seg{margin-top:14px;padding-top:12px}.rhl-seg svg{width:34px;height:34px}.rhl-mk b{font-size:46px}.rhl-art .rhl-mk svg{width:100px;height:auto}.rhl-art h1{margin-top:34px;font-size:50px}.rhl-ft{margin-top:60px}}@media(max-width:960px){.rhl{grid-template-columns:minmax(0,1fr);padding:26px 16px;gap:20px;background-position:42% center}.rhl>*{zoom:1}.rhl-art .rhl-mk svg{width:58px;height:auto}.rhl-mk{gap:12px}.rhl-art .rhl-mk b{font-size:30px}.rhl-art .rhl-mk small{font-size:10.5px;letter-spacing:.3em}.rhl-art .rhl-mk>i{display:none}
   .rhl-art h1{font-size:30px;margin-top:18px}.rhl-art p,.rhl-tr,.rhl-ft{display:none}.rhl-card{width:auto;padding:26px 20px 22px}.rhl-card .rhl-mk{display:none}.rhl-card h2{font-size:26px}.rhl-p{font-size:16px;margin-bottom:20px}.rhl .lx-in .inp{height:56px}.rhl .lx-ent{height:58px;font-size:19px}}
 </style>`);
   ajustaZoomLogin('.rhl', '.rhl-card');
@@ -2884,7 +2884,7 @@ async function painelContador(user, perfil) {
     q(() => FB.db.collection('revendaClientes').where('contadorUid', '==', user.uid).get()), q(() => FB.db.collection('revendaComissoes').where('contadorUid', '==', user.uid).get()), q(() => FB.db.doc('plataforma/revenda').get())]);
   const ds = r => r ? r.docs.map(d => ({ id: d.id, ...d.data() })) : []; conv = ds(r1).filter(c => c.status === 'pendente'); ac = ds(r2).sort((a, b) => (a.empresa || '').localeCompare(b.empresa || '')); cli = ds(r3); com = ds(r4).sort((a, b) => (b.em || '').localeCompare(a.em || ''));
   if (r5 && r5.exists && r5.data().pct != null) pct = +r5.data().pct;
-  const linkRev = new URL(/nexumdp\.com\.br$/.test(location.hostname) ? 'https://nexumdp.com.br/' : new URL('site.html', location.href).href); linkRev.searchParams.set('rev', perfil.revCodigo || revCodigo(user.uid));
+  const linkRev = new URL(/nexumdp\.com\.br$/.test(location.hostname) ? 'https://vendas.nexumdp.com.br/' : new URL('site.html', location.href).href); linkRev.searchParams.set('rev', perfil.revCodigo || revCodigo(user.uid));
   const aRec = com.filter(c => c.status !== 'pago').reduce((t, c) => t + (+c.comissao || 0), 0), pago = com.filter(c => c.status === 'pago').reduce((t, c) => t + (+c.comissao || 0), 0);
   $('#root').innerHTML = `<div class="ct-app"><header class="ct-top"><div class="ct-marca">${marcaPortal(false, .5)}<span class="ct-tit">Painel do contador</span></div><span class="sp"></span><span class="ct-who"><b>${esc(perfil.nome)}</b>${perfil.escritorio ? `<small>${esc(perfil.escritorio)}</small>` : ''}</span><button class="btn ghost sm" id="ct-sair">Sair</button></header>
     <main class="ct-main">${user.emailVerified ? '' : `<section class="panel" style="border-color:var(--warn)"><div class="row" style="gap:10px;flex-wrap:wrap"><div style="flex:1;min-width:220px"><b>Confirme seu e-mail</b><div class="hint">Enviamos um link para ${esc(em)}. A confirmação protege os dados das empresas e é necessária para aceitar convites.</div></div><button class="btn sec sm" id="ct-rev">Reenviar e-mail</button><button class="btn sm" id="ct-ja">Já confirmei</button></div></section>`}
@@ -3143,11 +3143,19 @@ function modalNovidades(l, titulo) {
 }
 async function novidadesRH() {
   if (!S.user || S.user.contador) return; const l = await lerNovidadesPlat('rh'); S.novid = l; const k = `nexum:novid:${S.user.id}`, vistos = new Set(JSON.parse(localStorage.getItem(k) || '[]')), novos = l.filter(n => !vistos.has(n.id));
-  const top = $('#b-aten'); if (top && !$('#b-nov')) { top.insertAdjacentHTML('beforebegin', '<button class="tb" id="b-nov">Novidades <span class="bdg" id="bdg-nov"></span></button>'); $('#b-nov').onclick = () => { modalNovidades(S.novid || []); localStorage.setItem(k, JSON.stringify((S.novid || []).map(n => n.id))); const b = $('#bdg-nov'); if (b) b.textContent = ''; }; }
-  const b = $('#bdg-nov'); if (b) b.textContent = novos.length || '';
-  if (novos.length && !localStorage.getItem(k + ':ini')) { localStorage.setItem(k + ':ini', '1'); localStorage.setItem(k, JSON.stringify(l.map(n => n.id))); if (b) b.textContent = ''; return; }
-  if (novos.length) setTimeout(() => { if ($('#modal-root').innerHTML || $('#av-mod')) return; modalNovidades(novos, novos.length > 1 ? `${novos.length} novidades no NEXUM` : 'Novidade no NEXUM'); localStorage.setItem(k, JSON.stringify(l.map(n => n.id))); if (b) b.textContent = ''; }, 2500);
+  localStorage.setItem(k, JSON.stringify(l.map(n => n.id))); if (!localStorage.getItem(k + ':ini')) { localStorage.setItem(k + ':ini', '1'); return; }
+  novos.slice(0, 5).reverse().forEach(n => notificar({ id: 'nov_' + n.id, tipo: 'nexum', titulo: `${(NOV_TAG[n.tag] || NOV_TAG.novidade)[1]}: ${n.titulo}`, texto: n.texto || '', rota: 'novid', botao: 'Ver novidades' }));
 }
+/* ---------- selo de situação da conta no topo: ATIVO ou INATIVO ---------- */
+function seloSituacao() {
+  const top = $('header.top'); if (!top || !S.tenant) return; const lic = licenca(), ativo = !S.tenant.suspenso && !lic.bloqueada && lic.ativa;
+  const txt = ativo ? 'ATIVO' : 'INATIVO', tit = ativo ? (lic.trial ? `Teste grátis ativo até ${fd(S.tenant.expira)}` : `Assinatura ativa até ${fd(S.tenant.expira)}`) : S.tenant.suspenso ? 'Acesso suspenso pela NEXUM' : lic.bloqueada ? 'Acesso bloqueado por falta de pagamento' : `Licença vencida em ${fd(S.tenant.expira)}: somente leitura`;
+  let b = $('#b-st'); const ref = $('#b-notif') || $('#b-aten');
+  if (!b) { const h = `<button class="tb" id="b-st" type="button"></button>`; if (ref) ref.insertAdjacentHTML('beforebegin', h); else top.insertAdjacentHTML('beforeend', h); b = $('#b-st'); b.onclick = () => { S.view = 'config'; go('config'); }; }
+  if (b.dataset.v !== txt + tit) { b.dataset.v = txt + tit; b.className = 'tb st-' + (ativo ? 'on' : 'off'); b.title = tit; b.setAttribute('aria-label', `Situação da conta: ${txt}. ${tit}`); b.innerHTML = `<i></i>${txt}`; }
+}
+setInterval(() => { try { if (S && S.user && S.tenant) seloSituacao(); } catch (e) { } }, 2000);
+document.head.insertAdjacentHTML('beforeend', '<style>#b-st{display:inline-flex;align-items:center;gap:7px;font-weight:800;letter-spacing:.06em;font-size:12.5px}#b-st i{width:9px;height:9px;border-radius:50%;display:inline-block}#b-st.st-on{color:#0F7A4F;border-color:#9FDBBF;background:#E8F8F0}#b-st.st-on i{background:#16A34A;box-shadow:0 0 0 3px rgba(22,163,74,.18)}#b-st.st-off{color:#B42318;border-color:#F5B5AE;background:#FDECEC}#b-st.st-off i{background:#E11D48;animation:stPulse 1.6s infinite}@keyframes stPulse{0%{box-shadow:0 0 0 0 rgba(225,29,72,.6)}70%{box-shadow:0 0 0 8px rgba(225,29,72,0)}100%{box-shadow:0 0 0 0 rgba(225,29,72,0)}}</style>');
 /* ---------- Notas fiscais da assinatura (emitidas pelo NEXUM) ---------- */
 async function painelNotasRH(el) {
   if (!FB_ON || !S.tenant || S.user.contador || $('#nf-rh', el)) return; let l = [];
@@ -5794,12 +5802,12 @@ function supRender() {
     c.innerHTML = `<div class="sp-m bot"><span class="mini">${supN(18)}</span><div class="bb">Olá${S.user ? ', ' + esc(String(S.user.nome).split(' ')[0]) : ''}! Este é o suporte do NEXUM RH. Toque em <b>Iniciar chat</b> para tirar dúvidas com o assistente ou falar com um atendente.</div></div><button class="sp-ini" data-sp="novo">Iniciar chat</button>${SUP.lista.length ? '<button class="sp-ini" data-sp="lista" style="border-color:#C9CFDB;font-weight:500">Meus atendimentos</button>' : ''}`; supEntrada(false); return; }
   $('.sp-h small', p).textContent = `Protocolo ${d.protocolo} · ${SUP_ST[d.status]}`;
   let dia = '', h = ''; (d.msgs || []).forEach(m => { const dd = new Date(m.em).toLocaleDateString('pt-BR'); if (dd !== dia) { dia = dd; h += `<div class="sp-dia">${dd}</div>`; }
-    h += `<div class="sp-m ${m.de}">${m.de !== 'rh' ? `<span class="mini">${supN(18)}</span>` : ''}<div class="bb">${m.de === 'dono' ? '<b style="display:block;font-size:12px;color:#1F5FE8">Atendente NEXUM</b>' : ''}${esc(m.t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')}</div></div><div class="sp-hr">${supHora(m.em)}</div>`; });
+    h += `<div class="sp-m ${m.de}">${m.de !== 'rh' ? `<span class="mini">${supN(18)}</span>` : ''}<div class="bb">${m.de === 'dono' ? '<b style="display:block;font-size:12px;color:#1F5FE8">Atendente NEXUM</b>' : ''}${esc(m.t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')}${m.anexo ? supAnexoChip(d.protocolo, m.anexo) : ''}</div></div><div class="sp-hr">${supHora(m.em)}</div>`; });
   const fechado = ['concluido', 'cancelado'].includes(d.status);
   if (SUP.dig) h += `<div class="sp-m bot"><span class="mini">${supN(18)}</span><div class="bb sp-dig"><i></i><i></i><i></i></div></div>`;
   else if (fechado) h += `<div class="sp-dia">Atendimento ${SUP_ST[d.status].toLowerCase()}. </div><button class="sp-ini" data-sp="novo">Iniciar novo chat</button>`;
   else h += `<div class="sp-ops">${d.status === 'bot' && NEXUM.ia.claude && (d.msgs || []).length > 2 && (d.msgs || []).slice(-1)[0].de === 'bot' ? '<button data-sp="completa">Quero uma resposta mais completa</button>' : ''}${d.status === 'bot' ? '<button data-sp="atendente">Falar com atendente</button>' : ''}<button data-sp="lista">Meus atendimentos</button></div>`;
-  c.innerHTML = h; c.scrollTop = c.scrollHeight; supEntrada(!fechado && !SUP.dig);
+  c.innerHTML = h; c.scrollTop = c.scrollHeight; supEntrada(!fechado && !SUP.dig); supThumbs(c, d.protocolo);
 }
 function supEntrada(on) { const t = $('#sp-t'); if (!t) return; t.disabled = !on; t.placeholder = on ? 'Enviar uma mensagem...' : 'Inicie um chat para escrever'; }
 function supAbrir(prot) {
@@ -5830,17 +5838,47 @@ async function supAcao(a) {
     d.status = 'analise'; d.msgs = [...(d.msgs || []), m]; supRender(); try { await SupDB.add(d.protocolo, m, { status: 'analise', naoLidoDono: true }); } catch (e) { toast('Não foi possível chamar o atendente: ' + (e.code || e.message), true); } return; }
   if (a === 'sair') { SUP.tela = 'chat'; SUP.doc = null; SUP.prot = null; if (SUP.unsub) { SUP.unsub(); SUP.unsub = null; } supRender(); }
 }
+/* ---------- anexos (foto, PDF, documento) no chat de suporte ---------- */
+async function supAnexoLer(f) {
+  if (/^image\//.test(f.type)) { const url = URL.createObjectURL(f); const img = await new Promise((ok, er) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => er(new Error('Não foi possível ler a imagem.')); i.src = url; });
+    const k = Math.min(1, 1600 / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+    let q = .82, d = c.toDataURL('image/jpeg', q); while (d.length > 850000 && q > .3) { q -= .12; d = c.toDataURL('image/jpeg', q); } return { nome: String(f.name || 'foto').replace(/\.\w+$/, '') + '.jpg', tipo: 'image/jpeg', data: d }; }
+  if (f.size > 640 * 1024) throw new Error('Arquivo grande demais (máximo 640 KB). Envie uma foto ou um PDF menor.');
+  const d = await new Promise((ok, er) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = () => er(new Error('Não foi possível ler o arquivo.')); r.readAsDataURL(f); });
+  return { nome: f.name || 'arquivo', tipo: f.type || 'application/octet-stream', data: d };
+}
+async function supAnexar(f) {
+  const d = SUP.doc; if (!d) return; const b = $('#sp-anx'); if (b) b.disabled = true; toast('Enviando o anexo…');
+  try { const a = await supAnexoLer(f), id = uid(), em = new Date().toISOString();
+    if (FB_ON) await FB.db.doc(`suporte/${d.protocolo}/anexos/${id}`).set({ ...a, em, de: 'rh' }); SUP.anx = SUP.anx || {}; SUP.anx[id] = a;
+    const m = { ...supMsg('rh', `📎 ${a.nome}`), anexo: FB_ON ? { id, nome: a.nome, tipo: a.tipo } : { id, nome: a.nome, tipo: a.tipo, data: a.data } };
+    d.msgs = [...(d.msgs || []), m]; supRender(); await SupDB.add(d.protocolo, m, d.status === 'bot' ? { status: 'analise', naoLidoDono: true } : { naoLidoDono: true });
+    if (d.status === 'bot') { d.status = 'analise'; const r = supMsg('bot', 'Recebi o seu arquivo e já passei para um atendente do NEXUM, que vai responder por aqui.'); d.msgs = [...d.msgs, r]; supRender(); SupDB.add(d.protocolo, r).catch(() => {}); }
+    toast('Anexo enviado.'); }
+  catch (e) { toast(e.code === 'permission-denied' ? 'Não foi possível enviar: o sistema precisa das regras novas do Firebase.' : (e.message || 'Não foi possível enviar o anexo.'), true); }
+  if (b) b.disabled = false;
+}
+function supAnexoChip(prot, a) { const img = /^image\//.test(a.tipo); return `<button type="button" class="sp-anxc" data-spanx="${esc(prot)}|${esc(a.id)}" title="Abrir ${esc(a.nome)}">${img ? `<span data-spthumb="${esc(a.id)}">🖼️ Ver foto</span>` : `📎 ${esc(a.nome)}`}</button>`; }
+async function supAnexoBuscar(prot, id) { SUP.anx = SUP.anx || {}; if (SUP.anx[id]) return SUP.anx[id]; const lm = ((SUP.doc && SUP.doc.msgs) || []).find(m => m.anexo && m.anexo.id === id); if (lm && lm.anexo.data) return lm.anexo;
+  const s = await FB.db.doc(`suporte/${prot}/anexos/${id}`).get(); if (!s.exists) throw new Error('Anexo não encontrado.'); return SUP.anx[id] = s.data(); }
+function supThumbs(box, prot) { $$('[data-spthumb]', box).forEach(async sp => { try { const x = await supAnexoBuscar(prot, sp.dataset.spthumb); sp.outerHTML = `<img src="${x.data}" alt="${esc(x.nome)}">`; } catch (e) { } }); }
+function supAnexoAbrir(data, nome) {
+  const [h, b] = String(data).split(','), mime = (h.match(/data:([^;]+)/) || [])[1] || 'application/octet-stream', bin = atob(b), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+  const url = URL.createObjectURL(new Blob([u], { type: mime })), a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener'; if (!/^image\/|pdf/.test(mime)) a.download = nome || 'anexo'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 180000);
+}
+document.addEventListener('click', async e => { const b = e.target.closest && e.target.closest('[data-spanx]'); if (!b) return; const [prot, id] = b.dataset.spanx.split('|'); try { const x = await supAnexoBuscar(prot, id); supAnexoAbrir(x.data, x.nome); } catch (er) { toast(er.message || 'Não foi possível abrir o anexo.', true); } });
+document.head.insertAdjacentHTML('beforeend', '<style>.sp-anxc{display:inline-flex;align-items:center;gap:6px;margin-top:6px;padding:6px 10px;border-radius:8px;border:1px solid rgba(0,0,0,.12);background:rgba(255,255,255,.8);color:#14203D;font:inherit;font-size:13px;font-weight:600;cursor:pointer;max-width:100%}.sp-anxc img{width:150px;max-height:150px;object-fit:cover;border-radius:6px;display:block}#sp-anx{flex:none}</style>');
 function suporteIniciar() {
   if (DEMO || !S.user || !S.tenant || document.getElementById('sup-b')) return;
   document.body.insertAdjacentHTML('beforeend', `<div id="sup-p" role="dialog" aria-label="Suporte NEXUM RH"><div class="sp-h"><span class="sp-av">${supN(22)}</span><b>Suporte NEXUM RH<small>IA 24h · humano seg–sex 9h–18h, sáb 9h–13h</small></b><button data-sp="lista" title="Meus atendimentos" aria-label="Meus atendimentos">☰</button><button id="sp-x" aria-label="Minimizar">×</button></div><div class="sp-c"></div>
-    <div class="sp-in"><textarea id="sp-t" rows="1" placeholder="Enviar uma mensagem..." aria-label="Mensagem"></textarea><button id="sp-env" aria-label="Enviar"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 20.5 21.5 12 3 3.5 3.1 10 15 12 3.1 14z"/></svg></button></div>
+    <div class="sp-in"><button id="sp-anx" type="button" aria-label="Anexar foto ou arquivo" title="Anexar foto ou arquivo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.4 11.6-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg></button><input type="file" id="sp-file" accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt" hidden><textarea id="sp-t" rows="1" placeholder="Enviar uma mensagem..." aria-label="Mensagem"></textarea><button id="sp-env" aria-label="Enviar"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 20.5 21.5 12 3 3.5 3.1 10 15 12 3.1 14z"/></svg></button></div>
     <div class="sp-pw">Powered by ${supN(16)} <b>NEXUM RH</b></div></div>
     <button id="sup-b" aria-label="Abrir o chat de suporte" title="Suporte NEXUM RH"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 6.5h14a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H10.5L7 20.5v-3H5A1.5 1.5 0 0 1 3.5 16V8A1.5 1.5 0 0 1 5 6.5z"/><path d="M20.5 11.5H27a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 27 22.5h-2v3l-3.5-3H14a1.5 1.5 0 0 1-1.5-1.5v-3.5"/></svg><span class="dot"></span></button>`);
   const p = $('#sup-p'), b = $('#sup-b');
   b.onclick = () => { SUP.aberto = !p.classList.contains('on'); p.classList.toggle('on', SUP.aberto); b.classList.remove('novo'); if (SUP.aberto) { if (SUP.doc && SUP.doc.naoLidoRh) SupDB.set(SUP.doc.protocolo, { naoLidoRh: false }).catch(() => {}); supRender(); } };
   $('#sp-x').onclick = () => { SUP.aberto = false; p.classList.remove('on'); };
   p.addEventListener('click', e => { const a = e.target.closest('[data-sp]'), o = e.target.closest('[data-sp-abre]'); if (a) supAcao(a.dataset.sp); if (o) supAbrir(o.dataset.spAbre); });
-  $('#sp-env').onclick = supEnviar; const t = $('#sp-t'); t.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); supEnviar(); } }; t.oninput = () => { t.style.height = ''; t.style.height = Math.min(110, t.scrollHeight) + 'px'; };
+  $('#sp-env').onclick = supEnviar; $('#sp-anx').onclick = () => { const d = SUP.doc; if (!d || ['concluido', 'cancelado'].includes(d.status)) return toast('Inicie um chat para enviar arquivos.', true); $('#sp-file').click(); }; $('#sp-file').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) supAnexar(f); }; const t = $('#sp-t'); t.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); supEnviar(); } }; t.oninput = () => { t.style.height = ''; t.style.height = Math.min(110, t.scrollHeight) + 'px'; };
   SUP.unsubL = SupDB.ouvirLista(l => { SUP.lista = l; const novo = l.some(x => x.naoLidoRh); if (novo && !SUP.aberto) b.classList.add('novo'); if (!SUP.doc) { const ab = l.find(x => ['bot', 'analise'].includes(x.status) && x.naoLidoRh); if (ab && !SUP.aberto) SUP.prot = ab.protocolo; } if (!FB_ON && SUP.prot) SUP.doc = l.find(x => x.protocolo === SUP.prot) || SUP.doc; if (SUP.aberto) supRender(); });
   if (FB_ON && !S.iaPlat) FB.db.doc('plataforma/ia').get().then(d => { const x = d.data() || {}; S.iaPlat = x.groqKey || ''; S.iaPlatC = { claude: x.claudeKey || '', workspace: x.workspace || '' }; }).catch(() => {});
   supRender();
@@ -5897,6 +5935,7 @@ function notificar({ id, tipo = 'nexum', titulo, texto = '', rota = '', botao = 
 }
 function notifAcao(n) {
   if (!n || !n.rota) return; if (n.rota === 'sup') { const b = document.getElementById('sup-b'); if (b && !(document.getElementById('sup-p') || {}).classList?.contains('on')) b.click(); return; }
+  if (n.rota === 'novid') { const go2 = () => modalNovidades(S.novid || []); return S.novid ? go2() : lerNovidadesPlat('rh').then(l => { S.novid = l; go2(); }); }
   if (n.rota === 'aviso') { const a = (S.avisosAtivos || []).find(x => 'av_' + x.id === n.id); if (a) return avisoJanela(a, false); return; }
   S.view = n.rota; try { go(n.rota); } catch (e) { }
 }
@@ -5922,7 +5961,8 @@ function notifPainel() {
   const l = notifLista(), podeNav = 'Notification' in window && Notification.permission === 'default';
   modal('Avisos', `${podeNav ? '<div class="row" style="gap:8px;align-items:center;margin-bottom:10px;background:var(--pri-s,#EEF3FF);border-radius:10px;padding:10px 12px"><span style="flex:1;font-size:13.5px">Receba os avisos mesmo com o NEXUM em outra aba.</span><button class="btn sm" id="nt-perm">Ativar notificações</button></div>' : ''}
     ${l.length ? `<ul class="list">${l.map(n => `<li style="border-left:3px solid ${NOTIF_COR[n.tipo] || NOTIF_COR.nexum};padding-left:10px;${n.lida ? 'opacity:.72' : ''}"><div class="t"><div><b>${esc(n.titulo)}</b>${n.lida ? '' : ' <span class="pill" style="font-size:11px">novo</span>'}</div><div>${esc(n.texto || '')}</div><div class="hint" style="font-size:12px">${new Date(n.em).toLocaleString('pt-BR').slice(0, 17)}</div></div>${n.botao ? `<button class="btn sec sm" data-nt="${esc(n.id)}">${esc(n.botao)}</button>` : ''}</li>`).join('')}</ul>` : '<p class="hint" style="margin:0">Nenhum aviso por enquanto. Aqui aparecem os avisos da NEXUM, as respostas do suporte, as notas fiscais e os aprovados que chegam do Recrutamento.</p>'}`,
-    { foot: `${l.length ? '<button class="btn ghost" id="nt-limpa">Limpar lista</button>' : ''}<button class="btn" data-close>Fechar</button>`, onMount: m => {
+    { foot: `<button class="btn sec" id="nt-nov" style="margin-right:auto">Novidades do NEXUM</button>${l.length ? '<button class="btn ghost" id="nt-limpa">Limpar lista</button>' : ''}<button class="btn" data-close>Fechar</button>`, onMount: m => {
+      $('#nt-nov', m).onclick = () => { closeModal(true); notifAcao({ rota: 'novid' }); };
       notifGrava(l.map(x => ({ ...x, lida: true }))); notifSino();
       $$('[data-nt]', m).forEach(b => b.onclick = () => { closeModal(); notifAcao(l.find(x => x.id === b.dataset.nt)); });
       const lp = $('#nt-limpa', m); if (lp) lp.onclick = () => { notifGrava([]); notifSino(); closeModal(); };
