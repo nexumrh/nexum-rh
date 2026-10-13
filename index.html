@@ -630,7 +630,7 @@ const FB = {
     if (!FB.aux) { FB.aux = firebase.initializeApp(FIREBASE_CONFIG, 'nexum-aux').auth(); await FB.aux.setPersistence(firebase.auth.Auth.Persistence.NONE); }
     const cr = await FB.aux.createUserWithEmailAndPassword(email, senha); const id = cr.user.uid; await FB.aux.signOut(); return id;
   },
-  tenant(s) { const x = s.data(); return { id: s.id, nome: x.nome, cnpj: x.cnpj || '', plano: x.plano, trial: !!x.trial, suspenso: !!x.suspenso, bloqueado: !!x.bloqueado, recrutamento: !!x.recrutamento, criadoEm: x.criadoEm, expira: iso(addD(x.expiraTs.toDate(), -1)) }; },
+  tenant(s) { const x = s.data(); return { id: s.id, nome: x.nome, cnpj: x.cnpj || '', plano: x.plano, trial: !!x.trial, suspenso: !!x.suspenso, bloqueado: !!x.bloqueado, recrutamento: !!x.recrutamento, cobrancaAberta: x.cobrancaAberta || null, criadoEm: x.criadoEm, expira: iso(addD(x.expiraTs.toDate(), -1)) }; },
   emailColab: (tid, cpf, v) => `c${cpf}.v${v}.${tid}@colab.nexum.app`,
   falhou(e) { console.error('[NEXUM]', e); toast(FB.erro(e), true); },
   erro(e) {
@@ -1218,6 +1218,8 @@ function renderApp() {
   else if (!lic.ativa) banner = `<div class="banner bad">Sua licença venceu em ${fd(S.tenant.expira)}. O sistema está em modo somente leitura e o ponto pelo portal está suspenso. Em ${addD(pd(S.tenant.expira), REGUA.leitura + 1).toLocaleDateString('pt-BR')}, o acesso será bloqueado. ${can('admin') ? (linkPagar() ? `<a href="${linkPagar()}" target="_blank" rel="noopener" style="color:inherit;font-weight:700">Pagar agora</a> ou renove em Configurações > Plano.` : 'Renove em Configurações > Plano.') : 'Fale com o administrador.'}</div>`;
   else if (lic.tolerancia) banner = `<div class="banner">Pagamento pendente: a licença venceu em ${fd(S.tenant.expira)}. O sistema funciona normalmente até ${addD(pd(S.tenant.expira), REGUA.tolerancia).toLocaleDateString('pt-BR')}; depois, fica somente para consulta. ${can('admin') ? (linkPagar() ? `<a href="${linkPagar()}" target="_blank" rel="noopener" style="color:inherit;font-weight:700">Pagar agora</a>` : 'Renove em Configurações > Plano.') : 'Avise o administrador.'}</div>`;
   else if (lic.trial && lic.dias <= 5) banner = `<div class="banner">Seu teste grátis termina em ${lic.dias} dia${lic.dias === 1 ? '' : 's'}.</div>`;
+  /* cobrança da renovação gerada automaticamente antes do vencimento */
+  if (!banner && S.tenant.cobrancaAberta && S.tenant.cobrancaAberta.fatura && can('admin')) { const ca = S.tenant.cobrancaAberta; banner = `<div class="banner" style="background:#EAF1FF;border-color:#C9D6F2;color:#14203D">A cobrança da renovação já está disponível: <b>${brl(+ca.valor || 0)}</b>, vence em ${fd(ca.vencimento)}. Pague com PIX, boleto ou cartão e a renovação é automática. <a href="${esc(ca.fatura)}" target="_blank" rel="noopener" style="color:#1F5FE8;font-weight:700">Pagar agora</a></div>`; }
   $('#root').innerHTML = `
   <div class="app">
     <aside class="side" id="side">
@@ -3160,7 +3162,7 @@ document.head.insertAdjacentHTML('beforeend', '<style>#b-st{display:inline-flex;
 async function painelNotasRH(el) {
   if (!FB_ON || !S.tenant || S.user.contador || $('#nf-rh', el)) return; let l = [];
   try { l = (await FB.db.collection('notasFiscais').where('tid', '==', S.tenant.id).get()).docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.emitidaEm || '').localeCompare(a.emitidaEm || '')); } catch (e) { return; }
-  const cf = $('#cf', el) || el; cf.insertAdjacentHTML('beforeend', `<section class="panel" id="nf-rh"><h2 style="margin-bottom:8px">Notas fiscais</h2>${l.length ? `<ul class="list">${l.map(n => `<li><div class="t"><div><b>NFS-e nº ${esc(n.numero)}</b> · ${brl(+n.valor || 0)}</div><div>Emitida em ${fd(String(n.emitidaEm || '').slice(0, 10))}${n.competencia ? ' · ' + esc(n.competencia) : ''}</div></div><button class="btn sec sm" data-nfr="${esc(n.id)}">Ver nota</button>${n.pdf ? `<a class="btn ghost sm" href="${n.pdf}" download="NFS-e_${esc(n.numero)}.pdf">Baixar PDF</a>` : ''}</li>`).join('')}</ul>` : '<p class="hint" style="margin:0">As notas fiscais dos seus pagamentos aparecem aqui assim que forem emitidas.</p>'}</section>`);
+  const cf = $('#cf', el) || el; cf.insertAdjacentHTML('beforeend', `<section class="panel" id="nf-rh"><h2 style="margin-bottom:8px">Notas fiscais</h2>${l.length ? `<ul class="list">${l.map(n => `<li><div class="t"><div><b>${n.numero ? 'NFS-e nº ' + esc(n.numero) : n.status === 'erro' ? 'NFS-e com erro na emissão (a NEXUM já foi avisada)' : 'NFS-e em emissão'}</b> · ${brl(+n.valor || 0)}</div><div>Emitida em ${fd(String(n.emitidaEm || '').slice(0, 10))}${n.competencia ? ' · ' + esc(n.competencia) : ''}</div></div>${n.numero ? `<button class="btn sec sm" data-nfr="${esc(n.id)}">Ver nota</button>` : ''}${n.pdf ? `<a class="btn ghost sm" href="${esc(n.pdf)}" target="_blank" rel="noopener" download="NFS-e_${esc(n.numero)}.pdf">Baixar PDF</a>` : ''}</li>`).join('')}</ul>` : '<p class="hint" style="margin:0">As notas fiscais dos seus pagamentos aparecem aqui assim que forem emitidas.</p>'}</section>`);
   $$('[data-nfr]', cf).forEach(b => b.onclick = () => verNotaRH(l.find(n => n.id === b.dataset.nfr)));
 }
 async function verNotaRH(n) {
