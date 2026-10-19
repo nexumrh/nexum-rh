@@ -1688,7 +1688,7 @@ function vFerias(el) {
       ${s.proximo ? `<div><span class="hint">Próximo direito a partir de</span><span>${fd(iso(s.proximo))}</span></div>` : ''}</div>
       <div class="row end" style="margin-top:14px"><button class="btn" id="fe-sol">Solicitar férias</button></div></section>
     ${pend.length ? `<section class="panel"><h2>Minhas solicitações</h2><ul class="list">${pend.map(x => `<li><div class="t"><div>${resumoSolic(x)}</div><div>Pedido em ${fdt(x.criadoEm)}${x.resposta ? ' · RH: ' + esc(x.resposta) : ''}</div></div>${stPill(x.status)}</li>`).join('')}</ul></section>` : ''}
-    <section class="panel"><h2>Férias programadas e gozadas</h2>${minhas.length ? `<ul class="list">${minhas.map(f => `<li><div class="t"><div>${fd(f.inicio)} a ${fd(iso(addD(pd(f.inicio), f.dias - 1)))}</div><div>${f.dias} dias${f.abono ? ' + 10 de abono' : ''} · líquido ${brl(f.calc.liq)}</div></div>${pd(f.inicio) > hoje() ? '<span class="pill">Programada</span>' : '<span class="pill mut">Gozada</span>'}</li>`).join('')}</ul>` : '<div class="empty">Nenhum registro ainda.</div>'}</section>`;
+    <section class="panel"><h2>Férias programadas e gozadas</h2>${minhas.length ? `<ul class="list">${minhas.map(f => `<li><div class="t"><div>${fd(f.inicio)} a ${fd(iso(addD(pd(f.inicio), f.dias - 1)))}</div><div>${f.dias} dias${f.abono ? ' + 10 de abono' : ''}${f.calc && f.calc.liq != null ? ` · líquido ${brl(f.calc.liq)}` : ''}</div></div>${pd(f.inicio) > hoje() ? '<span class="pill">Programada</span>' : '<span class="pill mut">Gozada</span>'}</li>`).join('')}</ul>` : '<div class="empty">Nenhum registro ainda.</div>'}</section>`;
   $('#fe-sol', el).onclick = () => modal('Solicitar férias', `<div class="grid">
       <div class="fld"><label for="sf-i">Início desejado</label><input class="inp" type="date" id="sf-i" value="${iso(addD(hoje(), 35))}" min="${iso(addD(hoje(), 1))}"></div>
       <div class="fld"><label for="sf-d">Dias</label><select class="inp" id="sf-d">${opts([[30, '30 dias'], [20, '20 dias'], [15, '15 dias'], [14, '14 dias'], [10, '10 dias'], [5, '5 dias']], 30)}</select></div></div>
@@ -3302,5 +3302,196 @@ if (typeof renderApp === 'function') { const _ra = renderApp; renderApp = functi
 if (typeof go === 'function') { const _gp = go; go = function (v) { if (portalBloqRota(v)) v = 'inicio'; return _gp.call(this, v); }; }
 </script>
 
+<script>
+/* =====================================================================
+   MURAL DE TROCAS: o funcionário anuncia o dia que precisa trocar e os
+   colegas da mesma loja se oferecem. Quem anunciou escolhe com quem
+   trocar, e segue o caminho de sempre: o colega aceita e o RH aprova.
+   ===================================================================== */
+try { if (FB.LIVRES && !FB.LIVRES.includes('mural')) FB.LIVRES.push('mural'); } catch (e) { }
+const muralLista = () => { const hj = iso(hoje()); return G('mural').filter(x => x && x.status === 'aberta' && x.dia >= hj && (!P.c.loja || !x.loja || x.loja === P.c.loja)).sort((a, b) => a.dia.localeCompare(b.dia)); };
+const fdSem = ds => pd(ds).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+function muralViavel(x) {
+  if (turnoDia(P.c, pd(x.dia), P.cfg)) return `Você já trabalha em ${fd(x.dia)}.`;
+  if (!turnoDia(P.c, pd(x.diaTroca), P.cfg)) return `Você não trabalha em ${fd(x.diaTroca)}, então não tem turno para trocar.`;
+  return '';
+}
+function painelMural(el, depois) {
+  if (portalLimitadoMural()) return;
+  const l = muralLista(), meus = l.filter(x => x.de === me()), deles = l.filter(x => x.de !== me());
+  const t = x => x.turno ? ` (${x.turno.ent} às ${x.turno.sai})` : '';
+  const sec = document.createElement('section'); sec.className = 'panel'; sec.id = 'mural';
+  sec.innerHTML = `<div class="row" style="gap:10px;flex-wrap:wrap;margin-bottom:6px"><div style="flex:1;min-width:200px"><h2 style="margin:0">Mural de trocas</h2><p class="hint" style="margin:2px 0 0">Precisa de um dia? Anuncie aqui e os colegas da loja se oferecem para trocar.</p></div><button class="btn sm" id="mu-n">Anunciar uma troca</button></div>
+    ${meus.length ? `<h3 style="margin:14px 0 6px;font-size:14px">Meus anúncios</h3><ul class="list">${meus.map(x => `<li style="align-items:flex-start"><div class="t"><div>Não posso em <b>${fdSem(x.dia)}</b>${t(x)} · trabalho no lugar em <b>${fdSem(x.diaTroca)}</b></div>${x.obs ? `<div>${esc(x.obs)}</div>` : ''}
+        ${(x.interessados || []).length ? `<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">${x.interessados.map(i => `<button class="btn sm" data-mu-t="${x.id}|${i.id}">Trocar com ${esc(i.nome)}</button>`).join('')}</div>` : '<div class="hint">Ninguém se ofereceu ainda.</div>'}</div><button class="btn ghost sm" data-mu-c="${x.id}">Cancelar</button></li>`).join('')}</ul>` : ''}
+    ${deles.length ? `<h3 style="margin:14px 0 6px;font-size:14px">Colegas procurando troca</h3><ul class="list">${deles.map(x => { const inv = muralViavel(x), ja = (x.interessados || []).some(i => i.id === me());
+        return `<li style="align-items:flex-start"><div class="t"><div><b>${esc(x.nomeDe)}</b> não pode em <b>${fdSem(x.dia)}</b>${t(x)}</div><div>Em troca, trabalha no seu lugar em <b>${fdSem(x.diaTroca)}</b>.</div>${x.obs ? `<div>${esc(x.obs)}</div>` : ''}${inv && !ja ? `<div class="hint">${esc(inv)}</div>` : ''}</div>
+          ${ja ? '<span class="pill ok">Você se ofereceu</span>' : inv ? '' : `<button class="btn sm" data-mu-i="${x.id}">Quero trocar</button>`}</li>`; }).join('')}</ul>` : (meus.length ? '' : '<p class="hint" style="margin:8px 0 0">Nenhum pedido de troca aberto na sua loja.</p>')}`;
+  el.appendChild(sec);
+  const refaz = () => depois ? depois() : go(P.view);
+  $('#mu-n', sec).onclick = () => anunciarTroca(refaz);
+  $$('[data-mu-c]', sec).forEach(b => b.onclick = () => { mut('mural', ls => { const x = ls.find(y => y.id === b.dataset.muC); if (x) x.status = 'cancelada'; }); toast('Anúncio cancelado.'); refaz(); });
+  $$('[data-mu-i]', sec).forEach(b => b.onclick = () => { mut('mural', ls => { const x = ls.find(y => y.id === b.dataset.muI); if (x && x.status === 'aberta' && !(x.interessados || []).some(i => i.id === me())) x.interessados = [...(x.interessados || []), { id: me(), nome: nomeCurtoP(P.c.nome), em: new Date().toISOString() }]; });
+    toast('Pronto! Seu colega foi avisado. Se ele escolher você, o convite aparece aqui no portal.'); refaz(); });
+  $$('[data-mu-t]', sec).forEach(b => b.onclick = () => { const [mid, cid] = b.dataset.muT.split('|'), x = G('mural').find(y => y.id === mid), i = (x.interessados || []).find(y => y.id === cid); if (!x || !i) return;
+    const sid = uid(); novaSolic('troca', { dia: x.dia, diaTroca: x.diaTroca, colega: i.nome, colegaId: i.id, mural: x.id }, sid);
+    mut('convites', ls => ls.push({ id: uid(), colabId: me(), de: me(), para: i.id, partes: [me(), i.id], solicId: sid, nomeDe: nomeCurtoP(P.c.nome), dia: x.dia, diaTroca: x.diaTroca, turnoDe: turnoDia(P.c, pd(x.dia), P.cfg), status: 'aguardando', em: new Date().toISOString() }));
+    mut('mural', ls => { const y = ls.find(z => z.id === mid); if (y) y.status = 'fechada'; });
+    toast(`Convite enviado para ${i.nome}. Quando ele aceitar, o RH aprova. Você acompanha em Solicitações.`); refaz(); });
+}
+const portalLimitadoMural = () => typeof portalLimitado === 'function' && portalLimitado();
+function anunciarTroca(depois) {
+  const prox = Array.from({ length: 45 }, (_, i) => addD(hoje(), i + 1)), trab = prox.filter(d => turnoDia(P.c, d, P.cfg)), livres = prox.filter(d => !turnoDia(P.c, d, P.cfg) && d.getDay() !== 0);
+  const o = l => l.map(d => [iso(d), d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })]);
+  if (!trab.length) return toast('Você não tem dias de trabalho nos próximos 45 dias.', true);
+  if (!livres.length) return toast('Você não tem folga nos próximos dias para oferecer em troca.', true);
+  modal('Anunciar uma troca', `<div class="fld"><label for="mu-d">Dia em que você NÃO pode trabalhar</label><select class="inp" id="mu-d">${opts(o(trab), iso(trab[0]))}</select></div>
+    <div class="fld"><label for="mu-x">Dia de folga em que você trabalha no lugar</label><select class="inp" id="mu-x">${opts(o(livres), iso(livres[0]))}</select></div>
+    <div class="fld"><label for="mu-o">Recado (opcional)</label><input class="inp" id="mu-o" maxlength="120" placeholder="Ex.: consulta médica de manhã"></div>
+    <p class="hint">O anúncio aparece para os colegas da sua loja. Quem puder trocar se oferece, e você escolhe com quem. Depois o colega confirma e o RH aprova.</p>`,
+    { size: 'sm', foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="mu-ok">Publicar no mural</button>', onMount: m => $('#mu-ok', m).onclick = () => {
+      const dia = $('#mu-d', m).value, diaTroca = $('#mu-x', m).value;
+      if (G('mural').some(x => x.de === me() && x.status === 'aberta' && x.dia === dia)) return toast('Você já anunciou esse dia.', true);
+      mut('mural', ls => ls.push({ id: uid(), colabId: me(), de: me(), nomeDe: nomeCurtoP(P.c.nome), loja: P.c.loja || '', dia, diaTroca, turno: turnoDia(P.c, pd(dia), P.cfg) || null, obs: $('#mu-o', m).value.trim().slice(0, 120), status: 'aberta', interessados: [], em: new Date().toISOString() }));
+      closeModal(); toast('Publicado no mural. Os colegas da loja já podem ver.'); depois(); } });
+}
+if (typeof vEscala === 'function') { const _vem = vEscala; vEscala = function (el) { _vem.apply(this, arguments); try { painelMural(el, () => go('escala')); } catch (e) { console.warn(e); } }; }
+/* aviso para quem anunciou quando alguém se oferece */
+(function () {
+  if (typeof FB === 'undefined' || !FB.set) return; const orig = FB.set;
+  FB.set = function (c, v) { const ant = c === 'mural' && FB.cache ? FB.cache[c] : null; const r = orig.apply(this, arguments);
+    try { if (c === 'mural' && Array.isArray(ant) && typeof pushEnviar === 'function') v.forEach(x => { const a = ant.find(y => y.id === x.id); if (a && x.de !== me() && (x.interessados || []).length > (a.interessados || []).length) pushEnviar({ colabs: [x.de] }, `${nomeCurtoP(P.c.nome)} quer trocar com você`, `Dia ${fd(x.dia)}. Toque para escolher no Mural de trocas.`, 'nexum_portal.html', 'mural-' + x.id); }); } catch (e) { }
+    return r; };
+})();
+</script>
+
+<script>
+/* =====================================================================
+   HOLERITE EXPLICADO EM ÁUDIO: o celular lê o resumo do holerite e as
+   respostas da IA em voz alta (funciona sem internet para o resumo)
+   ===================================================================== */
+const reaisFala = v => { v = Math.round((+v || 0) * 100) / 100; const r = Math.floor(Math.abs(v)), c = Math.round((Math.abs(v) - r) * 100); return `${v < 0 ? 'menos ' : ''}${r.toLocaleString('pt-BR')} ${r === 1 ? 'real' : 'reais'}${c ? ` e ${c} centavo${c === 1 ? '' : 's'}` : ''}`; };
+const textoFala = t => String(t || '').replace(/\*\*/g, '').replace(/^\s*[-*•]\s+/gm, '').replace(/R\$\s?([\d.]+,\d{2})/g, (_, x) => reaisFala(+x.replace(/\./g, '').replace(',', '.'))).replace(/\bINSS\b/g, 'I N S S').replace(/\bIRRF\b/g, 'imposto de renda').replace(/\bFGTS\b/g, 'F G T S').replace(/\bDSR\b/g, 'descanso semanal remunerado');
+let _falando = null;
+function falar(t, bt) {
+  if (!('speechSynthesis' in window)) return toast('Este aparelho não consegue ler em voz alta.', true);
+  if (_falando) { speechSynthesis.cancel(); const b = _falando; _falando = null; if (b) { b.classList.remove('on'); b.textContent = b.dataset.rot || 'Ouvir'; } if (b === bt) return; }
+  const u = new SpeechSynthesisUtterance(textoFala(t)); u.lang = 'pt-BR'; u.rate = 0.98; const v = speechSynthesis.getVoices().find(x => /pt[-_]BR/i.test(x.lang)); if (v) u.voice = v;
+  _falando = bt || true; if (bt) { bt.dataset.rot = bt.dataset.rot || bt.textContent; bt.classList.add('on'); bt.textContent = 'Parar'; }
+  u.onend = u.onerror = () => { if (bt) { bt.classList.remove('on'); bt.textContent = bt.dataset.rot; } _falando = null; };
+  speechSynthesis.speak(u);
+}
+function resumoFalado(h) {
+  const a = resumoHolerite(h), n = P.c.nome.split(' ')[0], partes = [`${n}, este é o seu holerite de ${a.mes}.`, `O salário base é de R$ ${brl(a.salarioBase).replace(/^R\$\s?/, '')}.`];
+  const ext = a.horasExtras50 + a.horasExtras100; if (ext) partes.push(`Você recebeu R$ ${brl(ext).replace(/^R\$\s?/, '')} de horas extras.`);
+  if (a.adicionais) partes.push(`Os adicionais somam R$ ${brl(a.adicionais).replace(/^R\$\s?/, '')}.`);
+  partes.push(`Os descontos somam R$ ${brl(a.totalDescontos).replace(/^R\$\s?/, '')}${a.inss ? `, sendo R$ ${brl(a.inss).replace(/^R\$\s?/, '')} de INSS` : ''}${a.irrf ? ` e R$ ${brl(a.irrf).replace(/^R\$\s?/, '')} de IRRF` : ''}.`);
+  if (a.faltas) partes.push(`Houve desconto de faltas de R$ ${brl(a.faltas + a.dsrPerdidoPorFalta).replace(/^R\$\s?/, '')}.`);
+  partes.push(`O valor líquido que você recebe é de R$ ${brl(a.liquido).replace(/^R\$\s?/, '')}.`, `Além disso, a empresa depositou R$ ${brl(a.fgtsDoMes).replace(/^R\$\s?/, '')} no seu FGTS, que não sai do seu salário.`);
+  return partes.join(' ');
+}
+if (typeof ligarHoleriteIA === 'function') { const _lh = ligarHoleriteIA; ligarHoleriteIA = function (el) { _lh.apply(this, arguments); try { const go2 = $('#hx-go', el); if (!go2 || $('#hx-ou', el)) return;
+  go2.insertAdjacentHTML('beforebegin', '<button class="btn sec" id="hx-ou" aria-label="Ouvir o resumo do holerite">🔊 Ouvir</button>');
+  $('#hx-ou', el).onclick = e => { const h = G('holerites').find(x => x.id === $('#hx-sel', el).value); if (h) falar(resumoFalado(h), e.currentTarget); };
+  const d = el.querySelector('#hx-p .hint'); if (d) d.textContent = 'Ouça o resumo em voz alta ou peça para a IA explicar cada desconto e por que o valor mudou.'; } catch (e) { } }; }
+if (typeof explicarHolerite === 'function') { const _eh = explicarHolerite; explicarHolerite = function (h) { _eh.apply(this, arguments); try { const m = $('#modal-root .modal'), box = m && $('#hx-c', m); if (!box) return;
+  const por = () => $$('.hx-m.assistant', box).forEach(x => { if (x.querySelector('.hx-ou') || x.textContent.trim() === '…') return; const b = document.createElement('button'); b.className = 'btn ghost sm hx-ou'; b.type = 'button'; b.textContent = '🔊 Ouvir'; b.onclick = () => falar(x.textContent.replace('🔊 Ouvir', '').replace('Parar', ''), b); x.appendChild(b); });
+  new MutationObserver(por).observe(box, { childList: true }); por();
+  const ob = new MutationObserver(() => { if (!document.contains(box)) { try { speechSynthesis.cancel(); } catch (e) { } ob.disconnect(); } }); ob.observe(document.body, { childList: true, subtree: true }); } catch (e) { } }; }
+document.head.insertAdjacentHTML('beforeend', '<style>.hx-ou{display:flex;margin-top:6px;padding:2px 8px;min-height:0}.btn.on{background:var(--pri,#1250d4)!important;color:#fff!important}</style>');
+</script>
+
+<script>
+/* =====================================================================
+   LOTE 26 (Portal): ponto sem internet de verdade, vale na tela inicial
+   e holerite comparado com o mês anterior.
+   ===================================================================== */
+
+/* ---------- 1. Ponto sem internet ----------
+   a) os dados ficam guardados no aparelho (cache do Firestore), então o app abre e funciona offline;
+   b) o reconhecimento facial é baixado uma vez, em segundo plano, e fica no aparelho;
+   c) o rosto cadastrado fica guardado no aparelho para conferir sem conexão;
+   d) a batida sem internet já vai para a fila e sobe sozinha quando a conexão volta. */
+(function () {
+  try { if (typeof FB_ON !== 'undefined' && FB_ON && FB.db && typeof FB.db.enablePersistence === 'function') FB.db.enablePersistence({ synchronizeTabs: true }).catch(() => { }); } catch (e) { }
+})();
+const OFF_KEY = () => `nexum:bioOff:${P.t && P.t.id}:${me()}`;
+const offFaceKey = () => `nexum:face:${P.t && P.t.id}:${me()}`;
+function guardarRostoLocal() {
+  try { const f = G('faces').find(x => x.colabId === me()); if (f && f.descs) localStorage.setItem(offFaceKey(), JSON.stringify({ id: f.id, colabId: f.colabId, descs: f.descs, status: f.status, vivo: f.vivo, em: new Date().toISOString() })); } catch (e) { }
+}
+function rostoLocal() { try { return JSON.parse(localStorage.getItem(offFaceKey()) || 'null'); } catch (e) { return null; } }
+function offlinePronto() { try { return !!localStorage.getItem(OFF_KEY()); } catch (e) { return false; } }
+let _prepOff = false;
+function prepararOffline() {
+  if (_prepOff || !P || !P.c || !P.t || typeof BIO === 'undefined') return;
+  const modo = ((P.cfg || {}).bio || {}).modo || 'facial'; if (modo !== 'facial' || semInternet() || navigator.onLine === false) return;
+  _prepOff = true; guardarRostoLocal();
+  const fazer = () => BIO.carregar().then(() => { try { localStorage.setItem(OFF_KEY(), new Date().toISOString()); } catch (e) { } const s = document.getElementById('off-st'); if (s) pintarOffline(s); }).catch(() => { _prepOff = false; });
+  (window.requestIdleCallback || (f => setTimeout(f, 2500)))(fazer, { timeout: 8000 });
+}
+/* sem internet, a lista de rostos vem do aparelho */
+if (typeof Store !== 'undefined' && Store.get) { const _sgOff = Store.get; Store.get = function (t, c) { const r = _sgOff.apply(this, arguments); try { if (c === 'faces' && Array.isArray(r) && P && P.c && P.t && t === P.t.id && !r.some(f => f.colabId === me()) && navigator.onLine === false) { const l = rostoLocal(); if (l) return [...r, l]; } } catch (e) { } return r; }; }
+function pintarOffline(el) {
+  const ok = offlinePronto(), sem = navigator.onLine === false;
+  el.className = 'off-st ' + (ok ? 'ok' : 'pend');
+  el.innerHTML = ok ? `<b>${sem ? 'Você está sem internet.' : 'Pronto para bater o ponto sem internet.'}</b><span>${sem ? 'Pode bater o ponto normalmente: ele fica guardado e é enviado sozinho quando a conexão voltar.' : 'Se a internet cair, o ponto continua funcionando neste celular.'}</span>`
+    : `<b>${sem ? 'Sem internet e o reconhecimento ainda não foi baixado.' : 'Preparando o ponto sem internet…'}</b><span>${sem ? 'Abra o portal uma vez com internet para deixar este celular pronto.' : 'Deixe o portal aberto alguns segundos com internet. Isso só acontece uma vez.'}</span>`;
+}
+if (typeof vPonto === 'function') { const _vpOff = vPonto; vPonto = function (el) { _vpOff.apply(this, arguments); try { const modo = ((P.cfg || {}).bio || {}).modo || 'facial'; if (modo === 'facial' && !$('#off-st', el)) { const d = document.createElement('div'); d.id = 'off-st'; pintarOffline(d); const ref = $('.panel', el); ref ? ref.insertAdjacentElement('afterend', d) : el.prepend(d); } prepararOffline(); } catch (e) { console.warn(e); } }; }
+if (typeof vInicio === 'function') { const _viOff = vInicio; vInicio = function () { const r = _viOff.apply(this, arguments); try { prepararOffline(); } catch (e) { } return r; }; }
+['online', 'offline'].forEach(ev => window.addEventListener(ev, () => { const s = document.getElementById('off-st'); if (s) pintarOffline(s); if (ev === 'online') { _prepOff = false; prepararOffline(); } }));
+
+/* ---------- 2. Vale na tela inicial ---------- */
+function cartaoVale(el) {
+  if (!P || !P.c || $('#vl-c', el) || typeof limiteVale !== 'function') return; const cv = (P.cfg || {}).vale || {}; if (cv.portal === false) return;
+  const lim = limiteVale(); if (lim === null) return;
+  const mes = iso(hoje()).slice(0, 7), ult = G('solic').filter(s => s.colabId === me() && s.tipo === 'adiantamento').sort((a, b) => (b.criadoEm || '').localeCompare(a.criadoEm || ''))[0];
+  const st = ult && (ult.criadoEm || '').slice(0, 7) === mes ? { pendente: ['Pedido de ' + brl(num(ult.dados && ult.dados.valor)) + ' esperando o RH', 'warn'], aprovada: ['Vale de ' + brl(num(ult.dados && ult.dados.valor)) + ' aprovado', 'ok'], recusada: ['Último pedido não foi aprovado', 'bad'] }[ult.status] : null;
+  const sec = document.createElement('section'); sec.className = 'panel vl-c'; sec.id = 'vl-c';
+  sec.innerHTML = `<div class="vl-l"><span class="vl-t">Vale disponível neste mês</span><b class="vl-v">${brl(lim)}</b>${st ? `<span class="pill ${st[1]}">${esc(st[0])}</span>` : '<span class="hint">O valor pedido é descontado no seu próximo salário.</span>'}</div><button class="btn" id="vl-b" ${lim > 0 ? '' : 'disabled'}>${lim > 0 ? 'Pedir vale' : 'Limite usado'}</button>`;
+  const ref = $('.panel', el); ref ? ref.insertAdjacentElement('afterend', sec) : el.appendChild(sec);
+  const b = $('#vl-b', sec); if (b) b.onclick = () => { go('solic'); setTimeout(() => { try { formSolic($('#view'), 'adiantamento'); } catch (e) { } }, 80); };
+}
+if (typeof vInicio === 'function') { const _viVl = vInicio; vInicio = function (el) { const r = _viVl.apply(this, arguments); try { if (!(P.c && P.c.status === 'admissao')) cartaoVale(el); } catch (e) { console.warn(e); } return r; }; }
+
+/* ---------- 3. Holerite comparado com o mês anterior ---------- */
+function linhasHol(h) {
+  const i = h.item || {}, k = folhaItem(i), n = v => Math.round((+v || 0) * 100) / 100;
+  const outrosDesc = n((+i.desc || 0) + (+i.descExtra || 0) + (+i.pensao || 0) + (+i.contrib || 0));
+  return [['Salário base', n(i.sal), 'p'], ['Horas extras, adicionais e comissões', n(k.bruto - (+i.sal || 0)), 'p'], ['Total de ganhos', n(k.bruto), 'pt'],
+    ['INSS', n(k.inss), 'd'], ['Imposto de renda (IRRF)', n(k.irrf), 'd'], ['Vale e adiantamentos', n(i.adiant), 'd'], ['Benefícios descontados', n(i.benDesc), 'd'], ['Outros descontos', outrosDesc, 'd'],
+    ['Líquido a receber', n(k.liq), 'l'], ['FGTS depositado pela empresa', n(k.fgts), 'f']];
+}
+const mesCurto = c => { const [a, m] = c.split('-'); return ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'][+m - 1] + '/' + a.slice(2); };
+function painelComparar(el) {
+  if ($('#hc-p', el)) return; const hs = G('holerites').filter(h => h.colabId === me()).sort((a, b) => b.comp.localeCompare(a.comp)); if (hs.length < 1) return;
+  const sec = document.createElement('section'); sec.className = 'panel'; sec.id = 'hc-p';
+  const opc = hs.map(h => [h.comp, mesNome(h.comp)]);
+  sec.innerHTML = `<h2 style="margin:0 0 4px">Comparar com o mês anterior</h2><p class="hint" style="margin:0 0 10px">Veja o que mudou no seu holerite, linha por linha.</p><select class="inp" id="hc-m" style="width:auto">${opts(opc, hs[0].comp)}</select><div id="hc-t" style="margin-top:12px"></div>`;
+  el.appendChild(sec);
+  const pinta = () => {
+    const comp = $('#hc-m', sec).value, a = hs.find(h => h.comp === comp), i = hs.indexOf(a), b = hs[i + 1], t = $('#hc-t', sec);
+    if (!b) { t.innerHTML = `<p class="hint">Não há holerite anterior a ${mesNome(comp)} para comparar.</p>`; return; }
+    const la = linhasHol(a), lb = linhasHol(b), linhas = la.map((x, j) => [x[0], lb[j][1], x[1], x[2]]).filter(x => x[1] || x[2]);
+    const seta = (d, tipo) => { if (Math.abs(d) < 0.01) return '<span class="hc-z">igual</span>'; const bom = tipo === 'd' ? d < 0 : d > 0; return `<span class="${bom ? 'hc-b' : 'hc-r'}">${d > 0 ? '+' : '−'}${nb(Math.abs(d))}</span>`; }, nb = v => (+v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const dl = la[8][1] - lb[8][1], imp = linhas.filter(x => ['p', 'd'].includes(x[3])).map(x => { const d = x[2] - x[1]; return [x[0], d, x[3] === 'd' ? -d : d]; }).filter(x => Math.abs(x[1]) >= 0.01 && Math.sign(x[2]) === Math.sign(dl)).sort((p, q) => Math.abs(q[2]) - Math.abs(p[2])), maior = imp[0];
+    const frase = Math.abs(dl) < 0.01 ? 'Seu líquido ficou igual ao do mês anterior.' : `Seu líquido ${dl > 0 ? 'subiu' : 'caiu'} ${brl(Math.abs(dl))}${maior ? `, principalmente porque o valor de <b>${esc(maior[0].toLowerCase())}</b> ${maior[1] > 0 ? 'subiu' : 'caiu'} ${brl(Math.abs(maior[1]))}` : ''}.`;
+    t.innerHTML = `<p class="hc-frase">${frase}</p><p class="hint" style="margin:0 0 4px">Valores em reais.</p><div class="hc-wrap"><table class="hc-tb"><thead><tr><th></th><th>${mesCurto(b.comp)}</th><th>${mesCurto(comp)}</th><th>Dif.</th></tr></thead><tbody>${linhas.map(x => `<tr class="${x[3]}"><td>${esc(x[0])}</td><td>${nb(x[1])}</td><td>${nb(x[2])}</td><td>${seta(x[2] - x[1], x[3])}</td></tr>`).join('')}</tbody></table></div>`;
+  };
+  $('#hc-m', sec).onchange = pinta; pinta();
+}
+['vHoleritesV3', 'vHolerites'].forEach(nm => { if (typeof window[nm] === 'function') { const f = window[nm]; window[nm] = function (el) { const r = f.apply(this, arguments); try { painelComparar(el); } catch (e) { console.warn(e); } return r; }; } });
+
+(function () {
+  const st = document.createElement('style');
+  st.textContent = `.off-st{display:grid;gap:2px;border-radius:14px;padding:12px 14px;margin:12px 0;font-size:14px;line-height:1.4}.off-st b{font-size:14.5px}.off-st.ok{background:#E8F7EF;color:#0B5D3B;border:1px solid #BFE6CF}.off-st.pend{background:#FFF7E6;color:#7A4B00;border:1px solid #F5DDB0}
+  .vl-c{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.vl-l{flex:1;min-width:180px;display:grid;gap:3px}.vl-t{font-size:13px;color:var(--mut);font-weight:600}.vl-v{font-size:26px;letter-spacing:-.01em;font-variant-numeric:tabular-nums}.vl-c .pill{justify-self:start}
+  .hc-frase{margin:0 0 10px;font-size:15px;line-height:1.45}.hc-wrap{overflow-x:auto}.hc-tb{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}.hc-tb th{font-size:12px;color:var(--mut);text-align:right;font-weight:600;padding:6px 4px;white-space:nowrap;border-bottom:1px solid var(--line)}.hc-tb th:first-child{text-align:left}
+  .hc-tb td{padding:7px 4px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}.hc-tb td:first-child{text-align:left;white-space:normal;min-width:96px}.hc-tb tr.pt td,.hc-tb tr.l td{font-weight:700}.hc-tb tr.l td{background:var(--bg,#F3F2F7)}.hc-tb tr.f td{color:var(--mut)}
+  .hc-b{color:#0B7A4B;font-weight:700}.hc-r{color:#B42318;font-weight:700}.hc-z{color:var(--mut)}`;
+  document.head.appendChild(st);
+})();
+</script>
 </body>
 </html>
