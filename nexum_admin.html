@@ -756,10 +756,11 @@ const LINKS_NX = [
   ['Sistema do RH', 'https://rh.nexumdp.com.br/'], ['Portal do Colaborador', 'https://rh.nexumdp.com.br/nexum_portal.html'], ['Recrutamento e Seleção', 'https://recrutamento.nexumdp.com.br/'],
   ['Site de vendas', 'https://vendas.nexumdp.com.br/'], ['Planos e preços', 'https://vendas.nexumdp.com.br/#planos'], ['Seleção terceirizada', 'https://vendas.nexumdp.com.br/#selecao'],
   ['Demonstração sem cadastro', 'https://rh.nexumdp.com.br/#demo'], ['Guia trabalhista', 'https://vendas.nexumdp.com.br/blog.html'],
+  ['Treinamento em vídeo (guia e videoaulas)', 'https://nexumrh.github.io/treinamento/'], ['Agendar demonstração', 'https://vendas.nexumdp.com.br/demo.html'], ['Status do sistema', 'https://rh.nexumdp.com.br/status.html'], ['Guia de reunião (slides)', 'https://rh.nexumdp.com.br/guia.html'],
   ['Contrato de prestação de serviços', 'https://rh.nexumdp.com.br/contrato.html'], ['Termos de uso', 'https://rh.nexumdp.com.br/termos.html'], ['Política de privacidade', 'https://rh.nexumdp.com.br/privacidade.html'],
   ['Painel do Dono', 'https://adm.nexumdp.com.br/'], ['Portal da Equipe NEXUM', 'https://adm.nexumdp.com.br/equipe.html'], ['Firebase do NEXUM RH', 'https://console.firebase.google.com/project/nexum-30044/overview'], ['Firebase do Recrutamento', 'https://console.firebase.google.com/project/recrutamento-bed5d/overview']
 ];
-const LINKS_CLIENTE = 11; /* os 11 primeiros podem ser mandados ao cliente; os outros são internos */
+const LINKS_CLIENTE = 15; /* os 15 primeiros podem ser mandados ao cliente; os outros são internos */
 const RESP_GRUPOS = [
   ['Atendimento', [
     ['Saudação', 'Olá, {nome}! Aqui é do suporte NEXUM. Já estou vendo o seu atendimento.'],
@@ -2641,6 +2642,18 @@ if (typeof vNum === 'function') { const _vnPv = vNum; vNum = async function (el)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 <script>
 /* =====================================================================
    TREINAMENTO DOS CLIENTES: quem já assistiu todas as videoaulas,
@@ -2961,6 +2974,33 @@ if (typeof vTrein === 'function') { const _vtTC = vTrein; vTrein = async functio
   if (V) { A.view = v; $$('.side .nav button[data-v]').forEach(b => b.classList.toggle('on', b.dataset.v === v)); $('#side').classList.remove('open'); $('#t-view').textContent = V[1]; const el = $('#view'); el.innerHTML = ''; V[0](el); $('.content').scrollTop = 0; return; }
   return _goL28(v, ms); }; }
 setTimeout(() => { try { if (A.user && document.getElementById('view') && !document.querySelector('.side .nav button[data-v="indic"]')) renderApp(); } catch (e) { } }, 0);
+
+/* ---------- Suporte: mandar aulas em vídeo e convite da reunião ao vivo direto do atendimento ---------- */
+function supTokenAula() { const a = new Uint8Array(18), c = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789'; crypto.getRandomValues(a); return Array.from(a, x => c[x % c.length]).join(''); }
+if (typeof supChat === 'function') { const _scL28 = supChat; supChat = function (prot) {
+  const r = _scL28.apply(this, arguments);
+  setTimeout(() => { try {
+    const m = $('.modal'), env = m && $('#sc-env', m); if (!env || $('#sc-aula', m)) return; const x = (A.sup || []).find(y => y.protocolo === prot) || {};
+    const ins = tx => { const t = $('#sc-t', m); t.value = (t.value.trim() ? t.value.trim() + '\n' : '') + tx; t.focus(); };
+    const box = document.createElement('div'); box.className = 'row'; box.style.cssText = 'gap:6px;margin-top:8px;flex-wrap:wrap';
+    box.innerHTML = '<button type="button" class="btn ghost sm" id="sc-aula">Aulas em vídeo</button><button type="button" class="btn ghost sm" id="sc-reun">Convite da reunião ao vivo</button>';
+    env.closest('.row').after(box);
+    $('#sc-aula', m).onclick = async () => {
+      const mod = prompt('Quais aulas?\n1 = NEXUM RH completo (o RH assiste dentro do sistema)\n2 = Portal do Colaborador (link para o funcionário)\n3 = Recrutamento e Seleção (link)', '1'); if (!mod) return;
+      if (mod.trim() === '1') return ins('O treinamento em vídeo fica dentro do NEXUM RH, no menu Treinamento. São aulas curtas, com voz explicando cada tela, em ordem. No fim há um quiz e o certificado.');
+      const md = mod.trim() === '3' ? 'rs' : 'portal', nome = prompt('Nome de quem vai assistir:', md === 'rs' ? (x.nome || '') : ''); if (!nome) return;
+      const tk = supTokenAula();
+      try { await FB.db.collection('treinoLinks').doc(tk).set({ mod: md, nome: nome.trim(), empresa: x.empresa || '', tid: x.tid || '', tel: '', conv: prot, canal: 'sistema', criadoEm: new Date().toISOString(), criadoPor: (A.user && A.user.email) || '', ativo: true, feitas: {}, pos: {}, pct: 0, concluido: false, visitas: 0 });
+        ins(`Segue o treinamento em vídeo do ${md === 'rs' ? 'Recrutamento e Seleção' : 'Portal do Colaborador'} para ${nome.trim().split(' ')[0]}:\nhttps://rh.nexumdp.com.br/aula.html?t=${tk}\nSão aulas curtas, com voz; assista até o fim de cada uma para liberar a próxima.`); } catch (e) { toast('Não foi possível gerar o link: ' + (e.code || e.message), true); }
+    };
+    $('#sc-reun', m).onclick = async () => {
+      let rs = []; try { rs = (await FB.db.collection('reunioesTreino').where('status', '==', 'agendada').get()).docs.map(d => ({ id: d.id, ...d.data() })).filter(q => new Date(q.quando).getTime() > Date.now() - 36e5).sort((a, b) => a.quando.localeCompare(b.quando)); } catch (e) { }
+      if (!rs.length) return toast('Nenhuma reunião agendada. Agende em Reuniões de treinamento.', true);
+      const r0 = rs[0]; if (x.tid) { try { await FB.db.doc(`reunioesTreino/${r0.id}`).update({ tids: firebase.firestore.FieldValue.arrayUnion(x.tid) }); } catch (e) { } }
+      ins(reunTexto(r0, x.nome || '', x.empresa || '', x.tid || '').replace(/\*/g, ''));
+    };
+  } catch (e) { console.warn(e); } }, 200);
+  return r; }; }
 </script>
 
 </body>
