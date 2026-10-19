@@ -2623,6 +2623,21 @@ if (typeof vNum === 'function') { const _vnPv = vNum; vNum = async function (el)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <script>
 /* =====================================================================
    TREINAMENTO DOS CLIENTES: quem já assistiu todas as videoaulas,
@@ -2644,7 +2659,7 @@ function treinLinksHTML(quando, pill) {
   return `<section class="panel"><h2 style="margin:0 0 4px">Links de aulas enviados pelo CRM</h2><p class="hint" style="margin:0 0 12px">Cada link mostra só as aulas de um sistema: Portal do Colaborador (para o funcionário) ou Recrutamento e Seleção. Mande pelo botão <b>Aulas</b> na conversa do CRM.</p>
     <ul class="list">${ls.map(l => { const n = Object.keys(l.feitas || {}).length, st = l.concluido ? 'ok' : n > 0 ? 'and' : 'nao';
       return `<li><div class="av">${esc((l.nome || '?').slice(0, 2).toUpperCase())}</div><div class="t" style="flex:1;min-width:0"><div><b>${esc(l.nome || 'Sem nome')}</b> ${l.ativo === false ? '<span class="pill">desativado</span>' : pill[st]}</div>
-        <div>${MOD[l.mod] || l.mod}${l.empresa ? ` · ${esc(l.empresa)}` : ''} · ${n} aula${n === 1 ? '' : 's'} · ${l.pct || 0}%${l.abertoEm ? ` · abriu ${quando(l.abertoEm)}` : ' · ainda não abriu o link'}${l.atualizado && l.abertoEm ? ` · última atividade ${quando(l.atualizado)}` : ''}</div>
+        <div>${MOD[l.mod] || l.mod}${l.empresa ? ` · ${esc(l.empresa)}` : ''} · ${n} aula${n === 1 ? '' : 's'} · ${l.pct || 0}%${l.quiz ? ` · quiz ${l.quiz.acertos}/${l.quiz.total}` : ''}${l.abertoEm ? ` · abriu ${quando(l.abertoEm)}` : ' · ainda não abriu o link'}${l.atualizado && l.abertoEm ? ` · última atividade ${quando(l.atualizado)}` : ''}</div>
         <div class="tr-bar"><i style="width:${l.pct || 0}%"></i></div><div class="hint" style="font-size:12px">Enviado em ${l.criadoEm ? new Date(l.criadoEm).toLocaleDateString('pt-BR') : '?'}${l.criadoPor ? ` por ${esc(l.criadoPor)}` : ''}</div></div>
         ${l.ativo !== false ? `<button class="btn ghost sm" data-tl-off="${esc(l.id)}">Desativar link</button>` : ''}</li>`; }).join('')}</ul></section>`;
 }
@@ -2660,7 +2675,7 @@ async function vTrein(el) {
   if (A.view !== 'trein') return;
   const m = A.treinCache.m, f = A.treinF || 'todos', q = (A.treinQ || '').toLowerCase();
   const linhas = ts.map(t => { const d = m[t.id] || {}, total = d.total || 0, feitas = d.feitas || 0, st = d.concluido ? 'ok' : feitas > 0 ? 'and' : 'nao';
-    const users = Object.values(d.users || {}).map(u => ({ nome: u.nome || u.email || 'usuário', n: Object.keys(u.feitas || {}).length, ultimo: u.ultimo || '' })).sort((a, b) => b.n - a.n);
+    const users = Object.values(d.users || {}).map(u => ({ nome: u.nome || u.email || 'usuário', n: Object.keys(u.feitas || {}).filter(k => !k.startsWith('quiz-')).length, quiz: Object.entries(u.quiz || {}).map(([m, q]) => `${m === 'rh' ? 'RH' : m === 'portal' ? 'Portal' : 'Recrutamento'} ${q.acertos}/${q.total}${q.tentativas > 1 ? ` em ${q.tentativas} tentativas` : ''}`).join(', '), ultimo: u.ultimo || '' })).sort((a, b) => b.n - a.n);
     return { t, d, total, feitas, pct: d.pct || 0, st, users, ultimo: d.atualizado || '' }; });
   const n = k => linhas.filter(l => l.st === k).length;
   const vis = linhas.filter(l => (f === 'todos' || l.st === f) && (!q || (l.t.nome || '').toLowerCase().includes(q))).sort((a, b) => ({ nao: 0, and: 1, ok: 2 }[a.st] - { nao: 0, and: 1, ok: 2 }[b.st]) || b.pct - a.pct || (a.t.nome || '').localeCompare(b.t.nome || ''));
@@ -2676,7 +2691,7 @@ async function vTrein(el) {
     ${vis.length ? `<ul class="list">${vis.map(l => `<li><div class="av">${esc((l.t.nome || '?').slice(0, 2).toUpperCase())}</div><div class="t" style="flex:1;min-width:0"><div><b>${esc(l.t.nome)}</b> ${pill[l.st]}</div>
       <div>${l.total ? `${l.feitas} de ${l.total} aulas · ${l.pct}%` : 'nenhuma aula assistida'}${l.ultimo ? ` · última atividade ${quando(l.ultimo)}` : ''}${l.st === 'and' && l.d.ultimaAula ? ` · parou em “${esc(l.d.ultimaAula)}”` : ''}${l.d.concluidoEm ? ` · concluiu em ${new Date(l.d.concluidoEm).toLocaleDateString('pt-BR')}` : ''}</div>
       ${l.total ? `<div class="tr-bar"><i style="width:${l.pct}%"></i></div>` : ''}
-      ${l.users.length ? `<div class="hint" style="font-size:12px">${l.users.map(u => `${esc(u.nome)}: ${u.n} aula${u.n === 1 ? '' : 's'}`).join(' · ')}</div>` : ''}</div>${l.st !== 'ok' ? wa(l) : ''}</li>`).join('')}</ul>` : '<div class="empty">Nenhuma empresa neste filtro.</div>'}</section>${treinDuvidasHTML()}${treinLinksHTML(quando, pill)}`;
+      ${l.users.length ? `<div class="hint" style="font-size:12px">${l.users.map(u => `${esc(u.nome)}: ${u.n} aula${u.n === 1 ? '' : 's'}${u.quiz ? ` · quiz ${esc(u.quiz)}` : ''}`).join(' · ')}</div>` : ''}</div>${l.st !== 'ok' ? wa(l) : ''}</li>`).join('')}</ul>` : '<div class="empty">Nenhuma empresa neste filtro.</div>'}</section>${treinDuvidasHTML()}${treinLinksHTML(quando, pill)}`;
   $$('[data-tdv]', el).forEach(b => b.onclick = async () => { const k = b.dataset.tdv, t = $(`[data-tdvt="${k}"]`, el).value.trim(); if (!t) return toast('Escreva a resposta.', true); b.disabled = true;
     try { await FB.db.doc(`treinoLinks/${k.split('/')[0]}/duvidas/${k.split('/')[1]}`).update({ resposta: t, respondidoPor: 'Equipe NEXUM', respondidoEm: new Date().toISOString() }); toast('Resposta enviada. A pessoa vê no link das aulas.'); A.treinCache = null; vTrein(el); } catch (e) { b.disabled = false; toast('Não foi possível responder: ' + (e.code || e.message), true); } });
   $$('[data-tl-off]', el).forEach(b => b.onclick = async () => { try { await FB.db.doc(`treinoLinks/${b.dataset.tlOff}`).update({ ativo: false }); A.treinCache = null; vTrein(el); } catch (e) { toast('Não foi possível desativar: ' + (e.code || e.message), true); } });
@@ -2688,6 +2703,248 @@ async function vTrein(el) {
 (function () { const st = document.createElement('style'); st.textContent = `.tr-bar{height:6px;border-radius:99px;background:var(--line,#e3e8f0);overflow:hidden;margin:6px 0 4px;max-width:360px}.tr-bar i{display:block;height:100%;background:linear-gradient(90deg,#1f5eff,#f26a1b)}
   button.kpi.tr-k{cursor:pointer;text-align:left;font:inherit;color:inherit;border:0;border-radius:0}button.kpi.tr-k:hover{background:var(--bg,#f4f6fa)}button.kpi.tr-k.on{box-shadow:inset 0 -3px 0 #1f5eff}`; document.head.appendChild(st); })();
 setTimeout(() => { try { if (A.user && document.getElementById('view') && !document.querySelector('.side .nav button[data-v="trein"]')) renderApp(); } catch (e) { } }, 0);
+</script>
+
+<script>
+/* =====================================================================
+   REUNIÕES DE TREINAMENTO AO VIVO (Google Meet)
+   A NEXUM agenda, manda o convite (rh.nexumdp.com.br/reuniao.html?r=...)
+   e, na hora, apresenta com o guia atrás, o roteiro e a lista de presença.
+   ===================================================================== */
+const REUN_URL = 'https://rh.nexumdp.com.br/reuniao.html?r=', GUIA_URL = 'https://rh.nexumdp.com.br/guia.html';
+const REUN_PAUTA = ['Boas-vindas e apresentação da equipe NEXUM', 'Primeiro acesso, menu e Painel inicial', 'Cadastrar funcionários (um por um ou pela planilha)', 'Escalas, lojas e ponto pelo rosto', 'Liberar o Portal do Colaborador para a equipe', 'Banco de horas, atestados e férias', 'Fechar a folha e enviar ao contador', 'Onde pedir ajuda: suporte, videoaulas e guia', 'Dúvidas'];
+try { ICO.reun = '<rect x="2" y="6" width="14" height="12" rx="2"/><path d="m16 10 6-3v10l-6-3z"/>'; } catch (e) { }
+{ const i = NAV.findIndex(n => n[0] === 'trein'); NAV.splice(i > -1 ? i + 1 : NAV.length, 0, ['reun', 'Reuniões de treinamento']); }
+try { PAPEL_NX.suporte[1].push('reun'); PAPEL_NX.comercial[1].push('reun'); } catch (e) { }
+function reunId() { const a = new Uint8Array(16), c = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789'; crypto.getRandomValues(a); return Array.from(a, x => c[x % c.length]).join(''); }
+const reunQuando = s => { const d = new Date(s); return d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' }) + ' às ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' }); };
+async function reunCarregar() {
+  const s = await FB.db.collection('reunioesTreino').get(); A.reun = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.quando || '').localeCompare(b.quando || ''));
+  A.reunPres = {}; await Promise.all(A.reun.map(r => FB.db.collection(`reunioesTreino/${r.id}/presenca`).get().then(p => { A.reunPres[r.id] = p.docs.map(d => d.data()); }).catch(() => { A.reunPres[r.id] = []; })));
+}
+function reunResumo(r) {
+  const p = A.reunPres[r.id] || [], pessoa = x => (x.nome || '').trim().toLowerCase() + '|' + (x.empresa || '').trim().toLowerCase();
+  const uniq = t => { const m = new Map(); p.filter(x => x.tipo === t).forEach(x => m.set(pessoa(x), x)); return [...m.values()]; };
+  const av = uniq('avaliou'), media = av.length ? av.reduce((s, x) => s + (x.nota || 0), 0) / av.length : 0;
+  return { conf: uniq('confirmou'), entr: uniq('entrou'), av, media };
+}
+async function vReun(el) {
+  el.innerHTML = '<div class="panel"><p class="hint">Carregando as reuniões…</p></div>';
+  try { await reunCarregar(); } catch (e) { el.innerHTML = `<div class="panel empty"><b>Não foi possível ler as reuniões</b><p class="hint">${esc(e.code || e.message)}. Publique o firestore.rules novo.</p></div>`; return; }
+  if (A.view !== 'reun') return;
+  const ag = Date.now(), fut = A.reun.filter(r => r.status !== 'cancelada' && new Date(r.quando).getTime() + (r.duracao || 60) * 60000 > ag - 36e5 && r.status !== 'encerrada'), pas = A.reun.filter(r => !fut.includes(r)).reverse();
+  const card = r => { const s = reunResumo(r), conv = (r.tids || []).map(t => (A.tenants.find(x => x.id === t) || {}).nome).filter(Boolean);
+    return `<li style="align-items:flex-start"><div class="av">${new Date(r.quando).toLocaleDateString('pt-BR', { day: '2-digit', timeZone: 'America/Sao_Paulo' })}</div><div class="t" style="flex:1;min-width:0"><div><b>${esc(r.titulo)}</b> ${r.status === 'cancelada' ? '<span class="pill bad">cancelada</span>' : r.status === 'encerrada' ? '<span class="pill">encerrada</span>' : '<span class="pill ok">agendada</span>'}</div>
+      <div>${reunQuando(r.quando)} · ${r.duracao || 60} min${conv.length ? ` · ${conv.length} empresa(s): ${esc(conv.slice(0, 3).join(', '))}${conv.length > 3 ? '…' : ''}` : ''}</div>
+      <div class="hint">${s.conf.length} confirmaram · ${s.entr.length} entraram${s.av.length ? ` · nota ${s.media.toFixed(1)} de 5 (${s.av.length})` : ''}${r.meet ? '' : ' · <b style="color:var(--bad,#c62d46)">falta o link do Meet</b>'}</div></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${r.status === 'agendada' ? `<button class="btn sm" data-rap="${r.id}">Apresentar</button><button class="btn ghost sm" data-rcp="${r.id}">Copiar convite</button><button class="btn ghost sm" data-rwa="${r.id}">Mandar no WhatsApp</button>` : ''}<button class="btn ghost sm" data-rvr="${r.id}">Presença</button>${r.status === 'agendada' ? `<button class="btn ghost sm" data-red="${r.id}">Editar</button>` : ''}</div></li>`; };
+  el.innerHTML = `<section class="panel"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px"><h2 style="margin:0;flex:1">Reuniões de treinamento ao vivo</h2><button class="btn" id="rn-nova">Agendar reunião</button></div>
+      <p class="hint" style="margin:0 0 12px">Agende pelo Google Meet e mande o convite para o RH ou para os clientes novos. O convite tem data, hora, botão para a agenda, confirmação de presença e o botão de entrar, que libera 10 minutos antes. No fim, quem participou avalia o treinamento.</p>
+      ${fut.length ? `<ul class="list">${fut.map(card).join('')}</ul>` : '<div class="empty">Nenhuma reunião agendada.</div>'}</section>
+    ${pas.length ? `<section class="panel"><h2 style="margin:0 0 10px">Reuniões anteriores</h2><ul class="list">${pas.slice(0, 20).map(card).join('')}</ul></section>` : ''}`;
+  $('#rn-nova', el).onclick = () => reunEditar(null, el);
+  const R = id => A.reun.find(x => x.id === id);
+  $$('[data-red]', el).forEach(b => b.onclick = () => reunEditar(R(b.dataset.red), el));
+  $$('[data-rcp]', el).forEach(b => b.onclick = () => { const r = R(b.dataset.rcp); navigator.clipboard.writeText(reunTexto(r, '', '')).then(() => toast('Convite copiado. Cole no WhatsApp ou no e-mail.')).catch(() => toast(REUN_URL + r.id)); });
+  $$('[data-rwa]', el).forEach(b => b.onclick = () => reunMandarWa(R(b.dataset.rwa)));
+  $$('[data-rvr]', el).forEach(b => b.onclick = () => reunPresenca(R(b.dataset.rvr)));
+  $$('[data-rap]', el).forEach(b => b.onclick = () => reunApresentar(R(b.dataset.rap)));
+}
+function reunTexto(r, nome, empresa, tid) {
+  const q = (nome ? `&n=${encodeURIComponent(nome)}` : '') + (empresa ? `&e=${encodeURIComponent(empresa)}` : '') + (tid ? `&t=${encodeURIComponent(tid)}` : '');
+  return `Olá${nome ? ', ' + nome.split(' ')[0] : ''}! Você está convidado(a) para o *${r.titulo}*.\n📅 ${reunQuando(r.quando)} (horário de Brasília), pelo Google Meet.\n\nConfirme a presença e entre pelo convite:\n${REUN_URL}${r.id}${q}\n\nO botão de entrar libera 10 minutos antes.`;
+}
+function reunMandarWa(r) {
+  const ts = (r.tids || []).map(t => A.tenants.find(x => x.id === t)).filter(Boolean);
+  modal('Mandar o convite no WhatsApp', ts.length ? `<p class="hint" style="margin-top:0">Abre o WhatsApp com a mensagem pronta para cada empresa convidada. Para mandar pelo CRM (fica no histórico), use o botão <b>Reunião</b> na conversa.</p><ul class="list">${ts.map(t => { const tel = String(t.telefone || '').replace(/\D/g, '');
+      return `<li><div class="t" style="flex:1"><div><b>${esc(t.nome)}</b></div><div>${tel ? esc(t.telefone) : 'sem telefone cadastrado'}</div></div>${tel.length >= 10 ? `<a class="btn sm" target="_blank" rel="noopener" href="https://wa.me/${tel.length <= 11 ? '55' : ''}${tel}?text=${encodeURIComponent(reunTexto(r, '', t.nome, t.id))}">Abrir WhatsApp</a>` : ''}</li>`; }).join('')}</ul>`
+    : '<p>Nenhuma empresa marcada nesta reunião. Use <b>Copiar convite</b> ou o botão <b>Reunião</b> no CRM.</p>', { foot: '<button class="btn sec" data-close>Fechar</button>' });
+}
+function reunEditar(r, el) {
+  const novo = !r, d = r ? new Date(r.quando) : new Date(Date.now() + 864e5), loc = new Date(d.getTime() - 3 * 36e5).toISOString();
+  const ts = (A.tenants || []).filter(t => !t.bloqueado).slice().sort((a, b) => (b.criadoEm || '').localeCompare(a.criadoEm || ''));
+  const sel = new Set(r ? r.tids || [] : []);
+  modal(novo ? 'Agendar reunião de treinamento' : 'Editar reunião', `<div class="fld"><label for="rn-t">Título</label><input class="inp" id="rn-t" value="${esc(r ? r.titulo : 'Treinamento NEXUM RH')}"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px"><div class="fld"><label for="rn-d">Dia</label><input class="inp" type="date" id="rn-d" value="${loc.slice(0, 10)}"></div><div class="fld"><label for="rn-h">Hora (Brasília)</label><input class="inp" type="time" id="rn-h" value="${r ? loc.slice(11, 16) : '14:00'}"></div>
+      <div class="fld"><label for="rn-du">Duração</label><select class="inp" id="rn-du">${opts([[30, '30 min'], [45, '45 min'], [60, '1 hora'], [90, '1h30'], [120, '2 horas']], r ? r.duracao : 60)}</select></div></div>
+    <div class="fld"><label for="rn-m">Link do Google Meet</label><div style="display:flex;gap:8px"><input class="inp" id="rn-m" placeholder="https://meet.google.com/abc-defg-hij" value="${esc(r ? r.meet || '' : '')}"><a class="btn sec" href="https://meet.google.com/new" target="_blank" rel="noopener">Criar sala no Meet</a></div>
+      <p class="hint">“Criar sala no Meet” abre uma sala nova na sua conta Google. Copie o endereço que aparece e cole aqui.</p></div>
+    <div class="fld"><label for="rn-ds">Descrição (aparece no convite)</label><input class="inp" id="rn-ds" value="${esc(r ? r.descricao || '' : 'Vamos configurar o sistema juntos e tirar todas as dúvidas. Tenha em mãos a lista de funcionários.')}"></div>
+    <div class="fld"><label for="rn-p">Roteiro (um item por linha)</label><textarea class="inp" id="rn-p" rows="7">${esc((r ? r.pauta : REUN_PAUTA).join('\n'))}</textarea></div>
+    <div class="fld"><label>Empresas convidadas <span class="hint">(o RH delas vê o convite no NEXUM RH)</span></label><input class="inp" id="rn-q" placeholder="Buscar empresa" style="margin-bottom:6px"><div id="rn-ts" style="max-height:200px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:6px 10px">${ts.map(t => `<label style="display:flex;gap:8px;align-items:center;padding:3px 0;font-weight:400" data-tn="${esc((t.nome || '').toLowerCase())}"><input type="checkbox" value="${t.id}" ${sel.has(t.id) ? 'checked' : ''}> ${esc(t.nome)} <span class="hint">${t.trial ? 'em teste' : t.plano || ''}${t.criadoEm ? ' · desde ' + fd(t.criadoEm.slice(0, 10)) : ''}</span></label>`).join('')}</div></div>`,
+    { size: 'lg', foot: `${novo ? '' : '<button class="btn ghost" id="rn-cx" style="margin-right:auto">Cancelar reunião</button>'}<button class="btn sec" data-close>Fechar</button><button class="btn" id="rn-ok">${novo ? 'Agendar' : 'Salvar'}</button>`, onMount: m => {
+      $('#rn-q', m).oninput = e => { const q = e.target.value.toLowerCase(); $$('[data-tn]', m).forEach(l => { l.hidden = q && !l.dataset.tn.includes(q); }); };
+      const cx = $('#rn-cx', m); if (cx) cx.onclick = async () => { await FB.db.doc(`reunioesTreino/${r.id}`).update({ status: 'cancelada' }); closeModal(true); toast('Reunião cancelada. Quem abrir o convite vê o aviso.'); vReun(el); };
+      $('#rn-ok', m).onclick = async () => {
+        const dia = $('#rn-d', m).value, h = $('#rn-h', m).value, meet = $('#rn-m', m).value.trim();
+        if (!dia || !h) return toast('Escolha o dia e a hora.', true);
+        if (meet && !/^https:\/\/(meet\.google\.com|[a-z0-9.-]*zoom\.us|teams\.microsoft\.com|teams\.live\.com)\//i.test(meet)) return toast('Cole o link completo da sala (começa com https://meet.google.com/).', true);
+        const dados = { titulo: $('#rn-t', m).value.trim() || 'Treinamento NEXUM RH', quando: new Date(`${dia}T${h}:00-03:00`).toISOString(), duracao: +$('#rn-du', m).value, meet, descricao: $('#rn-ds', m).value.trim(),
+          pauta: $('#rn-p', m).value.split('\n').map(x => x.trim()).filter(Boolean).slice(0, 30), tids: $$('#rn-ts input:checked', m).map(i => i.value), status: 'agendada', atualizadoEm: new Date().toISOString() };
+        const b = $('#rn-ok', m); b.disabled = true;
+        try { if (novo) await FB.db.doc(`reunioesTreino/${reunId()}`).set({ ...dados, criadoEm: dados.atualizadoEm, criadoPor: A.user.email }); else await FB.db.doc(`reunioesTreino/${r.id}`).update(dados);
+          closeModal(true); toast(novo ? 'Reunião agendada. Agora mande o convite.' : 'Reunião atualizada.'); vReun(el); } catch (e) { b.disabled = false; toast('Não foi possível salvar: ' + (e.code || e.message), true); }
+      };
+    } });
+}
+function reunPresenca(r) {
+  const s = reunResumo(r), conv = (r.tids || []).map(t => A.tenants.find(x => x.id === t)).filter(Boolean), entrouEmp = new Set(s.entr.map(x => x.tid || (x.empresa || '').toLowerCase()));
+  const linha = x => `<li><div class="t" style="flex:1"><div><b>${esc(x.nome || 'Sem nome')}</b>${x.empresa ? ` · ${esc(x.empresa)}` : ''}</div><div>${new Date(x.em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}${x.nota ? ` · nota ${x.nota}/5` : ''}${x.comentario ? ` · “${esc(x.comentario)}”` : ''}</div></div></li>`;
+  modal(`Presença: ${r.titulo}`, `<p class="hint" style="margin-top:0">${reunQuando(r.quando)}</p>
+    ${conv.length ? `<h3 style="font-size:15px;margin:10px 0 6px">Empresas convidadas</h3><ul class="list">${conv.map(t => `<li><div class="t" style="flex:1"><b>${esc(t.nome)}</b></div>${entrouEmp.has(t.id) || entrouEmp.has((t.nome || '').toLowerCase()) ? '<span class="pill ok">participou</span>' : s.conf.some(x => x.tid === t.id) ? '<span class="pill warn">confirmou, não entrou</span>' : '<span class="pill bad">não entrou</span>'}</li>`).join('')}</ul>` : ''}
+    <h3 style="font-size:15px;margin:14px 0 6px">Entraram (${s.entr.length})</h3>${s.entr.length ? `<ul class="list">${s.entr.map(linha).join('')}</ul>` : '<p class="hint">Ninguém entrou ainda.</p>'}
+    <h3 style="font-size:15px;margin:14px 0 6px">Confirmaram (${s.conf.length})</h3>${s.conf.length ? `<ul class="list">${s.conf.map(linha).join('')}</ul>` : '<p class="hint">Ninguém confirmou ainda.</p>'}
+    <h3 style="font-size:15px;margin:14px 0 6px">Avaliações ${s.av.length ? `(média ${s.media.toFixed(1)} de 5)` : ''}</h3>${s.av.length ? `<ul class="list">${s.av.map(linha).join('')}</ul>` : '<p class="hint">Sem avaliações ainda. O pedido de avaliação aparece no convite quando a reunião termina.</p>'}`,
+    { size: 'lg', foot: '<button class="btn sec" data-close>Fechar</button>' });
+}
+/* modo apresentador: o guia de reunião atrás, o roteiro e a presença ao lado */
+let _reunUn = null;
+function reunApresentar(r) {
+  const ov = document.createElement('div'); ov.id = 'rn-ap'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'Modo apresentador');
+  const feitos = new Set(JSON.parse(localStorage.getItem('nx-rn-' + r.id) || '[]')), ini = Date.now();
+  ov.innerHTML = `<div class="rn-top"><b>${esc(r.titulo)}</b><span id="rn-rel" class="rn-rel">00:00</span><span style="flex:1"></span>${r.meet ? `<a class="btn sm" href="${esc(r.meet)}" target="_blank" rel="noopener">Abrir o Meet</a>` : ''}<button class="btn sec sm" id="rn-gn">Guia em nova aba</button><button class="btn ghost sm" id="rn-enc">Encerrar reunião</button><button class="btn sec sm" id="rn-sai" aria-label="Sair do modo apresentador">Sair</button></div>
+    <div class="rn-corpo"><iframe src="${GUIA_URL}" title="Guia de reunião NEXUM" id="rn-if"></iframe>
+      <aside class="rn-lado"><h3>Roteiro</h3><ol class="rn-pa">${(r.pauta || []).map((p, i) => `<li><label><input type="checkbox" data-pi="${i}" ${feitos.has(i) ? 'checked' : ''}> <span>${esc(p)}</span></label></li>`).join('')}</ol>
+        <h3>Na sala <span class="hint" id="rn-n"></span></h3><ul class="rn-pr" id="rn-pr"><li class="hint">Aguardando…</li></ul>
+        <p class="hint">Quem entra pelo convite aparece aqui. Mostre o guia compartilhando esta aba no Meet (Apresentar agora → Uma guia).</p></aside></div>`;
+  document.body.appendChild(ov); document.body.style.overflow = 'hidden';
+  const rel = setInterval(() => { const s = Math.floor((Date.now() - ini) / 1000); const e = $('#rn-rel'); if (e) e.textContent = `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; }, 1000);
+  $$('[data-pi]', ov).forEach(c => c.onchange = () => { c.checked ? feitos.add(+c.dataset.pi) : feitos.delete(+c.dataset.pi); try { localStorage.setItem('nx-rn-' + r.id, JSON.stringify([...feitos])); } catch (e) { } });
+  if (_reunUn) _reunUn();
+  _reunUn = FB.db.collection(`reunioesTreino/${r.id}/presenca`).onSnapshot(s => { A.reunPres[r.id] = s.docs.map(d => d.data()); const x = reunResumo(r), l = $('#rn-pr'); if (!l) return; $('#rn-n').textContent = `${x.entr.length} entraram · ${x.conf.length} confirmaram`;
+    l.innerHTML = x.entr.length ? x.entr.map(p => `<li><b>${esc(p.nome || 'Sem nome')}</b>${p.empresa ? `<span>${esc(p.empresa)}</span>` : ''}</li>`).join('') : '<li class="hint">Ninguém entrou ainda.</li>'; }, () => { });
+  const sair = () => { clearInterval(rel); if (_reunUn) { _reunUn(); _reunUn = null; } ov.remove(); document.body.style.overflow = ''; document.removeEventListener('keydown', esc1); };
+  const esc1 = e => { if (e.key === 'Escape' && !document.fullscreenElement) sair(); }; document.addEventListener('keydown', esc1);
+  $('#rn-sai').onclick = sair; $('#rn-gn').onclick = () => window.open(GUIA_URL, '_blank', 'noopener');
+  $('#rn-enc').onclick = async () => { if (!confirm('Encerrar a reunião? O convite passa a pedir a avaliação de quem participou.')) return; try { await FB.db.doc(`reunioesTreino/${r.id}`).update({ status: 'encerrada', encerradaEm: new Date().toISOString() }); toast('Reunião encerrada.'); sair(); if (A.view === 'reun') go('reun'); } catch (e) { toast(e.code || e.message, true); } };
+}
+{ const _goRn = go; go = function (v, ms) { if (v === 'reun') { A.view = 'reun'; $$('.side .nav button[data-v]').forEach(b => b.classList.toggle('on', b.dataset.v === 'reun')); $('#side').classList.remove('open'); $('#t-view').textContent = 'Reuniões de treinamento'; const el = $('#view'); el.innerHTML = ''; vReun(el); $('.content').scrollTop = 0; return; } return _goRn(v, ms); }; }
+(function () { const st = document.createElement('style'); st.textContent = `
+  #rn-ap{position:fixed;inset:0;z-index:9000;background:var(--bg,#f4f6fa);display:flex;flex-direction:column}
+  .rn-top{display:flex;gap:8px;align-items:center;padding:10px 14px;background:#0b1f3a;color:#fff;flex-wrap:wrap}.rn-top .btn.sec,.rn-top .btn.ghost{color:#fff!important;background:transparent!important;border:1px solid rgba(255,255,255,.35)!important}
+  .rn-rel{font-variant-numeric:tabular-nums;background:rgba(255,255,255,.12);border-radius:8px;padding:3px 8px;font-size:13px}
+  .rn-corpo{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 320px;min-height:0}.rn-corpo iframe{width:100%;height:100%;border:0;background:#fff}
+  .rn-lado{border-left:1px solid var(--line,#e3e8f0);padding:14px;overflow:auto;background:var(--card,#fff)}.rn-lado h3{font-size:15px;margin:4px 0 8px}
+  .rn-pa{padding-left:18px;margin:0 0 16px}.rn-pa li{margin:4px 0}.rn-pa label{display:flex;gap:6px;align-items:flex-start;font-weight:400;cursor:pointer}.rn-pa input:checked+span{text-decoration:line-through;opacity:.6}
+  .rn-pr{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:6px}.rn-pr li{display:grid;padding:6px 8px;border:1px solid var(--line,#e3e8f0);border-radius:8px;font-size:14px}.rn-pr span{font-size:12px;color:var(--mut,#6b7a90)}
+  @media (max-width:860px){.rn-corpo{grid-template-columns:1fr;grid-template-rows:1fr 220px}.rn-lado{border-left:0;border-top:1px solid var(--line,#e3e8f0)}}`; document.head.appendChild(st); })();
+setTimeout(() => { try { if (A.user && document.getElementById('view') && !document.querySelector('.side .nav button[data-v="reun"]')) renderApp(); } catch (e) { } }, 0);
+</script>
+
+<script>
+/* =====================================================================
+   LOTE 28 (Painel do Dono): indicações (indique e ganhe), página pública
+   de status, demonstrações agendadas pelo site e treinamento x cancelamento.
+   ===================================================================== */
+const DEMO_URL = 'https://vendas.nexumdp.com.br/demo.html', STATUS_URL = 'https://rh.nexumdp.com.br/status.html';
+try { ICO.indic = '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/>'; ICO.stat = '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>'; ICO.demo = '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 15l2 2 4-4"/>'; } catch (e) { }
+{ const i = NAV.findIndex(n => n[0] === 'reun'); NAV.splice(i > -1 ? i + 1 : NAV.length, 0, ['demo', 'Demonstrações agendadas']);
+  const j = NAV.findIndex(n => n[0] === 'leads'); NAV.splice(j > -1 ? j + 1 : NAV.length, 0, ['indic', 'Indicações']);
+  const k = NAV.findIndex(n => n[0] === 'plat'); NAV.splice(k > -1 ? k : NAV.length, 0, ['stat', 'Página de status']); }
+try { PAPEL_NX.comercial[1].push('demo', 'indic'); PAPEL_NX.suporte[1].push('demo', 'stat'); } catch (e) { }
+/* o cadastro da empresa guarda quem indicou */
+if (typeof tenantDe === 'function') { const _tdI = tenantDe; tenantDe = function (d) { const t = _tdI.apply(this, arguments); try { const x = d.data(); t.indicadoPor = x.indicadoPor || ''; t.indicGanhos = x.indicGanhos || 0; t.indicBonusEm = x.indicBonusEm || ''; } catch (e) { } return t; }; }
+
+/* ---------- Indicações ---------- */
+async function vIndic(el) {
+  el.innerHTML = '<div class="panel"><p class="hint">Carregando…</p></div>';
+  let leads = A.leads; if (!leads) { try { leads = (await FB.db.collection('leads').get()).docs.map(d => ({ id: d.id, ...d.data() })); } catch (e) { leads = []; } }
+  if (A.view !== 'indic') return;
+  const ts = A.tenants || [], nomeT = id => (ts.find(t => t.id === id) || {}).nome || id, preco = t => ((PLANOS[t.plano] || {}).preco || 0) + (t.recrutamento ? 289 : 0);
+  const indT = ts.filter(t => t.indicadoPor), indL = (leads || []).filter(l => l.indicadoPor && !ts.some(t => t.indicadoPor === l.indicadoPor && String(t.telefone || '').slice(-8) === String(l.whatsapp || '').slice(-8)));
+  const clientes = indT.filter(t => !t.trial && !t.bloqueado), receita = clientes.reduce((s, t) => s + preco(t), 0), meses = ts.reduce((s, t) => s + (t.indicGanhos || 0), 0);
+  const quem = {}; [...indT.map(t => t.indicadoPor), ...indL.map(l => l.indicadoPor)].forEach(id => quem[id] = (quem[id] || 0) + 1);
+  const kpi = (v, t) => `<div class="kpi"><b>${v}</b><span>${t}</span></div>`;
+  el.innerHTML = `<section class="panel"><h2 style="margin:0 0 4px">Indique e ganhe</h2><p class="hint" style="margin:0 0 12px">Cada cliente tem um link de indicação no painel do NEXUM RH. Quem chega por ele fica marcado aqui. Quando a empresa indicada vira cliente pagante, dê o mês grátis para quem indicou.</p>
+      <div class="kpis">${kpi(indT.length + indL.length, 'indicações')}${kpi(clientes.length, 'viraram clientes')}${kpi(brl(receita) + '/mês', 'receita das indicadas')}${kpi(meses, 'meses grátis dados')}</div></section>
+    <section class="panel"><h2 style="margin:0 0 10px">Empresas indicadas</h2>${indT.length ? `<ul class="list">${indT.map(t => { const s = situacao(t), pode = !t.trial && !t.bloqueado && !t.indicBonusEm;
+      return `<li><div class="av">${esc((t.nome || '?').slice(0, 2).toUpperCase())}</div><div class="t" style="flex:1"><div><b>${esc(t.nome)}</b> <span class="pill ${s.k === 'ativo' ? 'ok' : s.k === 'teste' ? 'warn' : 'bad'}">${esc(s.k === 'teste' ? 'em teste' : s.k)}</span></div><div>indicada por <b>${esc(nomeT(t.indicadoPor))}</b>${t.indicBonusEm ? ` · mês grátis dado em ${fd(t.indicBonusEm.slice(0, 10))}` : ''}</div></div>
+        ${pode ? `<button class="btn sm" data-ib="${t.id}">Dar 1 mês grátis para ${esc(nomeT(t.indicadoPor).split(' ')[0])}</button>` : t.trial ? '<span class="hint">aguardando assinar</span>' : ''}</li>`; }).join('')}</ul>` : '<div class="empty">Nenhuma empresa indicada ainda.</div>'}</section>
+    <section class="panel"><h2 style="margin:0 0 10px">Leads indicados (ainda não viraram empresa)</h2>${indL.length ? `<ul class="list">${indL.map(l => `<li><div class="t" style="flex:1"><div><b>${esc(l.nome)}</b>${l.empresa ? ` · ${esc(l.empresa)}` : ''}</div><div>indicado por <b>${esc(nomeT(l.indicadoPor))}</b> · ${fd(String(l.em || '').slice(0, 10))} · ${esc(l.status || 'novo')}</div></div></li>`).join('')}</ul>` : '<div class="empty">Nenhum lead indicado aguardando.</div>'}</section>
+    <section class="panel"><h2 style="margin:0 0 10px">Quem mais indica</h2>${Object.keys(quem).length ? `<ul class="list">${Object.entries(quem).sort((a, b) => b[1] - a[1]).map(([id, n]) => { const t = ts.find(x => x.id === id) || {}; return `<li><div class="t" style="flex:1"><div><b>${esc(nomeT(id))}</b></div><div>${n} indicação(ões) · ${t.indicGanhos || 0} mês(es) ganho(s)</div></div></li>`; }).join('')}</ul>` : '<div class="empty">Ninguém indicou ainda.</div>'}</section>`;
+  $$('[data-ib]', el).forEach(b => b.onclick = async () => { const ind = ts.find(t => t.id === b.dataset.ib), dono = ts.find(t => t.id === ind.indicadoPor); if (!dono) return toast('A empresa que indicou não existe mais.', true);
+    if (!confirm(`Dar 1 mês grátis para ${dono.nome}? A validade passa de ${fd(dono.expira)} para ${fd(iso(addD(pd(dono.expira), 30)))}.`)) return;
+    try { const nova = addD(dono.expiraDate || pd(dono.expira), 30), b2 = FB.db.batch();
+      b2.update(FB.db.doc(`tenants/${dono.id}`), { expiraTs: firebase.firestore.Timestamp.fromDate(nova), indicGanhos: (dono.indicGanhos || 0) + 1 });
+      b2.update(FB.db.doc(`tenants/${ind.id}`), { indicBonusEm: new Date().toISOString() }); await b2.commit(); toast(`Mês grátis dado para ${dono.nome}.`); } catch (e) { toast('Não foi possível: ' + (e.code || e.message), true); } });
+}
+
+/* ---------- Página pública de status ---------- */
+const STATUS_PARTES = [['rh', 'NEXUM RH'], ['portal', 'Portal do Colaborador'], ['ponto', 'Ponto pelo rosto'], ['rs', 'Recrutamento e Seleção'], ['whats', 'Avisos pelo WhatsApp'], ['pag', 'Pagamentos (Pix e boleto)']];
+const STATUS_EST = { ok: ['Funcionando', 'ok'], lento: ['Lento', 'warn'], fora: ['Fora do ar', 'bad'], manut: ['Em manutenção', 'warn'] };
+async function vStat(el) {
+  let d = {}; try { const s = await FB.db.doc('plataforma/status').get(); d = s.exists ? s.data() : {}; } catch (e) { }
+  if (A.view !== 'stat') return; const p = d.partes || {}, inc = d.incidentes || [];
+  el.innerHTML = `<section class="panel"><div class="row" style="align-items:center;margin-bottom:6px"><h2 style="margin:0;flex:1">Página pública de status</h2><a class="btn sec sm" href="${STATUS_URL}" target="_blank" rel="noopener">Abrir a página</a><button class="btn ghost sm" id="st-cp">Copiar link</button></div>
+      <p class="hint" style="margin:0 0 12px">Os clientes abrem ${esc(STATUS_URL)} para ver se o sistema está funcionando. Quando algo cair, mude aqui e escreva o aviso: diminui as mensagens no suporte.</p>
+      <ul class="list">${STATUS_PARTES.map(([k, n]) => `<li><div class="t" style="flex:1"><b>${n}</b></div><select class="inp" data-sp="${k}" style="width:auto">${Object.entries(STATUS_EST).map(([v, [l]]) => `<option value="${v}" ${(p[k] || 'ok') === v ? 'selected' : ''}>${l}</option>`).join('')}</select></li>`).join('')}</ul>
+      <div class="fld" style="margin-top:12px"><label for="st-m">Aviso no topo da página (deixe vazio quando estiver tudo bem)</label><textarea class="inp" id="st-m" rows="2" placeholder="Ex.: O ponto pelo rosto está lento desde as 9h. Já estamos resolvendo.">${esc(d.aviso || '')}</textarea></div>
+      <div class="row"><span class="sp"></span><button class="btn" id="st-ok">Publicar status</button></div></section>
+    <section class="panel"><h2 style="margin:0 0 10px">Histórico de ocorrências</h2>${inc.length ? `<ul class="list">${inc.slice().reverse().map(x => `<li><div class="t"><div><b>${esc(x.titulo)}</b></div><div>${new Date(x.em).toLocaleString('pt-BR')}${x.resolvidoEm ? ` · resolvido em ${new Date(x.resolvidoEm).toLocaleString('pt-BR')}` : ' · <b>em andamento</b>'}</div></div></li>`).join('')}</ul>` : '<div class="empty">Nenhuma ocorrência registrada.</div>'}</section>`;
+  $('#st-cp', el).onclick = () => navigator.clipboard.writeText(STATUS_URL).then(() => toast('Link copiado.'));
+  $('#st-ok', el).onclick = async () => {
+    const partes = {}; $$('[data-sp]', el).forEach(s => partes[s.dataset.sp] = s.value); const ruim = Object.entries(partes).filter(([, v]) => v !== 'ok'), aviso = $('#st-m', el).value.trim(), agora = new Date().toISOString();
+    let lista = inc.slice(); const aberto = lista.find(x => !x.resolvidoEm);
+    if (ruim.length && !aberto) lista.push({ titulo: aviso || ruim.map(([k, v]) => `${(STATUS_PARTES.find(x => x[0] === k) || [])[1]}: ${STATUS_EST[v][0].toLowerCase()}`).join(', '), em: agora });
+    if (!ruim.length && aberto) aberto.resolvidoEm = agora;
+    try { await FB.db.doc('plataforma/status').set({ partes, aviso, atualizado: agora, incidentes: lista.slice(-30) }); toast('Status publicado.'); vStat(el); } catch (e) { toast('Não foi possível: ' + (e.code || e.message), true); }
+  };
+}
+
+/* ---------- Demonstrações agendadas pelo site ---------- */
+async function vDemo(el) {
+  el.innerHTML = '<div class="panel"><p class="hint">Carregando…</p></div>';
+  let cfg = {}, ds = []; try { const c = await FB.db.doc('plataforma/demoAgenda').get(); cfg = c.exists ? c.data() : {}; } catch (e) { }
+  try { ds = (await FB.db.collection('demos').get()).docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.quando || '').localeCompare(b.quando || '')); } catch (e) { }
+  if (A.view !== 'demo') return;
+  const ag = Date.now(), fut = ds.filter(d => d.status !== 'cancelada' && new Date(d.quando).getTime() > ag - 2 * 36e5), pas = ds.filter(d => !fut.includes(d)).reverse().slice(0, 30), TZ = { timeZone: 'America/Sao_Paulo' };
+  const q = s => { const d = new Date(s); return d.toLocaleDateString('pt-BR', { ...TZ, weekday: 'short', day: '2-digit', month: '2-digit' }) + ' às ' + d.toLocaleTimeString('pt-BR', { ...TZ, hour: '2-digit', minute: '2-digit' }); };
+  const wa = (d, txt) => { const t = String(d.whatsapp || '').replace(/\D/g, ''); return t.length >= 10 ? `https://wa.me/${t.length <= 11 ? '55' : ''}${t}?text=${encodeURIComponent(txt)}` : ''; };
+  const meet = cfg.meet || '';
+  const card = d => { const falta = new Date(d.quando).getTime() - ag, primeiro = String(d.nome || '').split(' ')[0];
+    const conf = wa(d, `Olá, ${primeiro}! Aqui é da NEXUM. Confirmando a sua demonstração do NEXUM RH ${q(d.quando)} (horário de Brasília), pelo Google Meet: ${meet}\nPosso confirmar?`), lemb = wa(d, `Olá, ${primeiro}! Daqui a pouco, ${q(d.quando)}, é a sua demonstração do NEXUM RH. Entre por aqui: ${meet}`), remar = wa(d, `Olá, ${primeiro}! Sentimos sua falta na demonstração do NEXUM RH. Quer marcar outro horário? É só escolher aqui: ${DEMO_URL}`);
+    return `<li style="align-items:flex-start"><div class="t" style="flex:1;min-width:0"><div><b>${esc(d.nome)}</b>${d.empresa ? ` · ${esc(d.empresa)}` : ''} ${d.status === 'feita' ? '<span class="pill ok">aconteceu</span>' : d.status === 'faltou' ? '<span class="pill bad">não apareceu</span>' : d.status === 'cancelada' ? '<span class="pill">cancelada</span>' : falta < 864e5 && falta > 0 ? '<span class="pill warn">em menos de 24 h</span>' : '<span class="pill">agendada</span>'}</div>
+      <div>${q(d.quando)} · ${esc(d.whatsapp || '')}${d.funcionarios ? ` · ${esc(d.funcionarios)} funcionários` : ''}${d.obs ? ` · “${esc(d.obs)}”` : ''}</div></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${!d.status || d.status === 'agendada' ? `${conf ? `<a class="btn ghost sm" target="_blank" rel="noopener" href="${conf}">Confirmar (1 dia antes)</a>` : ''}${lemb ? `<a class="btn ghost sm" target="_blank" rel="noopener" href="${lemb}">Lembrar (1 hora antes)</a>` : ''}${meet ? `<a class="btn sm" target="_blank" rel="noopener" href="${esc(meet)}">Abrir o Meet</a>` : ''}<button class="btn ghost sm" data-df="${d.id}|feita">Aconteceu</button><button class="btn ghost sm" data-df="${d.id}|faltou">Não apareceu</button>` : ''}${d.status === 'faltou' && remar ? `<a class="btn sec sm" target="_blank" rel="noopener" href="${remar}">Remarcar pelo WhatsApp</a>` : ''}</div></li>`; };
+  const dias = cfg.dias || [1, 2, 3, 4, 5], horas = (cfg.horas || ['10:00', '14:00', '16:00']).join(', ');
+  el.innerHTML = `<section class="panel"><div class="row" style="align-items:center;margin-bottom:6px"><h2 style="margin:0;flex:1">Demonstrações agendadas</h2><a class="btn sec sm" href="${DEMO_URL}" target="_blank" rel="noopener">Abrir a página de agendar</a><button class="btn ghost sm" id="dm-cp">Copiar link</button></div>
+      <p class="hint" style="margin:0 0 12px">O lead escolhe o dia e a hora em ${esc(DEMO_URL)} (há um botão no site e o link fica nos Links do CRM). Ele recebe a confirmação com o link da sala e o botão de agenda. Use os botões para confirmar na véspera e lembrar uma hora antes.</p>
+      ${fut.length ? `<ul class="list">${fut.map(card).join('')}</ul>` : '<div class="empty">Nenhuma demonstração marcada.</div>'}</section>
+    <section class="panel"><h2 style="margin:0 0 10px">Horários disponíveis</h2><div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+      <div class="fld"><label>Dias da semana</label><div>${['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((n, i) => `<label style="display:inline-flex;gap:4px;margin-right:8px;font-weight:400"><input type="checkbox" data-dd="${i}" ${dias.includes(i) ? 'checked' : ''}>${n}</label>`).join('')}</div></div>
+      <div class="fld"><label for="dm-h">Horários (separados por vírgula)</label><input class="inp" id="dm-h" value="${esc(horas)}"></div>
+      <div class="fld"><label for="dm-m">Sala fixa do Google Meet</label><input class="inp" id="dm-m" placeholder="https://meet.google.com/..." value="${esc(meet)}"></div>
+      <div class="fld"><label for="dm-du">Duração (min)</label><input class="inp" type="number" id="dm-du" min="15" max="120" value="${cfg.duracao || 30}"></div></div>
+      <div class="row"><span class="sp"></span><button class="btn" id="dm-ok">Salvar horários</button></div></section>
+    ${pas.length ? `<section class="panel"><h2 style="margin:0 0 10px">Anteriores</h2><ul class="list">${pas.map(card).join('')}</ul></section>` : ''}`;
+  $('#dm-cp', el).onclick = () => navigator.clipboard.writeText(DEMO_URL).then(() => toast('Link copiado.'));
+  $('#dm-ok', el).onclick = async () => { const hs = $('#dm-h', el).value.split(',').map(x => x.trim()).filter(x => /^\d{1,2}:\d\d$/.test(x)).map(x => x.padStart(5, '0')), m = $('#dm-m', el).value.trim();
+    if (m && !/^https:\/\/meet\.google\.com\//.test(m)) return toast('Cole o link da sala do Meet (https://meet.google.com/...).', true);
+    try { await FB.db.doc('plataforma/demoAgenda').set({ dias: $$('[data-dd]', el).filter(c => c.checked).map(c => +c.dataset.dd), horas: hs, meet: m, duracao: +$('#dm-du', el).value || 30 }); toast('Horários salvos.'); vDemo(el); } catch (e) { toast(e.code || e.message, true); } };
+  $$('[data-df]', el).forEach(b => b.onclick = async () => { const [id, st] = b.dataset.df.split('|'); try { await FB.db.doc(`demos/${id}`).update({ status: st, statusEm: new Date().toISOString() }); vDemo(el); } catch (e) { toast(e.code || e.message, true); } });
+}
+
+/* ---------- Treinamento x cancelamento ---------- */
+async function painelTreinoCancel(el) {
+  if (!el || $('#tc-p', el) || !A.treinCache) return;
+  let saude = {}, canc = []; try { const s = await FB.db.doc('plataforma/saude').get(); saude = s.exists ? s.data() : {}; } catch (e) { }
+  try { canc = (await FB.db.collection('cancelamentos').get()).docs.map(d => d.data()); } catch (e) { }
+  const esfr = new Set((saude.esfriando || []).map(x => x.tid || x.id || x)), pediu = new Set(canc.map(c => c.tid || c.id)), hj = iso(hoje());
+  const risco = t => pediu.has(t.id) || esfr.has(t.id) || t.bloqueado || (!t.trial && t.expira < hj);
+  const ts = (A.tenants || []).filter(t => !t.trial || t.expira < hj), m = A.treinCache.m, grupo = t => { const d = m[t.id] || {}; return d.concluido ? 'ok' : (d.feitas || 0) > 0 ? 'and' : 'nao'; };
+  const G = { ok: 'Assistiram tudo', and: 'Pararam no meio', nao: 'Não começaram' }, linhas = Object.entries(G).map(([k, n]) => { const l = ts.filter(t => grupo(t) === k), r = l.filter(risco); return { k, n, tot: l.length, r: r.length, pct: l.length ? Math.round(r.length / l.length * 100) : 0 }; });
+  const sec = document.createElement('section'); sec.className = 'panel'; sec.id = 'tc-p';
+  sec.innerHTML = `<h2 style="margin:0 0 4px">Treinamento x cancelamento</h2><p class="hint" style="margin:0 0 12px">Das empresas que já passaram do teste: quantas estão em risco (pediram cancelamento, uso caindo, vencidas ou bloqueadas) em cada grupo do treinamento.</p>
+    <div class="tbl-wrap"><table><thead><tr><th>Grupo</th><th>Empresas</th><th>Em risco</th><th>% em risco</th></tr></thead><tbody>${linhas.map(x => `<tr><td><b>${x.n}</b></td><td>${x.tot}</td><td>${x.r}</td><td><div class="tr-bar" style="max-width:160px;margin:0;display:inline-block;width:100px;vertical-align:middle"><i style="width:${x.pct}%;background:${x.k === 'ok' ? '#16a34a' : '#c62d46'}"></i></div> ${x.pct}%</td></tr>`).join('')}</tbody></table></div>
+    ${linhas[0].tot && linhas[2].tot ? `<p style="margin:10px 0 0"><b>${linhas[2].pct > linhas[0].pct ? `Quem não faz o treinamento tem ${linhas[0].pct ? (linhas[2].pct / linhas[0].pct).toFixed(1).replace('.', ',') + ' vezes' : 'muito'} mais risco de cancelar.` : 'Por enquanto o treinamento não mudou o risco de cancelar.'}</b> Use isso na venda e no suporte: lembre quem não começou.</p>` : '<p class="hint" style="margin:10px 0 0">Ainda há poucas empresas para comparar. O quadro fica mais preciso com o tempo.</p>'}`;
+  el.appendChild(sec);
+}
+if (typeof vTrein === 'function') { const _vtTC = vTrein; vTrein = async function (el) { const r = await _vtTC.apply(this, arguments); try { if (A.papel === 'dono' || !A.papel) await painelTreinoCancel(el); } catch (e) { console.warn(e); } return r; }; }
+
+{ const _goL28 = go; go = function (v, ms) { const V = { indic: [vIndic, 'Indicações'], stat: [vStat, 'Página de status'], demo: [vDemo, 'Demonstrações agendadas'] }[v];
+  if (V) { A.view = v; $$('.side .nav button[data-v]').forEach(b => b.classList.toggle('on', b.dataset.v === v)); $('#side').classList.remove('open'); $('#t-view').textContent = V[1]; const el = $('#view'); el.innerHTML = ''; V[0](el); $('.content').scrollTop = 0; return; }
+  return _goL28(v, ms); }; }
+setTimeout(() => { try { if (A.user && document.getElementById('view') && !document.querySelector('.side .nav button[data-v="indic"]')) renderApp(); } catch (e) { } }, 0);
 </script>
 
 </body>

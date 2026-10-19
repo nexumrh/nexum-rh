@@ -8659,6 +8659,16 @@ setTimeout(() => { try { if (S.tenant && document.getElementById('nav') && !docu
 
 
 
+
+
+
+
+
+
+
+
+
+
 <script>
 /* =====================================================================
    TREINAMENTO EM VIDEOAULAS (RH)
@@ -8675,14 +8685,38 @@ try { if (!NAV.some(n => n[0] === 'curso')) NAV.splice(1, 0, ['curso', 'Treiname
 try { if (typeof ROTAS_PONTO !== 'undefined' && ROTAS_PONTO.add) ROTAS_PONTO.add('curso'); } catch (e) { }
 
 /* aulas que esta empresa precisa assistir, na ordem */
+const CURSO_QUIZ = {
+  rh: [
+    ['Onde você vê, antes de acontecer, que uma hora extra vai passar do limite?', ['No alerta "Vai dar problema se nada for feito", no painel', 'Só no fechamento da folha', 'No portal do funcionário'], 'O alerta antecipado lê o ponto e as escalas e avisa antes da infração. "Resolver" leva à correção.'],
+    ['O que o funcionário usa para entrar no Portal do Colaborador?', ['Código da empresa, CPF e senha', 'Só o e-mail', 'O número do PIS'], 'O RH entrega o código da empresa e a senha. O usuário é o CPF.'],
+    ['O que acontece quando você aprova um ajuste de ponto pedido pelo portal?', ['As marcações são corrigidas e o funcionário recebe a resposta', 'Nada: é preciso lançar tudo à mão', 'O pedido é apagado'], 'Aprovar já corrige o ponto e avisa o funcionário no portal e no celular.'],
+    ['O que fazer antes de fechar a folha do mês?', ['Importar do ponto as horas extras, faltas e atrasos', 'Apagar os holerites do mês anterior', 'Desligar o portal'], 'O botão "Importar do ponto" leva para a folha tudo o que aconteceu no cartão ponto.'],
+    ['Para que serve a escala de domingos e feriados?', ['Dividir de forma justa quem trabalha em cada domingo e feriado', 'Calcular o décimo terceiro', 'Cadastrar os feriados nacionais'], 'Ela monta o rodízio respeitando a lei e o mínimo de pessoas na loja.'],
+  ],
+  portal: [
+    ['Como o funcionário bate o ponto?', ['Em "Registrar ponto", com a câmera e um movimento do rosto', 'Mandando mensagem ao RH', 'Assinando o espelho de ponto'], 'A prova de vida pede um movimento simples para mostrar que é a pessoa ao vivo.'],
+    ['E se o celular estiver sem internet na hora do ponto?', ['A batida fica guardada e é enviada quando a internet volta', 'Não dá para bater o ponto', 'É preciso ligar para o RH'], 'O horário original fica registrado, e o RH vê que foi feita sem internet.'],
+    ['Onde o funcionário entende por que o salário mudou?', ['No holerite, em "Explicar" ou "Comparar com o mês anterior"', 'No banco de horas', 'Na escala'], 'A comparação mostra cada valor dos dois meses lado a lado.'],
+    ['Como trocar uma folga com um colega?', ['Anunciar no mural de trocas; vale depois que o RH aprova', 'Combinar entre os dois sem avisar', 'Pedir férias'], 'A troca combinada no mural só vale depois da aprovação do RH.'],
+  ],
+  rs: [
+    ['Como mudar o candidato de etapa?', ['Arrastando o cartão para a coluna da etapa', 'Criando uma vaga nova', 'Apagando o candidato'], 'Cada coluna do quadro é uma etapa. Ao mudar, o candidato pode ser avisado sozinho.'],
+    ['O que faz a triagem às cegas?', ['Esconde nome, foto e idade para avaliar só pela experiência', 'Reprova todo mundo', 'Mostra só os indicados'], 'Ajuda a avaliar de forma justa, sem preconceito.'],
+    ['Para que serve o banco de talentos?', ['Guardar os candidatos e avisar quando combinam com uma vaga nova', 'Guardar só os contratados', 'Apagar os currículos antigos'], 'Ao criar uma vaga, o sistema mostra quem já passou pela empresa e combina com ela.'],
+    ['Como diminuir as faltas nas entrevistas?', ['Mandar lembrete e pedir confirmação pelo WhatsApp', 'Marcar todas no mesmo horário', 'Não avisar o candidato'], 'Em Entrevistas, "Lembrar no WhatsApp" e "Confirmar no WhatsApp" fazem isso.'],
+  ],
+};
 function cursoAulas() {
   const ess = typeof planoLimitado === 'function' && planoLimitado(), rs = !!(S.tenant && S.tenant.recrutamento);
-  return CURSO_CAT.filter(a => {
+  const l = CURSO_CAT.filter(a => {
     if (a.id === 'rh-essencial') return ess;
     if (a.mod === 'rs') return rs;
     if (a.mod === 'rh' && ess) return CURSO_ESSENCIAL.has(a.id);
     return true;
-  });
+  }), out = [];
+  /* no fim de cada módulo entra o quiz: a próxima parte só libera com todas as respostas certas */
+  l.forEach((a, i) => { out.push(a); if ((!l[i + 1] || l[i + 1].mod !== a.mod) && CURSO_QUIZ[a.mod]) out.push({ id: 'quiz-' + a.mod, mod: a.mod, quiz: true, titulo: 'Quiz: ' + (CURSO_MODS[a.mod] || a.mod), serve: `${CURSO_QUIZ[a.mod].length} perguntas rápidas sobre o que você viu. Acerte todas para concluir esta parte.`, dur: 60 }); });
+  return out;
 }
 const cursoUid = () => (S.user && (S.user.uid || S.user.id || S.user.email)) || 'local';
 const cursoKey = () => `nexum:curso:${S.tenant ? S.tenant.id : 'x'}:${cursoUid()}`;
@@ -8733,13 +8767,15 @@ async function vCurso(el) {
       <p class="hint">${meus >= lista.length ? 'Você assistiu todas as aulas. Pode rever qualquer uma quando quiser.' : `Aulas curtas com a voz explicando cada tela. Elas seguem em ordem: a próxima libera quando a atual termina. Falta${lista.length - meus > 1 ? 'm' : ''} ${lista.length - meus} aula${lista.length - meus > 1 ? 's' : ''} (cerca de ${Math.max(1, Math.round(restante / 60))} min).`}</p>
       <div class="cs-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="Seu progresso"><i style="width:${pct}%"></i></div><div class="cs-num"><b>${meus} de ${lista.length}</b> aulas · ${pct}%</div>
       ${r.porUser.length > 1 ? `<div class="hint" style="margin-top:6px">Na empresa: ${r.porUser.filter(u => u.feitas).map(u => `${esc((u.nome || u.email || 'usuário').split(' ')[0])} ${u.feitas}/${lista.length}`).join(' · ')}</div>` : ''}</div>
-      ${prox ? `<button class="btn" id="cs-go">${meus ? 'Continuar' : 'Começar'}: aula ${lista.indexOf(prox) + 1}</button>` : ''}</section>
+      ${prox ? `<button class="btn" id="cs-go">${meus ? 'Continuar' : 'Começar'}: ${prox.quiz ? 'quiz' : 'aula ' + (lista.indexOf(prox) + 1)}</button>` : '<button class="btn" id="cs-cert">Baixar certificado</button>'}</section>
     ${Object.entries(grupos).map(([m, as]) => `<section class="panel"><h3 class="cs-g">${CURSO_MODS[m] || m} <span class="hint">${as.filter(feito).length} de ${as.length}</span></h3><ol class="cs-l">${as.map(a => { const i = lista.indexOf(a), lib = feito(a) || a === prox, st = feito(a) ? 'ok' : a === prox ? 'agora' : 'bloq';
-      return `<li class="cs-${st}"><button ${lib ? `data-cs="${a.id}"` : 'disabled'} aria-label="Aula ${i + 1}: ${esc(a.titulo)}${lib ? '' : ' (bloqueada)'}"><span class="cs-i">${st === 'ok' ? '✓' : st === 'bloq' ? '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>' : i + 1}</span><span class="cs-t"><b>${esc(a.titulo)}</b><small>${esc(a.serve || '')}</small></span><span class="cs-d">${cursoDur(a.dur)}</span></button></li>`; }).join('')}</ol></section>`).join('')}
+      return `<li class="cs-${st}"><button ${lib ? `data-cs="${a.id}"` : 'disabled'} aria-label="Aula ${i + 1}: ${esc(a.titulo)}${lib ? '' : ' (bloqueada)'}"><span class="cs-i">${st === 'ok' ? '✓' : st === 'bloq' ? '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>' : i + 1}</span><span class="cs-t"><b>${esc(a.titulo)}</b><small>${esc(a.serve || '')}</small></span><span class="cs-d">${a.quiz ? (eu.quiz && eu.quiz[a.mod] ? `${eu.quiz[a.mod].acertos}/${eu.quiz[a.mod].total}` : 'quiz') : cursoDur(a.dur)}</span></button></li>`; }).join('')}</ol></section>`).join('')}
   </div>`;
   const b = $('#cs-go', el); if (b) b.onclick = () => cursoAbrir(prox.id);
+  const ct = $('#cs-cert', el); if (ct) ct.onclick = cursoCertificado;
   $$('[data-cs]', el).forEach(x => x.onclick = () => cursoAbrir(x.dataset.cs));
   cursoDuvidasColab(el).catch(e => console.warn(e));
+  cursoReunioes(el.querySelector('.cs'), 'curso').catch(() => { });
 }
 
 let _cursoProx = null, _cursoCont = null;
@@ -8747,6 +8783,7 @@ function cursoAbrir(id) {
   const lista = cursoAulas(), i = lista.findIndex(a => a.id === id), a = lista[i]; if (!a) return;
   const eu = CURSO.eu; let livre = !!eu.feitas[id];
   if (!livre && lista.slice(0, i).some(x => !eu.feitas[x.id])) { toast('Assista as aulas anteriores primeiro.', true); return; }
+  if (a.quiz) return cursoQuiz(a, i, lista);
   let base = 0, max = livre ? 1e9 : (eu.pos[id] || 0), fim = false; const ultima = i + 1 >= lista.length;
   const parar = () => { clearInterval(_cursoCont); _cursoCont = null; const c = $('#cs-cont'); if (c) c.hidden = true; };
   modal(`Aula ${i + 1} de ${lista.length}: ${a.titulo}`, `<div class="cs-pl"><video id="cs-v" playsinline preload="auto" disablepictureinpicture controlslist="nodownload noplaybackrate"></video>
@@ -8788,6 +8825,46 @@ function cursoAbrir(id) {
   v.play().catch(() => { });
 }
 
+/* quiz do módulo: todas as respostas certas para concluir; errou, vê a explicação e tenta de novo */
+function cursoQuiz(a, i, lista) {
+  const eu = CURSO.eu, Q = CURSO_QUIZ[a.mod], emb = q => q[1].map((t, k) => ({ t, k })).sort(() => Math.random() - 0.5), ultima = i + 1 >= lista.length;
+  let ordem = Q.map(emb);
+  const pinta = () => `<p class="hint" style="margin-top:0">${esc(a.serve)}</p>${Q.map((q, n) => `<fieldset class="cs-q" data-q="${n}"><legend>${n + 1}. ${esc(q[0])}</legend>${ordem[n].map(o => `<label><input type="radio" name="csq${n}" value="${o.k}"> ${esc(o.t)}</label>`).join('')}<p class="cs-qx" hidden></p></fieldset>`).join('')}`;
+  modal(`Quiz: ${CURSO_MODS[a.mod] || a.mod}`, `<div id="cs-qz">${pinta()}</div>`, { size: 'lg', foot: `<button class="btn sec" data-close>Fechar</button><button class="btn" id="cs-qok">Conferir respostas</button>`,
+    onClose: () => { cursoSalvar(true); const pr = _cursoProx; _cursoProx = null; if (pr) setTimeout(() => cursoAbrir(pr), 60); else if (S.view === 'curso') go('curso'); } });
+  const ok = $('#cs-qok');
+  ok.onclick = () => {
+    if (ok.dataset.fase === 'prox') { _cursoProx = !ultima ? lista[i + 1].id : null; closeModal(); return; }
+    if (ok.dataset.fase === 'denovo') { ordem = Q.map(emb); $('#cs-qz').innerHTML = pinta(); ok.dataset.fase = ''; ok.textContent = 'Conferir respostas'; return; }
+    const resp = Q.map((q, n) => { const r = document.querySelector(`input[name="csq${n}"]:checked`); return r ? +r.value : -1; });
+    if (resp.includes(-1)) return toast('Responda todas as perguntas.', true);
+    const certas = resp.filter(r => r === 0).length; eu.quiz = eu.quiz || {}; const ant = eu.quiz[a.mod] || {};
+    eu.quiz[a.mod] = { acertos: certas, total: Q.length, tentativas: (ant.tentativas || 0) + 1, em: new Date().toISOString() };
+    $$('.cs-q').forEach((f, n) => { const x = $('.cs-qx', f); x.hidden = false; const certo = resp[n] === 0; f.classList.toggle('ok', certo); f.classList.toggle('bad', !certo); x.textContent = (certo ? 'Certo. ' : `Resposta certa: ${Q[n][1][0]}. `) + Q[n][2]; f.querySelectorAll('input').forEach(r => r.disabled = true); });
+    if (certas === Q.length) { eu.feitas[a.id] = new Date().toISOString(); eu.ultimaAula = a.id; cursoSalvar(true); ok.dataset.fase = 'prox'; ok.textContent = ultima ? 'Concluir o treinamento' : 'Continuar o treinamento'; toast('Todas certas! Parte concluída.'); }
+    else { cursoSalvar(true); ok.dataset.fase = 'denovo'; ok.textContent = 'Tentar de novo'; toast(`Você acertou ${certas} de ${Q.length}. Veja as explicações e tente de novo.`, true); }
+  };
+}
+
+/* certificado de conclusão: abre pronto para imprimir ou salvar em PDF */
+function certificadoHTML({ nome, empresa, curso, partes, minutos, data, codigo }) {
+  const h = Math.floor(minutos / 60), m = minutos % 60, carga = h ? `${h} hora${h > 1 ? 's' : ''}${m ? ` e ${m} minutos` : ''}` : `${m} minutos`;
+  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Certificado NEXUM · ${esc(nome)}</title><style>@page{size:A4 landscape;margin:0}body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#0b1f3a}
+    .c{width:297mm;height:210mm;box-sizing:border-box;padding:22mm 26mm;position:relative;background:#fff;border:10mm solid #0b1f3a;outline:2mm solid #f26a1b;outline-offset:-14mm}
+    .t{font-size:13px;letter-spacing:.3em;text-transform:uppercase;color:#f26a1b;font-weight:700}h1{font-size:46px;margin:6mm 0 4mm}.n{font-size:34px;font-weight:700;border-bottom:1px solid #c9d3e3;padding-bottom:3mm;margin:6mm 0}
+    p{font-size:17px;line-height:1.55;margin:0 0 3mm}.r{position:absolute;left:26mm;right:26mm;bottom:22mm;display:flex;justify-content:space-between;font-size:13px;color:#4a5a75}.marca{font-weight:800;font-size:22px;color:#0b1f3a}</style></head>
+    <body><div class="c"><div class="t">Certificado de conclusão</div><h1>Treinamento NEXUM</h1><p>Certificamos que</p><div class="n">${esc(nome)}</div>
+    <p>${empresa ? `da empresa <b>${esc(empresa)}</b>, ` : ''}concluiu o treinamento em vídeo <b>${esc(curso)}</b>${partes ? `, com as partes ${esc(partes)}` : ''}, assistindo todas as aulas até o fim e acertando os questionários, com carga de <b>${carga}</b>.</p>
+    <div class="r"><div><span class="marca">NEXUM</span><br>Sistema de RH e Ponto</div><div style="text-align:right">Concluído em ${esc(data)}<br>Código de verificação: ${esc(codigo)}</div></div></div>
+    <script>setTimeout(()=>print(),400)<\/script></body></html>`;
+}
+function abrirCertificado(dados) { const w = window.open('', '_blank'); if (!w) return toast('Libere as janelas do navegador para ver o certificado.', true); w.document.write(certificadoHTML(dados)); w.document.close(); }
+function cursoCertificado() {
+  const lista = cursoAulas(), eu = CURSO.eu, ult = lista.map(a => eu.feitas[a.id]).filter(Boolean).sort().pop() || new Date().toISOString();
+  const mods = [...new Set(lista.map(a => a.mod))].map(m => CURSO_MODS[m] || m);
+  abrirCertificado({ nome: S.user.nome || S.user.email || '', empresa: (S.data.config.empresa || {}).nome || S.tenant.nome || '', curso: 'Sistema NEXUM', partes: mods.join(', '), minutos: Math.max(1, Math.round(lista.reduce((t, a) => t + (a.dur || 0), 0) / 60)), data: new Date(ult).toLocaleDateString('pt-BR'), codigo: `${S.tenant.id}-${String(cursoUid()).slice(0, 6)}`.toUpperCase() });
+}
+
 /* dúvida do RH durante uma aula: vai para a equipe NEXUM (chega no CRM como chat do sistema) */
 function cursoDuvida(a, n) {
   const caixa = document.createElement('div'); caixa.className = 'cs-dvb'; caixa.id = 'cs-dvb';
@@ -8822,6 +8899,21 @@ async function cursoDuvidasColab(el) {
     try { await FB.db.doc(`treinoLinks/${k.split('/')[0]}/duvidas/${k.split('/')[1]}`).update({ resposta: t, respondidoPor: S.user.nome || S.user.email || 'RH', respondidoEm: new Date().toISOString() }); toast('Resposta enviada.'); go('curso'); } catch (e) { b.disabled = false; toast('Não foi possível responder: ' + (e.code || e.message), true); } });
 }
 
+/* treinamento ao vivo (Google Meet) marcado pela NEXUM para esta empresa */
+let _reunCache = null;
+async function cursoReunioes(el, onde) {
+  if (typeof FB_ON === 'undefined' || !FB_ON || !FB.db || !S.tenant || !S.user || S.user.contador || !el || $('#cs-rn', el)) return;
+  if (!_reunCache || _reunCache.tid !== S.tenant.id || Date.now() - _reunCache.em > 300000) {
+    let l = []; try { l = (await FB.db.collection('reunioesTreino').where('tids', 'array-contains', S.tenant.id).get()).docs.map(d => ({ id: d.id, ...d.data() })); } catch (e) { }
+    _reunCache = { tid: S.tenant.id, em: Date.now(), l };
+  }
+  const ag = Date.now(), r = _reunCache.l.filter(x => x.status === 'agendada' && new Date(x.quando).getTime() + (x.duracao || 60) * 60000 > ag).sort((a, b) => a.quando.localeCompare(b.quando))[0];
+  if (!r || (onde === 'dash' && S.view !== 'dash') || (onde === 'curso' && S.view !== 'curso')) return;
+  const d = new Date(r.quando), TZ = { timeZone: 'America/Sao_Paulo' }, url = `https://rh.nexumdp.com.br/reuniao.html?r=${r.id}&n=${encodeURIComponent(S.user.nome || '')}&e=${encodeURIComponent((S.data.config.empresa || {}).nome || S.tenant.nome || '')}&t=${S.tenant.id}`;
+  const box = document.createElement('div'); box.className = 'cs-fx cs-rn'; box.id = 'cs-rn';
+  box.innerHTML = `<div><b>Treinamento ao vivo: ${esc(r.titulo)}</b><span>${d.toLocaleDateString('pt-BR', { ...TZ, weekday: 'long', day: '2-digit', month: 'long' })} às ${d.toLocaleTimeString('pt-BR', { ...TZ, hour: '2-digit', minute: '2-digit' })}, pelo Google Meet. Confirme a presença e entre pelo convite.</span></div><a class="btn sm" href="${url}" target="_blank" rel="noopener">Ver convite</a>`;
+  el.prepend(box);
+}
 /* faixa no Dashboard até o treinamento terminar */
 async function cursoFaixa(el) {
   if (!el || !S.user || S.user.contador || !['admin', 'rh', 'gestor'].includes(S.user.role) || $('#cs-fx', el) || !CURSO_CAT.length) return;
@@ -8841,7 +8933,7 @@ if (typeof go === 'function') {
       }
     } catch (e) { console.warn(e); }
     const r = _goCurso.apply(this, arguments);
-    try { if (S.view === 'dash') cursoFaixa($('#view')); } catch (e) { }
+    try { if (S.view === 'dash') { cursoFaixa($('#view')); cursoReunioes($('#view'), 'dash'); } } catch (e) { }
     return r;
   };
 }
@@ -8863,10 +8955,163 @@ if (typeof go === 'function') {
   .cs-dvb{display:grid;gap:8px;padding:12px;border:1px solid var(--line,#e3e8f0);border-radius:12px}.cs-dvb textarea,.cs-rp textarea{width:100%;font:inherit;border:1px solid var(--line,#e3e8f0);border-radius:10px;padding:8px 10px;background:transparent;color:inherit;resize:vertical}
   .cs-fl{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}.cs-fl li{display:grid;padding:8px 10px;border:1px solid var(--line,#e3e8f0);border-radius:10px;font-size:14px}
   .cs-dl{list-style:none;margin:0;padding:0;display:grid;gap:8px}.cs-dl li{padding:10px 12px;border:1px solid var(--line,#e3e8f0);border-radius:12px}.cs-dl p{margin:6px 0}.cs-resp{color:#15803d}.cs-rp{display:flex;gap:8px;align-items:flex-end}
+  .cs-rn{background:linear-gradient(90deg,#7a2e0b,#f26a1b)}.cs-fx a.btn{background:#fff;color:#0b1f3a}
+  .cs-q{border:1px solid var(--line,#e3e8f0);border-radius:12px;padding:10px 14px;margin:0 0 10px}.cs-q legend{font-weight:600;padding:0 6px}.cs-q label{display:flex;gap:8px;align-items:flex-start;padding:5px 0;cursor:pointer}
+  .cs-q.ok{border-color:#16a34a;background:rgba(22,163,74,.06)}.cs-q.bad{border-color:#c62d46;background:rgba(198,45,70,.06)}.cs-qx{margin:6px 0 0;font-size:13px}
   .cs-fx div{display:grid;gap:2px}.cs-fx span{font-size:13px;opacity:.85}`;
   document.head.appendChild(st);
 })();
 setTimeout(() => { try { if (S.tenant && document.getElementById('nav') && !document.querySelector('.side .nav button[data-v="curso"]') && typeof renderApp === 'function') renderApp(); } catch (e) { } }, 0);
+</script>
+
+<script>
+/* =====================================================================
+   LOTE 28 (RH): treinamentos da própria empresa com vídeo (sem pular),
+   perguntas e ciência; organograma automático; salários e vales por Pix
+   em lote; link de indicação (indique e ganhe).
+   ===================================================================== */
+
+/* ---------- 1. Treinamentos da empresa: vídeo do YouTube ou .mp4, perguntas e ciência ---------- */
+const treinoVideoOk = u => !u || /^https:\/\/(www\.)?(youtube\.com\/(watch\?v=|shorts\/|embed\/)|youtu\.be\/)[\w-]{6,}/i.test(u) || /^https:\/\/\S+\.(mp4|webm)(\?\S*)?$/i.test(u);
+function treinoPergsTexto(q) { return (q || []).map(x => [x.p, ...x.o].join(' | ')).join('\n'); }
+function treinoPergsLer(txt) { return String(txt || '').split('\n').map(l => l.split('|').map(x => x.trim())).filter(x => x.length >= 3 && x.every(Boolean)).slice(0, 8).map(x => ({ p: x[0].slice(0, 200), o: x.slice(1, 5).map(y => y.slice(0, 120)) })); }
+if (typeof vTrein === 'function') vTrein = function (el) {
+  const l = S.data.config.treinamentos || [], ed = podeEditar() && can('admin', 'rh');
+  el.innerHTML = `<div class="row" style="margin-bottom:14px"><span class="hint">Cadastre os treinamentos da sua empresa: regras da loja, atendimento, segurança, LGPD. Com vídeo, o funcionário assiste no portal sem poder adiantar, responde as perguntas e assina que entendeu.</span><span class="sp"></span>${ed ? '<button class="btn" id="tr-n">Novo treinamento</button>' : ''}</div>
+    ${l.length ? l.map(t => { const pub = ativos().filter(c => treinosDe(c).includes(t)), ok = pub.filter(c => treinoFeito(c.id, t.id)), pend = pub.filter(c => !treinoFeito(c.id, t.id)), atr = pend.filter(c => prazoTreino(t, c) && prazoTreino(t, c) < iso(hoje()));
+      return `<section class="panel"><div class="panel-head"><h2>${esc(t.titulo)} ${t.obrigatorio ? '<span class="pill warn">Obrigatório</span>' : ''}${t.video ? ' <span class="pill">vídeo</span>' : ''}${(t.perguntas || []).length ? ` <span class="pill">${t.perguntas.length} pergunta(s)</span>` : ''}</h2><b>${ok.length}/${pub.length}</b></div>
+        <div class="bar"><i class="${pub.length && ok.length === pub.length ? 'done' : ''}" style="width:${pub.length ? Math.round(ok.length / pub.length * 100) : 0}%"></i></div>
+        <p class="hint">${t.cargos ? `Cargos: ${esc(t.cargos)} · ` : 'Todos os funcionários · '}${t.prazoDias ? `prazo de ${t.prazoDias} dias` : 'sem prazo'}${t.ciencia ? ' · pede ciência' : ''}${t.video ? ` · <a href="${esc(t.video)}" target="_blank" rel="noopener">ver o vídeo</a>` : t.link ? ` · <a href="${esc(t.link)}" target="_blank" rel="noopener">abrir link</a>` : ''}</p>
+        ${ok.length ? `<details><summary class="hint" style="cursor:pointer">Quem concluiu (${ok.length})</summary><ul class="list" style="margin-top:6px">${ok.map(c => { const a = treinoFeito(c.id, t.id); return `<li><div class="t"><div><b>${esc(c.nome)}</b></div><div>${new Date(a.em).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}${a.assistiu ? ' · assistiu o vídeo até o fim' : ''}${a.quiz ? ` · acertou ${a.quiz.acertos} de ${a.quiz.total}${a.quiz.tentativas > 1 ? ` (${a.quiz.tentativas} tentativas)` : ''}` : ''}${a.ciente ? ' · assinou a ciência' : ''}</div></div></li>`; }).join('')}</ul></details>` : ''}
+        ${pend.length ? `<p class="hint" style="margin:6px 0 0">Pendentes: ${pend.map(c => `${esc(c.nome.split(' ')[0])}${atr.includes(c) ? ' <span class="pill bad">atrasado</span>' : ''}`).join(', ')}</p>` : ''}
+        ${ed ? `<div class="row" style="margin-top:10px">${pend.length ? `<button class="btn sec sm" data-tl="${t.id}">Lembrar pendentes pelo chat</button>` : ''}<span class="sp"></span><button class="btn ghost sm" data-te="${t.id}">Editar</button><button class="btn ghost sm" data-tx="${t.id}" style="color:var(--bad)">Excluir</button></div>` : ''}</section>`; }).join('')
+      : '<div class="panel empty"><b>Nenhum treinamento cadastrado</b>Cadastre treinamentos obrigatórios, como atendimento, segurança e LGPD. Pode ser um vídeo seu no YouTube.</div>'}`;
+  if (!ed) return;
+  const form = t => modal(t ? 'Editar treinamento' : 'Novo treinamento', `<div class="grid"><div class="fld full"><label for="tn-t">Título</label><input class="inp" id="tn-t" value="${esc(t ? t.titulo : '')}"></div>
+      <div class="fld full"><label for="tn-v">Vídeo da aula (YouTube ou arquivo .mp4)</label><input class="inp" id="tn-v" placeholder="https://youtu.be/..." value="${esc(t ? t.video || '' : '')}"><p class="hint">Grave com o celular e suba no YouTube como <b>Não listado</b>: só quem tem o link vê. O funcionário assiste dentro do portal, sem poder adiantar.</p></div>
+      <div class="fld full"><label for="tn-l">Ou um link de curso externo (ELEVARE, PDF…)</label><input class="inp" id="tn-l" placeholder="https://" value="${esc(t ? t.link || '' : '')}"></div>
+      <div class="fld full"><label for="tn-d">Descrição</label><textarea class="inp" id="tn-d">${esc(t ? t.desc || '' : '')}</textarea></div>
+      <div class="fld full"><label for="tn-q">Perguntas depois do vídeo (opcional)</label><textarea class="inp" id="tn-q" rows="4" placeholder="Uma por linha: pergunta | resposta certa | resposta errada | outra errada">${esc(t ? treinoPergsTexto(t.perguntas) : '')}</textarea><p class="hint">A primeira resposta de cada linha é a certa; no portal elas aparecem embaralhadas. O funcionário precisa acertar todas.</p></div>
+      <div class="fld"><label for="tn-c">Só para os cargos (opcional)</label><input class="inp" id="tn-c" placeholder="Ex.: vendedor, caixa" value="${esc(t ? t.cargos || '' : '')}"></div><div class="fld"><label for="tn-p">Prazo (dias)</label><input class="inp" type="number" min="0" id="tn-p" value="${t ? t.prazoDias || 0 : 15}"></div>
+      <label class="row hint full"><input type="checkbox" id="tn-o" ${!t || t.obrigatorio ? 'checked' : ''}> Obrigatório</label>
+      <label class="row hint full"><input type="checkbox" id="tn-s" ${!t || t.ciencia ? 'checked' : ''}> Pedir ciência no fim ("Assisti, entendi e vou cumprir"), que vale como registro assinado</label></div>`,
+    { size: 'lg', foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="tn-ok">Salvar</button>', onMount: m => $('#tn-ok', m).onclick = () => {
+      const tt = $('#tn-t', m).value.trim(), lk = $('#tn-l', m).value.trim(), vd = $('#tn-v', m).value.trim(), qs = treinoPergsLer($('#tn-q', m).value);
+      if (!tt) return toast('Informe o título.', true); if (lk && !/^https?:\/\//.test(lk)) return toast('O link deve começar com https://', true);
+      if (!treinoVideoOk(vd)) return toast('Use um link do YouTube ou de um arquivo .mp4.', true);
+      if ($('#tn-q', m).value.trim() && !qs.length) return toast('Escreva as perguntas assim: pergunta | certa | errada | errada', true);
+      const d = { titulo: tt, link: lk, video: vd, perguntas: qs, desc: $('#tn-d', m).value.trim(), cargos: $('#tn-c', m).value.trim(), prazoDias: parseInt($('#tn-p', m).value) || 0, obrigatorio: $('#tn-o', m).checked, ciencia: $('#tn-s', m).checked };
+      S.data.config.treinamentos = t ? (S.data.config.treinamentos || []).map(x => x.id === t.id ? { ...x, ...d } : x) : [...(S.data.config.treinamentos || []), { id: uid(), ...d, criado: iso(hoje()) }];
+      save('config'); audit(`${t ? 'Editou' : 'Criou'} o treinamento ${tt}`); closeModal(); vTrein(el); } });
+  $('#tr-n', el).onclick = () => form(null);
+  $$('[data-te]', el).forEach(b => b.onclick = () => form(l.find(x => x.id === b.dataset.te)));
+  $$('[data-tx]', el).forEach(b => b.onclick = () => confirmar('Excluir este treinamento?', () => { S.data.config.treinamentos = (S.data.config.treinamentos || []).filter(t => t.id !== b.dataset.tx); save('config'); vTrein(el); }, 'Excluir', true));
+  $$('[data-tl]', el).forEach(b => b.onclick = () => { const t = l.find(x => x.id === b.dataset.tl), pend = ativos().filter(c => c.portal && treinosDe(c).includes(t) && !treinoFeito(c.id, t.id));
+    pend.forEach(c => S.data.chat.push({ id: uid(), colabId: c.id, de: 'rh', texto: `Olá, ${c.nome.split(' ')[0]}! O treinamento "${t.titulo}" está pendente. Ele fica no portal, em Treinamentos.`, em: new Date().toISOString(), por: S.user.nome, lido: false }));
+    save('chat'); toast(`Lembrete enviado para ${pend.length} pessoa(s).`); });
+};
+
+/* ---------- 2. Salários e vales por Pix em lote ---------- */
+function pixChave(c) {
+  const k = String(c.pix || '').trim(), t = (c.pixTipo || '').toLowerCase(), d = k.replace(/\D/g, '');
+  if (!k) return '';
+  if (t.includes('mail') || k.includes('@')) return k.toLowerCase();
+  if (t.includes('cel') || t.includes('tel') || /^\+/.test(k) || /^\(\d\d\)/.test(k)) return '+55' + d.replace(/^55(?=\d{10,11}$)/, '');
+  if (t.includes('cpf') || t.includes('cnpj') || (/^\d{11}$|^\d{14}$/.test(d) && /^[\d.\-\/ ]+$/.test(k))) return d;
+  return k;
+}
+function pagarPixLote(comp) {
+  const f = S.data.folhas.find(x => !x.tipo && x.comp === comp); if (!f || !(f.itens || []).length) return toast('Gere a folha do mês primeiro.', true);
+  const emp = S.data.config.empresa || {}, cid = emp.cidade || (emp.cidadeUF || '').split('/')[0] || 'BRASIL';
+  const hol = cId => S.data.holerites.find(h => h.colabId === cId && h.comp === comp);
+  const pago = cId => { const h = hol(cId); return (h && h.pagoEm) || (f.pixPagos || {})[cId] || ''; };
+  const sal = f.itens.map(i => { const c = S.data.colab.find(x => x.id === i.colabId); if (!c) return null; const v = folhaItem(i).liq; return { tipo: 'sal', id: c.id, c, valor: v, chave: pixChave(c), pago: pago(c.id) }; }).filter(x => x && x.valor > 0);
+  const [a, m] = comp.split('-').map(Number);
+  const vales = S.data.adiant.filter(x => (x.data || '').slice(0, 7) === comp && x.tipo !== 'emprestimo').map(x => { const c = S.data.colab.find(y => y.id === x.colabId); return c ? { tipo: 'vale', id: x.id, x, c, valor: num(x.valor), chave: pixChave(c), pago: x.pixPagoEm || '' } : null; }).filter(Boolean);
+  const aba = S.pixAba || 'sal', l = aba === 'sal' ? sal : vales, falta = l.filter(x => !x.pago), total = falta.reduce((t, x) => t + x.valor, 0);
+  const cod = x => pixCodigo({ chave: x.chave, nome: x.c.nome, cidade: cid, valor: x.valor, txid: `${aba === 'sal' ? 'SAL' : 'VALE'}${comp.replace('-', '')}${String(x.c.id).replace(/[^A-Za-z0-9]/g, '').slice(0, 8)}` });
+  modal(`Pagar por Pix · ${new Date(a, m - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`, `<div class="tabs" style="margin-bottom:10px"><button class="${aba === 'sal' ? 'on' : ''}" data-pa="sal">Salários (${sal.length})</button><button class="${aba === 'vale' ? 'on' : ''}" data-pa="vale">Vales do mês (${vales.length})</button></div>
+    <p class="hint" style="margin-top:0">Cada linha tem o Pix pronto, com a chave do funcionário e o valor. No app do banco, use “Pix copia e cola” ou leia o QR Code e confirme. Depois marque como pago: o funcionário vê no portal. Para pagar todos de uma vez, baixe a planilha e envie no “pagamento em lote” do seu banco.</p>
+    <div class="row" style="margin-bottom:10px"><b>${falta.length} a pagar · ${brl(total)}</b><span class="sp"></span><button class="btn sec sm" id="px-csv">Baixar planilha do lote</button>${falta.length ? '<button class="btn sm" id="px-all">Marcar todos como pagos</button>' : ''}</div>
+    ${l.length ? `<ul class="list">${l.map(x => `<li style="align-items:flex-start;flex-wrap:wrap"><div class="t" style="flex:1;min-width:0"><div><b>${esc(x.c.nome)}</b> · ${brl(x.valor)} ${x.pago ? `<span class="pill ok">pago ${fd(String(x.pago).slice(0, 10))}</span>` : ''}</div>
+      <div>${x.chave ? `Chave Pix: ${esc(x.chave)}${x.c.pixTipo ? ` (${esc(x.c.pixTipo)})` : ''}` : '<b style="color:var(--bad)">Sem chave Pix no cadastro</b>'}${x.tipo === 'vale' ? ` · ${esc((typeof TIPOS_ADI !== 'undefined' && TIPOS_ADI[x.x.tipo]) || 'vale')} de ${fd(x.x.data)}` : ''}</div></div>
+      ${x.chave && !x.pago ? `<button class="btn ghost sm" data-pq="${x.id}">QR Code</button><button class="btn sec sm" data-pc="${x.id}">Copiar Pix</button><button class="btn sm" data-pp="${x.id}">Paguei</button>` : ''}${!x.chave ? `<button class="btn ghost sm" data-pe="${x.c.id}">Pôr a chave</button>` : ''}</li>`).join('')}</ul>` : '<div class="empty">Nada para pagar aqui.</div>'}`,
+    { size: 'lg', foot: '<button class="btn sec" data-close>Fechar</button>', onMount: md => {
+      const X = id => l.find(x => x.id === id), marcar = xs => { const em = new Date().toISOString();
+        xs.forEach(x => { if (x.tipo === 'vale') { x.x.pixPagoEm = em; return; } const h = hol(x.c.id); if (h) h.pagoEm = em; else { f.pixPagos = f.pixPagos || {}; f.pixPagos[x.c.id] = em; } });
+        if (aba === 'vale') save('adiant'); else { save('holerites'); save('folhas'); } audit(`Pagou por Pix ${xs.length} ${aba === 'sal' ? 'salário(s)' : 'vale(s)'} de ${comp}`); closeModal(true); pagarPixLote(comp); };
+      $$('[data-pa]', md).forEach(b => b.onclick = () => { S.pixAba = b.dataset.pa; closeModal(true); pagarPixLote(comp); });
+      $$('[data-pc]', md).forEach(b => b.onclick = () => { navigator.clipboard.writeText(cod(X(b.dataset.pc))).then(() => toast('Pix copiado. Cole no app do banco em "Pix copia e cola".')).catch(() => toast('Não foi possível copiar.', true)); });
+      $$('[data-pq]', md).forEach(b => b.onclick = () => { const x = X(b.dataset.pq), li = b.closest('li'); if ($('.px-qr', li)) return; li.insertAdjacentHTML('beforeend', `<div class="px-qr" style="width:180px;margin:6px 0 0 auto">${pixQR(cod(x), 4)}</div>`); });
+      $$('[data-pp]', md).forEach(b => b.onclick = () => marcar([X(b.dataset.pp)]));
+      const all = $('#px-all', md); if (all) all.onclick = () => confirmar(`Marcar ${falta.length} pagamento(s) como pagos? Faça isso só depois de pagar no banco.`, () => marcar(falta), 'Marcar como pagos');
+      $$('[data-pe]', md).forEach(b => b.onclick = () => { closeModal(true); try { formColab(b.dataset.pe); } catch (e) { go('colab'); } });
+      $('#px-csv', md).onclick = () => { const linhas = [['Nome', 'CPF', 'Tipo de chave', 'Chave Pix', 'Valor', 'Descrição'], ...falta.filter(x => x.chave).map(x => [x.c.nome, x.c.cpf || '', x.c.pixTipo || '', x.chave, x.valor.toFixed(2).replace('.', ','), `${aba === 'sal' ? 'Salário' : 'Vale'} ${comp}`])];
+        const csv = '﻿' + linhas.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\r\n'); const a2 = document.createElement('a'); a2.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a2.download = `pix-${aba === 'sal' ? 'salarios' : 'vales'}-${comp}.csv`; a2.click(); };
+    } });
+}
+if (typeof vFolhaMensal === 'function') { const _vfmPix = vFolhaMensal; vFolhaMensal = function (el) { const r = _vfmPix.apply(this, arguments);
+  try { const c = S.folhaComp, f = S.data.folhas.find(x => !x.tipo && x.comp === c); if (f && (f.itens || []).length && podeEditar() && !$('#px-b', el)) { const ref = [...el.querySelectorAll('button')].find(b => /Anexar comprovante/.test(b.textContent)) || [...el.querySelectorAll('button')].find(b => /Fechar folha|Holerites/.test(b.textContent)); const b = document.createElement('button'); b.className = 'btn sec sm'; b.id = 'px-b'; b.type = 'button'; b.textContent = 'Pagar por Pix'; b.onclick = () => pagarPixLote(c); if (ref) ref.after(b); else el.prepend(b); } } catch (e) { console.warn(e); }
+  return r; }; }
+
+/* ---------- 3. Organograma automático ---------- */
+try { ICO.org = '<rect x="9" y="2" width="6" height="5" rx="1"/><rect x="2" y="17" width="6" height="5" rx="1"/><rect x="16" y="17" width="6" height="5" rx="1"/><path d="M12 7v5M5 17v-3h14v3"/>'; } catch (e) { }
+try { if (!NAV.some(n => n[0] === 'org')) { const i = NAV.findIndex(n => n[0] === 'colab'); NAV.splice(i + 1, 0, ['org', 'Organograma', R_TODOS, 'EQUIPE']); } } catch (e) { }
+try { if (typeof ROTAS_PONTO !== 'undefined' && ROTAS_PONTO.add) ROTAS_PONTO.add('org'); } catch (e) { }
+const LIDER = /gerente|supervis|coordena|l[ií]der|encarregad|diretor|s[óo]ci[oa]|propriet|chefe/i;
+function orgArvore() {
+  const at = ativos(), ids = new Set(at.map(c => c.id)), filhos = {};
+  const chefe = c => { if (c.gestorId === 'topo') return null; if (c.gestorId && ids.has(c.gestorId) && c.gestorId !== c.id) return c.gestorId;
+    if (LIDER.test(c.cargo || '')) return null; const lid = at.find(x => x.id !== c.id && (x.loja || '') === (c.loja || '') && LIDER.test(x.cargo || '') && !x.gestorId); return lid ? lid.id : null; };
+  at.forEach(c => { const g = chefe(c); (filhos[g || 'raiz'] = filhos[g || 'raiz'] || []).push(c); });
+  return { at, filhos };
+}
+function vOrg(el) {
+  const { at, filhos } = orgArvore(), ed = podeEditar() && can('admin', 'rh'), lojas = S.data.config.lojas || [], ln = id => (lojas.find(l => l.id === id) || {}).nome || '';
+  const ini = n => String(n || '?').split(' ').filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase(), vist = new Set();
+  const no = (c, d) => { if (vist.has(c.id)) return ''; vist.add(c.id); return `<li><div class="og-c${LIDER.test(c.cargo || '') ? ' lid' : ''}" ${ed ? `data-og="${c.id}" role="button" tabindex="0"` : ''} aria-label="${esc(c.nome)}, ${esc(c.cargo || 'sem cargo')}"><span class="og-a">${c.foto ? `<img src="${esc(c.foto)}" alt="">` : ini(c.nome)}</span><b>${esc(c.nome.split(' ').slice(0, 2).join(' '))}</b><small>${esc(c.cargo || 'Sem cargo')}${ln(c.loja) ? ' · ' + esc(ln(c.loja)) : ''}</small></div>${(filhos[c.id] || []).length && d < 8 ? `<ul>${filhos[c.id].map(x => no(x, d + 1)).join('')}</ul>` : ''}</li>`; };
+  const raiz = (filhos.raiz || []).sort((a, b) => (LIDER.test(b.cargo || '') - LIDER.test(a.cargo || '')) || a.nome.localeCompare(b.nome));
+  const emp = (S.data.config.empresa || {}).nome || S.tenant.nome || 'Empresa';
+  el.innerHTML = `<div class="row" style="margin-bottom:12px"><span class="hint">Montado sozinho pelos cargos e lojas: gerentes, supervisores e líderes ficam em cima da equipe da loja deles. ${ed ? 'Clique em uma pessoa para mudar a quem ela responde.' : ''}</span><span class="sp"></span><button class="btn sec sm" id="og-pr">Imprimir</button></div>
+    <section class="panel og-w"><div class="og"><ul><li><div class="og-c topo"><span class="og-a">${esc(ini(emp))}</span><b>${esc(emp)}</b><small>${at.length} pessoas</small></div><ul>${raiz.map(c => no(c, 0)).join('')}</ul></li></ul></div></section>`;
+  $('#og-pr', el).onclick = () => printDoc(`Organograma ${emp}`, `<style>${ORG_CSS}</style><h1 style="font-family:Arial;font-size:20px">${esc(emp)}: organograma</h1><div class="og">${$('.og', el).innerHTML}</div>`);
+  $$('[data-og]', el).forEach(b => { const abre = () => { const c = at.find(x => x.id === b.dataset.og); modal(`A quem ${c.nome.split(' ')[0]} responde?`, `<div class="fld"><label for="og-g">Responde a</label><select class="inp" id="og-g"><option value="">Automático (pelo cargo e pela loja)</option><option value="topo" ${c.gestorId === 'topo' ? 'selected' : ''}>Ninguém: fica no topo</option>${at.filter(x => x.id !== c.id).map(x => `<option value="${x.id}" ${c.gestorId === x.id ? 'selected' : ''}>${esc(x.nome)} · ${esc(x.cargo || '')}</option>`).join('')}</select></div>`,
+    { foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="og-ok">Salvar</button>', onMount: m => $('#og-ok', m).onclick = () => { const v = $('#og-g', m).value; let p = v; const vis = new Set([c.id]);
+      while (p && p !== 'topo') { if (vis.has(p)) return toast('Assim a pessoa ficaria abaixo dela mesma. Escolha outra.', true); vis.add(p); p = (S.data.colab.find(x => x.id === p) || {}).gestorId; }
+      const x = S.data.colab.find(y => y.id === c.id); if (v) x.gestorId = v; else delete x.gestorId; save('colab'); audit(`Organograma: ${c.nome} responde a ${v ? (v === 'topo' ? 'ninguém' : (S.data.colab.find(y => y.id === v) || {}).nome) : 'automático'}`); closeModal(); vOrg(el); } }); };
+    b.onclick = abre; b.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abre(); } }; });
+}
+const ORG_CSS = `.og{overflow:auto;padding:10px 0}.og ul{display:flex;justify-content:center;padding-top:18px;position:relative;margin:0;padding-left:0}.og li{list-style:none;text-align:center;position:relative;padding:18px 6px 0}
+  .og li::before,.og li::after{content:'';position:absolute;top:0;right:50%;border-top:1.5px solid #c3cde0;width:50%;height:18px}.og li::after{right:auto;left:50%;border-left:1.5px solid #c3cde0}.og li:only-child::before,.og li:only-child::after{display:none}.og li:only-child{padding-top:0}
+  .og li:first-child::before,.og li:last-child::after{border:0 none}.og li:last-child::before{border-right:1.5px solid #c3cde0;border-radius:0 6px 0 0}.og li:first-child::after{border-radius:6px 0 0 0}.og ul ul::before{content:'';position:absolute;top:0;left:50%;border-left:1.5px solid #c3cde0;width:0;height:18px}
+  .og>ul{padding-top:0}.og-c{display:inline-grid;justify-items:center;gap:2px;min-width:120px;max-width:160px;padding:10px 8px;border:1px solid #d9e1ee;border-radius:12px;background:#fff;color:#14213a}.og-c.lid{border-color:#f26a1b}.og-c.topo{background:#0b1f3a;color:#fff;border-color:#0b1f3a}
+  .og-c b{font-size:13px}.og-c small{font-size:11px;opacity:.75}.og-a{width:38px;height:38px;border-radius:50%;background:#e8eefc;color:#1f5eff;display:grid;place-items:center;font-weight:700;font-size:13px;overflow:hidden}.og-a img{width:100%;height:100%;object-fit:cover}.og-c.topo .og-a{background:#f26a1b;color:#fff}
+  [data-og]{cursor:pointer}[data-og]:hover,[data-og]:focus-visible{outline:2px solid #1f5eff;outline-offset:2px}`;
+(function () { const st = document.createElement('style'); st.textContent = ORG_CSS + '.og-w{overflow:auto}'; document.head.appendChild(st); })();
+
+/* ---------- 4. Indique e ganhe: link de indicação da empresa ---------- */
+function painelIndique(el) {
+  if (!S.tenant || !S.user || S.user.contador || !can('admin', 'rh') || !el || $('#ig-p', el)) return;
+  const url = `https://vendas.nexumdp.com.br/?ind=${encodeURIComponent(S.tenant.id)}`;
+  const sec = document.createElement('section'); sec.className = 'panel'; sec.id = 'ig-p';
+  sec.innerHTML = `<h2 style="margin:0 0 4px">Indique o NEXUM e ganhe 1 mês grátis</h2><p class="hint" style="margin:0 0 10px">Mande o seu link para outra empresa. Quando ela assinar, você ganha um mês grátis na sua assinatura.</p>
+    <div class="row" style="gap:8px;flex-wrap:wrap"><input class="inp" readonly value="${esc(url)}" aria-label="Seu link de indicação" style="flex:1;min-width:220px"><button class="btn sec" id="ig-c">Copiar link</button><a class="btn" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(`Uso o NEXUM no ponto e no RH da minha empresa e recomendo: ponto pelo rosto, folha e portal do funcionário. Conheça pelo meu link: ${url}`)}">Mandar no WhatsApp</a></div>`;
+  el.appendChild(sec); $('#ig-c', sec).onclick = () => navigator.clipboard.writeText(url).then(() => toast('Link copiado.')).catch(() => toast(url));
+}
+if (typeof go === 'function') {
+  const _goL28 = go;
+  go = function (v) {
+    try {
+      if (v === 'org') { if (!document.getElementById('view')) return; clearInterval(S.timer); clearInterval(S.relogio); S.view = 'org';
+        $$('.side .nav button[data-v]').forEach(b => b.classList.toggle('on', b.dataset.v === 'org')); const sd = $('#side'); if (sd) sd.classList.remove('open');
+        $('#t-view').textContent = 'Organograma'; const el = $('#view'); el.innerHTML = ''; vOrg(el); try { atualizarBadge(); } catch (e) { } $('.content').scrollTop = 0; return; }
+    } catch (e) { console.warn(e); }
+    const r = _goL28.apply(this, arguments);
+    try { if (S.view === 'dash') painelIndique($('#view')); } catch (e) { }
+    return r;
+  };
+}
+setTimeout(() => { try { if (S.tenant && document.getElementById('nav') && !document.querySelector('.side .nav button[data-v="org"]') && typeof renderApp === 'function') renderApp(); } catch (e) { } }, 0);
 </script>
 
 </body>
