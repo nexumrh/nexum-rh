@@ -2638,6 +2638,9 @@ if (typeof vNum === 'function') { const _vnPv = vNum; vNum = async function (el)
 
 
 
+
+
+
 <script>
 /* =====================================================================
    TREINAMENTO DOS CLIENTES: quem já assistiu todas as videoaulas,
@@ -2711,6 +2714,8 @@ setTimeout(() => { try { if (A.user && document.getElementById('view') && !docum
    A NEXUM agenda, manda o convite (rh.nexumdp.com.br/reuniao.html?r=...)
    e, na hora, apresenta com o guia atrás, o roteiro e a lista de presença.
    ===================================================================== */
+const MEET_PADRAO = 'https://meet.google.com/ovn-pahy-hcx';
+async function meetPadrao() { if (A.meetPadrao) return A.meetPadrao; try { const s = await FB.db.doc('plataforma/salaMeet').get(); A.meetPadrao = (s.exists && s.data().meet) || MEET_PADRAO; } catch (e) { A.meetPadrao = MEET_PADRAO; } return A.meetPadrao; }
 const REUN_URL = 'https://rh.nexumdp.com.br/reuniao.html?r=', GUIA_URL = 'https://rh.nexumdp.com.br/guia.html';
 const REUN_PAUTA = ['Boas-vindas e apresentação da equipe NEXUM', 'Primeiro acesso, menu e Painel inicial', 'Cadastrar funcionários (um por um ou pela planilha)', 'Escalas, lojas e ponto pelo rosto', 'Liberar o Portal do Colaborador para a equipe', 'Banco de horas, atestados e férias', 'Fechar a folha e enviar ao contador', 'Onde pedir ajuda: suporte, videoaulas e guia', 'Dúvidas'];
 try { ICO.reun = '<rect x="2" y="6" width="14" height="12" rx="2"/><path d="m16 10 6-3v10l-6-3z"/>'; } catch (e) { }
@@ -2730,6 +2735,7 @@ function reunResumo(r) {
 }
 async function vReun(el) {
   el.innerHTML = '<div class="panel"><p class="hint">Carregando as reuniões…</p></div>';
+  await meetPadrao();
   try { await reunCarregar(); } catch (e) { el.innerHTML = `<div class="panel empty"><b>Não foi possível ler as reuniões</b><p class="hint">${esc(e.code || e.message)}. Publique o firestore.rules novo.</p></div>`; return; }
   if (A.view !== 'reun') return;
   const ag = Date.now(), fut = A.reun.filter(r => r.status !== 'cancelada' && new Date(r.quando).getTime() + (r.duracao || 60) * 60000 > ag - 36e5 && r.status !== 'encerrada'), pas = A.reun.filter(r => !fut.includes(r)).reverse();
@@ -2767,8 +2773,8 @@ function reunEditar(r, el) {
   modal(novo ? 'Agendar reunião de treinamento' : 'Editar reunião', `<div class="fld"><label for="rn-t">Título</label><input class="inp" id="rn-t" value="${esc(r ? r.titulo : 'Treinamento NEXUM RH')}"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px"><div class="fld"><label for="rn-d">Dia</label><input class="inp" type="date" id="rn-d" value="${loc.slice(0, 10)}"></div><div class="fld"><label for="rn-h">Hora (Brasília)</label><input class="inp" type="time" id="rn-h" value="${r ? loc.slice(11, 16) : '14:00'}"></div>
       <div class="fld"><label for="rn-du">Duração</label><select class="inp" id="rn-du">${opts([[30, '30 min'], [45, '45 min'], [60, '1 hora'], [90, '1h30'], [120, '2 horas']], r ? r.duracao : 60)}</select></div></div>
-    <div class="fld"><label for="rn-m">Link do Google Meet</label><div style="display:flex;gap:8px"><input class="inp" id="rn-m" placeholder="https://meet.google.com/abc-defg-hij" value="${esc(r ? r.meet || '' : '')}"><a class="btn sec" href="https://meet.google.com/new" target="_blank" rel="noopener">Criar sala no Meet</a></div>
-      <p class="hint">“Criar sala no Meet” abre uma sala nova na sua conta Google. Copie o endereço que aparece e cole aqui.</p></div>
+    <div class="fld"><label for="rn-m">Link do Google Meet</label><div style="display:flex;gap:8px"><input class="inp" id="rn-m" placeholder="https://meet.google.com/abc-defg-hij" value="${esc(r ? r.meet || '' : (A.meetPadrao || MEET_PADRAO))}"><a class="btn sec" href="https://meet.google.com/new" target="_blank" rel="noopener">Criar sala no Meet</a></div>
+      <p class="hint">Já vem a sala fixa da NEXUM (muda em Dados da plataforma → Sala do Google Meet). Para uma sala só desta reunião, use “Criar sala no Meet” e cole o endereço.</p></div>
     <div class="fld"><label for="rn-ds">Descrição (aparece no convite)</label><input class="inp" id="rn-ds" value="${esc(r ? r.descricao || '' : 'Vamos configurar o sistema juntos e tirar todas as dúvidas. Tenha em mãos a lista de funcionários.')}"></div>
     <div class="fld"><label for="rn-p">Roteiro (um item por linha)</label><textarea class="inp" id="rn-p" rows="7">${esc((r ? r.pauta : REUN_PAUTA).join('\n'))}</textarea></div>
     <div class="fld"><label>Empresas convidadas <span class="hint">(o RH delas vê o convite no NEXUM RH)</span></label><input class="inp" id="rn-q" placeholder="Buscar empresa" style="margin-bottom:6px"><div id="rn-ts" style="max-height:200px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:6px 10px">${ts.map(t => `<label style="display:flex;gap:8px;align-items:center;padding:3px 0;font-weight:400" data-tn="${esc((t.nome || '').toLowerCase())}"><input type="checkbox" value="${t.id}" ${sel.has(t.id) ? 'checked' : ''}> ${esc(t.nome)} <span class="hint">${t.trial ? 'em teste' : t.plano || ''}${t.criadoEm ? ' · desde ' + fd(t.criadoEm.slice(0, 10)) : ''}</span></label>`).join('')}</div></div>`,
@@ -2818,7 +2824,17 @@ function reunApresentar(r) {
   $('#rn-sai').onclick = sair; $('#rn-gn').onclick = () => window.open(GUIA_URL, '_blank', 'noopener');
   $('#rn-enc').onclick = async () => { if (!confirm('Encerrar a reunião? O convite passa a pedir a avaliação de quem participou.')) return; try { await FB.db.doc(`reunioesTreino/${r.id}`).update({ status: 'encerrada', encerradaEm: new Date().toISOString() }); toast('Reunião encerrada.'); sair(); if (A.view === 'reun') go('reun'); } catch (e) { toast(e.code || e.message, true); } };
 }
-{ const _goRn = go; go = function (v, ms) { if (v === 'reun') { A.view = 'reun'; $$('.side .nav button[data-v]').forEach(b => b.classList.toggle('on', b.dataset.v === 'reun')); $('#side').classList.remove('open'); $('#t-view').textContent = 'Reuniões de treinamento'; const el = $('#view'); el.innerHTML = ''; vReun(el); $('.content').scrollTop = 0; return; } return _goRn(v, ms); }; }
+/* sala fixa do Google Meet: fica em Dados da plataforma */
+async function painelSalaMeet(el) {
+  if (!el || $('#sm-p', el) || A.papel !== 'dono' && A.papel) return; const atual = await meetPadrao();
+  const sec = document.createElement('section'); sec.className = 'panel'; sec.id = 'sm-p';
+  sec.innerHTML = `<h2 style="margin:0 0 4px">Sala do Google Meet</h2><p class="hint" style="margin:0 0 10px">A sala fixa usada nas reuniões de treinamento e nas demonstrações. Se mudar o link, troque aqui: as próximas reuniões e a página de agendar demonstração passam a usar o novo.</p>
+    <div class="row" style="gap:8px;flex-wrap:wrap"><input class="inp" id="sm-l" value="${esc(atual)}" style="flex:1;min-width:240px" aria-label="Link da sala do Google Meet"><a class="btn sec" href="${esc(atual)}" target="_blank" rel="noopener">Testar a sala</a><button class="btn" id="sm-ok">Salvar</button></div>`;
+  el.prepend(sec);
+  $('#sm-ok', sec).onclick = async () => { const v = $('#sm-l', sec).value.trim(); if (!/^https:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}/.test(v)) return toast('Cole o link completo da sala, como https://meet.google.com/abc-defg-hij', true);
+    try { await FB.db.doc('plataforma/salaMeet').set({ meet: v, em: new Date().toISOString() }); A.meetPadrao = v; toast('Sala do Meet salva.'); } catch (e) { toast(e.code || e.message, true); } };
+}
+{ const _goRn = go; go = function (v, ms) { if (v === 'reun') { A.view = 'reun'; $$('.side .nav button[data-v]').forEach(b => b.classList.toggle('on', b.dataset.v === 'reun')); $('#side').classList.remove('open'); $('#t-view').textContent = 'Reuniões de treinamento'; const el = $('#view'); el.innerHTML = ''; vReun(el); $('.content').scrollTop = 0; return; } const r = _goRn(v, ms); if (v === 'plat') setTimeout(() => painelSalaMeet($('#view')).catch(() => { }), 300); return r; }; }
 (function () { const st = document.createElement('style'); st.textContent = `
   #rn-ap{position:fixed;inset:0;z-index:9000;background:var(--bg,#f4f6fa);display:flex;flex-direction:column}
   .rn-top{display:flex;gap:8px;align-items:center;padding:10px 14px;background:#0b1f3a;color:#fff;flex-wrap:wrap}.rn-top .btn.sec,.rn-top .btn.ghost{color:#fff!important;background:transparent!important;border:1px solid rgba(255,255,255,.35)!important}
@@ -2900,7 +2916,7 @@ async function vDemo(el) {
   const ag = Date.now(), fut = ds.filter(d => d.status !== 'cancelada' && new Date(d.quando).getTime() > ag - 2 * 36e5), pas = ds.filter(d => !fut.includes(d)).reverse().slice(0, 30), TZ = { timeZone: 'America/Sao_Paulo' };
   const q = s => { const d = new Date(s); return d.toLocaleDateString('pt-BR', { ...TZ, weekday: 'short', day: '2-digit', month: '2-digit' }) + ' às ' + d.toLocaleTimeString('pt-BR', { ...TZ, hour: '2-digit', minute: '2-digit' }); };
   const wa = (d, txt) => { const t = String(d.whatsapp || '').replace(/\D/g, ''); return t.length >= 10 ? `https://wa.me/${t.length <= 11 ? '55' : ''}${t}?text=${encodeURIComponent(txt)}` : ''; };
-  const meet = cfg.meet || '';
+  const meet = cfg.meet || (typeof meetPadrao === 'function' ? await meetPadrao() : '') || '';
   const card = d => { const falta = new Date(d.quando).getTime() - ag, primeiro = String(d.nome || '').split(' ')[0];
     const conf = wa(d, `Olá, ${primeiro}! Aqui é da NEXUM. Confirmando a sua demonstração do NEXUM RH ${q(d.quando)} (horário de Brasília), pelo Google Meet: ${meet}\nPosso confirmar?`), lemb = wa(d, `Olá, ${primeiro}! Daqui a pouco, ${q(d.quando)}, é a sua demonstração do NEXUM RH. Entre por aqui: ${meet}`), remar = wa(d, `Olá, ${primeiro}! Sentimos sua falta na demonstração do NEXUM RH. Quer marcar outro horário? É só escolher aqui: ${DEMO_URL}`);
     return `<li style="align-items:flex-start"><div class="t" style="flex:1;min-width:0"><div><b>${esc(d.nome)}</b>${d.empresa ? ` · ${esc(d.empresa)}` : ''} ${d.status === 'feita' ? '<span class="pill ok">aconteceu</span>' : d.status === 'faltou' ? '<span class="pill bad">não apareceu</span>' : d.status === 'cancelada' ? '<span class="pill">cancelada</span>' : falta < 864e5 && falta > 0 ? '<span class="pill warn">em menos de 24 h</span>' : '<span class="pill">agendada</span>'}</div>
