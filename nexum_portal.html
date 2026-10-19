@@ -3495,6 +3495,17 @@ function painelComparar(el) {
 </script>
 
 
+
+
+
+
+
+
+
+
+
+
+
 <script>
 /* =====================================================================
    LOTE 28 (Portal): treinamentos da empresa com vídeo dentro do portal,
@@ -3600,6 +3611,59 @@ if (typeof vTreinP === 'function') vTreinP = function (el) {
 (function () { const st = document.createElement('style'); st.textContent = `.tp-v{width:100%;aspect-ratio:16/9;background:#0b1f3a;border-radius:12px;display:block;overflow:hidden}.tp-v iframe,#tp-yt{width:100%;height:100%;border:0}
   .tp-qf{border:1px solid var(--line);border-radius:12px;padding:8px 12px;margin:0 0 8px}.tp-qf legend{font-weight:600;padding:0 4px}.tp-qf label{display:flex;gap:8px;padding:5px 0;align-items:flex-start}.tp-qf.ok{border-color:var(--ok,#16a34a)}.tp-qf.bad{border-color:var(--bad,#c62d46)}
   .tp-ci{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:12px;margin-top:10px;font-weight:600}`; document.head.appendChild(st); })();
+</script>
+
+<script>
+/* =====================================================================
+   LOTE 29 (Portal): aviso de documento e exame vencendo para o próprio
+   funcionário, e aceite do termo de uso e da LGPD no primeiro acesso.
+   ===================================================================== */
+const TERMO_VERSAO = '2026-10';
+function docsVencendo() {
+  const c = P.c || {}, hj = hoje(), out = [], dias = d => Math.round((pd(d) - hj) / 864e5);
+  if (c.cnhValidade) { const n = dias(c.cnhValidade); if (n <= 60) out.push({ t: 'CNH', d: c.cnhValidade, n, o: 'Renove no Detran e mande a foto da nova CNH ao RH pelo chat.' }); }
+  if (c.tipo !== 'pj') { const meses = +((P.cfg || {}).asoMeses) || 12; let v = '';
+    if (c.asoData) v = iso(addM(pd(c.asoData), meses)); else if (c.admissao) v = iso(addM(pd(c.admissao), meses));
+    if (v) { const n = dias(v); if (n <= 30) out.push({ t: 'Exame periódico (ASO)', d: v, n, o: 'O RH vai marcar o exame. Se ainda não recebeu a guia, peça pelo chat.' }); } }
+  (c.docsValidade || []).forEach(x => { if (x && x.validade) { const n = dias(x.validade); if (n <= 60) out.push({ t: x.nome || 'Documento', d: x.validade, n, o: 'Providencie o novo e mande ao RH.' }); } });
+  return out.sort((a, b) => a.n - b.n);
+}
+function cardVencimentos(el) {
+  if (!el || $('#dv-p', el) || !P.c) return; const l = docsVencendo(); if (!l.length) return;
+  const sec = document.createElement('section'); sec.className = 'panel'; sec.id = 'dv-p';
+  sec.innerHTML = `<div class="panel-head"><h2>Seus documentos e exames</h2></div><ul class="list">${l.map(x => `<li><div class="t"><div><b>${esc(x.t)}</b> <span class="pill ${x.n < 0 ? 'bad' : 'warn'}">${x.n < 0 ? `venceu há ${-x.n} dia${x.n === -1 ? '' : 's'}` : x.n === 0 ? 'vence hoje' : `vence em ${x.n} dia${x.n === 1 ? '' : 's'}`}</span></div><div>${fd(x.d)} · ${esc(x.o)}</div></div></li>`).join('')}</ul>
+    <div class="row" style="margin-top:8px"><button class="btn sec sm" id="dv-c">Falar com o RH</button></div>`;
+  const ref = el.querySelector('section.panel'); if (ref) ref.after(sec); else el.prepend(sec);
+  $('#dv-c', sec).onclick = () => go('chat');
+}
+/* aviso no celular uma vez por dia quando algo está vencendo */
+function avisoVencimento() {
+  try { const l = docsVencendo().filter(x => x.n <= 15); if (!l.length) return; const k = `nexum:dv:${P.t.id}:${me()}:${iso(hoje())}`; if (localStorage.getItem(k)) return; localStorage.setItem(k, '1');
+    if (typeof notificar === 'function' && 'Notification' in window && Notification.permission === 'granted') Promise.resolve(notificar(`${l[0].t}: ${l[0].n < 0 ? 'vencido' : 'vence em ' + l[0].n + ' dia(s)'}`, 'Toque para ver no NEXUM.')).catch(() => { }); } catch (e) { }
+}
+/* termo de uso e LGPD: aceite no primeiro acesso, registrado com data e aparelho */
+function termoAceito() { return G('assin').some(a => a.colabId === me() && a.tipo === 'termo-portal' && a.versao === TERMO_VERSAO); }
+function pedirTermo() {
+  if (!P.c || termoAceito() || $('#tm-ok') || $('#modal-root .ov')) return;
+  const emp = (P.cfg.empresa || {}).nome || P.t.nome || 'a empresa';
+  modal('Termo de uso do Portal e dos seus dados', `<div style="max-height:52vh;overflow:auto;padding-right:6px;font-size:14px;line-height:1.55">
+    <p style="margin-top:0">Este é o Portal do Colaborador de <b>${esc(emp)}</b>, feito com o sistema NEXUM. Antes de continuar, leia como ele funciona e como seus dados são usados.</p>
+    <p><b>1. Para que serve.</b> Bater o ponto, ver holerites, férias, banco de horas e documentos, assinar documentos e falar com o RH.</p>
+    <p><b>2. Seus dados.</b> A empresa usa seus dados pessoais (nome, CPF, contato, dados do contrato e do ponto) para cumprir o contrato de trabalho e as obrigações da lei, como pede a LGPD (Lei 13.709/2018, art. 7º, II e V).</p>
+    <p><b>3. Foto e localização no ponto.</b> Se a empresa usa o ponto pelo rosto, a foto na hora da batida serve só para confirmar que é você. A localização serve para conferir que a batida foi feita no local de trabalho, e é registrada só no momento da batida.</p>
+    <p><b>4. Assinatura pelo celular.</b> Quando você aceita um documento, holerite ou espelho de ponto, ficam registrados a data, a hora e o aparelho. Isso vale como sua assinatura.</p>
+    <p><b>5. Senha.</b> A senha é pessoal. Não passe para ninguém; se alguém souber, troque em Meu perfil.</p>
+    <p><b>6. Seus direitos.</b> Você pode ver, baixar e pedir correção dos seus dados a qualquer momento em Meu perfil → Seus dados (LGPD).</p></div>
+    <label style="display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-weight:600"><input type="checkbox" id="tm-ck"> Li e aceito o termo de uso do Portal e o tratamento dos meus dados.</label>`,
+    { foot: '<button class="btn" id="tm-ok" disabled>Aceitar e continuar</button>', onMount: m => {
+      const ov = m.closest('.ov'); if (ov) ov.removeAttribute('data-close'); const x = $('.x', m); if (x) x.remove();
+      $('#tm-ck', m).onchange = e => { $('#tm-ok', m).disabled = !e.target.checked; };
+      $('#tm-ok', m).onclick = () => { mut('assin', a => a.push({ id: uid(), colabId: me(), tipo: 'termo-portal', versao: TERMO_VERSAO, ref: 'termo-portal-' + TERMO_VERSAO, em: new Date().toISOString(), aparelho: navigator.userAgent.slice(0, 160) })); closeModal(true); toast('Obrigado! Termo aceito.'); };
+    } });
+}
+if (typeof go === 'function') { const _goL29 = go; go = function (v) { const r = _goL29.apply(this, arguments);
+  try { if (P.view === 'inicio' && P.c && P.c.status !== 'admissao') { cardVencimentos($('#view')); avisoVencimento(); setTimeout(pedirTermo, 600); } } catch (e) { console.warn(e); }
+  return r; }; }
 </script>
 
 </body>
