@@ -2654,6 +2654,9 @@ if (typeof vNum === 'function') { const _vnPv = vNum; vNum = async function (el)
 
 
 
+
+
+
 <script>
 /* =====================================================================
    TREINAMENTO DOS CLIENTES: quem já assistiu todas as videoaulas,
@@ -2664,14 +2667,14 @@ try { ICO.trein = '<rect x="2" y="4" width="20" height="14" rx="2"/><path d="M10
 try { PAPEL_NX.suporte[1].push('trein'); PAPEL_NX.comercial[1].push('trein'); } catch (e) { }
 function treinDuvidasHTML() {
   const dv = (A.treinCache.dv || []).slice().sort((x, y) => (!!x.resposta - !!y.resposta) || ((x.para === 'adm' ? 0 : 1) - (y.para === 'adm' ? 0 : 1)) || (y.em || '').localeCompare(x.em || '')); if (!dv.length) return '';
-  const MOD = { portal: 'Portal do Colaborador', rs: 'Recrutamento e Seleção' }, pend = dv.filter(d => !d.resposta && d.para === 'adm').length;
+  const MOD = { rh: 'NEXUM RH', portal: 'Portal do Colaborador', rs: 'Recrutamento e Seleção' }, pend = dv.filter(d => !d.resposta && d.para === 'adm').length;
   return `<section class="panel"><h2 style="margin:0 0 4px">Dúvidas nas aulas ${pend ? `<span class="pill warn">${pend} para a NEXUM responder</span>` : ''}</h2><p class="hint" style="margin:0 0 12px">Dúvidas de quem assiste pelo link. As do Recrutamento vêm para a NEXUM; as dos funcionários vão para o RH da empresa (aparecem aqui só para você acompanhar). As dúvidas do RH durante o treinamento chegam no CRM, no chat do sistema.</p>
     <ul class="list">${dv.map(d => { const k = `${esc(d.link.id)}/${esc(d.id)}`; return `<li style="align-items:flex-start"><div class="t" style="flex:1;min-width:0"><div><b>${esc(d.link.nome || 'Sem nome')}</b>${d.link.empresa ? ` · ${esc(d.link.empresa)}` : ''} · ${MOD[d.mod] || ''} · aula “${esc(d.aulaTitulo || '')}” ${d.para === 'rh' ? '<span class="pill">para o RH da empresa</span>' : '<span class="pill warn">para a NEXUM</span>'}</div>
       <div style="white-space:pre-wrap;margin:4px 0">${esc(d.texto || '')}</div>${d.resposta ? `<div style="color:var(--ok,#15803d)"><b>Resposta (${esc(d.respondidoPor || '')}):</b> ${esc(d.resposta)}</div>` : `<div style="display:flex;gap:8px;align-items:flex-end;margin-top:6px"><textarea class="inp" rows="2" maxlength="1500" data-tdvt="${k}" aria-label="Responder" placeholder="Responder: a pessoa vê a resposta no link das aulas"></textarea><button class="btn sm" data-tdv="${k}">Responder</button></div>`}</div></li>`; }).join('')}</ul></section>`;
 }
 function treinLinksHTML(quando, pill) {
   const ls = (A.treinCache.links || []).slice().sort((a, b) => (b.atualizado || b.criadoEm || '').localeCompare(a.atualizado || a.criadoEm || '')); if (!ls.length) return '';
-  const MOD = { portal: 'Portal do Colaborador', rs: 'Recrutamento e Seleção' };
+  const MOD = { rh: 'NEXUM RH', portal: 'Portal do Colaborador', rs: 'Recrutamento e Seleção' };
   return `<section class="panel"><h2 style="margin:0 0 4px">Links de aulas enviados pelo CRM</h2><p class="hint" style="margin:0 0 12px">Cada link mostra só as aulas de um sistema: Portal do Colaborador (para o funcionário) ou Recrutamento e Seleção. Mande pelo botão <b>Aulas</b> na conversa do CRM.</p>
     <ul class="list">${ls.map(l => { const n = Object.keys(l.feitas || {}).length, st = l.concluido ? 'ok' : n > 0 ? 'and' : 'nao';
       return `<li><div class="av">${esc((l.nome || '?').slice(0, 2).toUpperCase())}</div><div class="t" style="flex:1;min-width:0"><div><b>${esc(l.nome || 'Sem nome')}</b> ${l.ativo === false ? '<span class="pill">desativado</span>' : pill[st]}</div>
@@ -2986,12 +2989,11 @@ if (typeof supChat === 'function') { const _scL28 = supChat; supChat = function 
     box.innerHTML = '<button type="button" class="btn ghost sm" id="sc-aula">Aulas em vídeo</button><button type="button" class="btn ghost sm" id="sc-reun">Convite da reunião ao vivo</button>';
     env.closest('.row').after(box);
     $('#sc-aula', m).onclick = async () => {
-      const mod = prompt('Quais aulas?\n1 = NEXUM RH completo (o RH assiste dentro do sistema)\n2 = Portal do Colaborador (link para o funcionário)\n3 = Recrutamento e Seleção (link)', '1'); if (!mod) return;
-      if (mod.trim() === '1') return ins('O treinamento em vídeo fica dentro do NEXUM RH, no menu Treinamento. São aulas curtas, com voz explicando cada tela, em ordem. No fim há um quiz e o certificado.');
-      const md = mod.trim() === '3' ? 'rs' : 'portal', nome = prompt('Nome de quem vai assistir:', md === 'rs' ? (x.nome || '') : ''); if (!nome) return;
+      const mod = prompt('Quais aulas?\n1 = NEXUM RH (para o dono e o RH)\n2 = Portal do Colaborador (para o funcionário)\n3 = Recrutamento e Seleção', '1'); if (!mod) return;
+      const md = { '1': 'rh', '2': 'portal', '3': 'rs' }[mod.trim()] || 'rh', nome = prompt('Nome de quem vai assistir:', md !== 'portal' ? (x.nome || '') : ''); if (!nome) return;
       const tk = supTokenAula();
       try { await FB.db.collection('treinoLinks').doc(tk).set({ mod: md, nome: nome.trim(), empresa: x.empresa || '', tid: x.tid || '', tel: '', conv: prot, canal: 'sistema', criadoEm: new Date().toISOString(), criadoPor: (A.user && A.user.email) || '', ativo: true, feitas: {}, pos: {}, pct: 0, concluido: false, visitas: 0 });
-        ins(`Segue o treinamento em vídeo do ${md === 'rs' ? 'Recrutamento e Seleção' : 'Portal do Colaborador'} para ${nome.trim().split(' ')[0]}:\nhttps://rh.nexumdp.com.br/aula.html?t=${tk}\nSão aulas curtas, com voz; assista até o fim de cada uma para liberar a próxima.`); } catch (e) { toast('Não foi possível gerar o link: ' + (e.code || e.message), true); }
+        ins(`Segue o treinamento em vídeo do ${{ rh: 'NEXUM RH', rs: 'Recrutamento e Seleção', portal: 'Portal do Colaborador' }[md]} para ${nome.trim().split(' ')[0]}:\nhttps://rh.nexumdp.com.br/aula.html?t=${tk}\nSão aulas curtas, com voz; assista até o fim de cada uma para liberar a próxima.`); } catch (e) { toast('Não foi possível gerar o link: ' + (e.code || e.message), true); }
     };
     $('#sc-reun', m).onclick = async () => {
       let rs = []; try { rs = (await FB.db.collection('reunioesTreino').where('status', '==', 'agendada').get()).docs.map(d => ({ id: d.id, ...d.data() })).filter(q => new Date(q.quando).getTime() > Date.now() - 36e5).sort((a, b) => a.quando.localeCompare(b.quando)); } catch (e) { }
