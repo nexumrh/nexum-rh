@@ -2614,5 +2614,81 @@ async function painelPrevisao(el) {
 }
 if (typeof vNum === 'function') { const _vnPv = vNum; vNum = async function (el) { const r = await _vnPv.apply(this, arguments); try { await painelPrevisao(el); } catch (e) { console.warn(e); } return r; }; }
 </script>
+
+
+
+
+
+
+
+
+
+<script>
+/* =====================================================================
+   TREINAMENTO DOS CLIENTES: quem já assistiu todas as videoaulas,
+   quem parou no meio e quem nem começou. Lê tenants/{tid}/meta/treinamento.
+   ===================================================================== */
+try { ICO.trein = '<rect x="2" y="4" width="20" height="14" rx="2"/><path d="M10 8.5v6l5-3z"/><path d="M8 21h8"/>'; } catch (e) { }
+{ const i = NAV.findIndex(n => n[0] === 'impl'); NAV.splice(i > -1 ? i + 1 : NAV.length, 0, ['trein', 'Treinamento dos clientes']); }
+try { PAPEL_NX.suporte[1].push('trein'); PAPEL_NX.comercial[1].push('trein'); } catch (e) { }
+function treinDuvidasHTML() {
+  const dv = (A.treinCache.dv || []).slice().sort((x, y) => (!!x.resposta - !!y.resposta) || ((x.para === 'adm' ? 0 : 1) - (y.para === 'adm' ? 0 : 1)) || (y.em || '').localeCompare(x.em || '')); if (!dv.length) return '';
+  const MOD = { portal: 'Portal do Colaborador', rs: 'Recrutamento e Seleção' }, pend = dv.filter(d => !d.resposta && d.para === 'adm').length;
+  return `<section class="panel"><h2 style="margin:0 0 4px">Dúvidas nas aulas ${pend ? `<span class="pill warn">${pend} para a NEXUM responder</span>` : ''}</h2><p class="hint" style="margin:0 0 12px">Dúvidas de quem assiste pelo link. As do Recrutamento vêm para a NEXUM; as dos funcionários vão para o RH da empresa (aparecem aqui só para você acompanhar). As dúvidas do RH durante o treinamento chegam no CRM, no chat do sistema.</p>
+    <ul class="list">${dv.map(d => { const k = `${esc(d.link.id)}/${esc(d.id)}`; return `<li style="align-items:flex-start"><div class="t" style="flex:1;min-width:0"><div><b>${esc(d.link.nome || 'Sem nome')}</b>${d.link.empresa ? ` · ${esc(d.link.empresa)}` : ''} · ${MOD[d.mod] || ''} · aula “${esc(d.aulaTitulo || '')}” ${d.para === 'rh' ? '<span class="pill">para o RH da empresa</span>' : '<span class="pill warn">para a NEXUM</span>'}</div>
+      <div style="white-space:pre-wrap;margin:4px 0">${esc(d.texto || '')}</div>${d.resposta ? `<div style="color:var(--ok,#15803d)"><b>Resposta (${esc(d.respondidoPor || '')}):</b> ${esc(d.resposta)}</div>` : `<div style="display:flex;gap:8px;align-items:flex-end;margin-top:6px"><textarea class="inp" rows="2" maxlength="1500" data-tdvt="${k}" aria-label="Responder" placeholder="Responder: a pessoa vê a resposta no link das aulas"></textarea><button class="btn sm" data-tdv="${k}">Responder</button></div>`}</div></li>`; }).join('')}</ul></section>`;
+}
+function treinLinksHTML(quando, pill) {
+  const ls = (A.treinCache.links || []).slice().sort((a, b) => (b.atualizado || b.criadoEm || '').localeCompare(a.atualizado || a.criadoEm || '')); if (!ls.length) return '';
+  const MOD = { portal: 'Portal do Colaborador', rs: 'Recrutamento e Seleção' };
+  return `<section class="panel"><h2 style="margin:0 0 4px">Links de aulas enviados pelo CRM</h2><p class="hint" style="margin:0 0 12px">Cada link mostra só as aulas de um sistema: Portal do Colaborador (para o funcionário) ou Recrutamento e Seleção. Mande pelo botão <b>Aulas</b> na conversa do CRM.</p>
+    <ul class="list">${ls.map(l => { const n = Object.keys(l.feitas || {}).length, st = l.concluido ? 'ok' : n > 0 ? 'and' : 'nao';
+      return `<li><div class="av">${esc((l.nome || '?').slice(0, 2).toUpperCase())}</div><div class="t" style="flex:1;min-width:0"><div><b>${esc(l.nome || 'Sem nome')}</b> ${l.ativo === false ? '<span class="pill">desativado</span>' : pill[st]}</div>
+        <div>${MOD[l.mod] || l.mod}${l.empresa ? ` · ${esc(l.empresa)}` : ''} · ${n} aula${n === 1 ? '' : 's'} · ${l.pct || 0}%${l.abertoEm ? ` · abriu ${quando(l.abertoEm)}` : ' · ainda não abriu o link'}${l.atualizado && l.abertoEm ? ` · última atividade ${quando(l.atualizado)}` : ''}</div>
+        <div class="tr-bar"><i style="width:${l.pct || 0}%"></i></div><div class="hint" style="font-size:12px">Enviado em ${l.criadoEm ? new Date(l.criadoEm).toLocaleDateString('pt-BR') : '?'}${l.criadoPor ? ` por ${esc(l.criadoPor)}` : ''}</div></div>
+        ${l.ativo !== false ? `<button class="btn ghost sm" data-tl-off="${esc(l.id)}">Desativar link</button>` : ''}</li>`; }).join('')}</ul></section>`;
+}
+async function vTrein(el) {
+  el.innerHTML = '<div class="panel"><p class="hint">Lendo o progresso das empresas…</p></div>';
+  const ts = (A.tenants || []).filter(t => !t.bloqueado);
+  if (!A.treinCache || Date.now() - A.treinCache.em > 60000) {
+    const res = await Promise.all(ts.map(t => FB.db.doc(`tenants/${t.id}/meta/treinamento`).get().then(d => [t.id, d.exists ? d.data() : null]).catch(() => [t.id, null])));
+    let links = []; try { links = (await FB.db.collection('treinoLinks').get()).docs.map(d => ({ id: d.id, ...d.data() })); } catch (e) { }
+    const dv = []; await Promise.all(links.filter(l => l.duvidas > 0).map(l => FB.db.collection(`treinoLinks/${l.id}/duvidas`).get().then(s => s.docs.forEach(d => dv.push({ id: d.id, link: l, ...d.data() }))).catch(() => { })));
+    A.treinCache = { em: Date.now(), m: Object.fromEntries(res), links, dv };
+  }
+  if (A.view !== 'trein') return;
+  const m = A.treinCache.m, f = A.treinF || 'todos', q = (A.treinQ || '').toLowerCase();
+  const linhas = ts.map(t => { const d = m[t.id] || {}, total = d.total || 0, feitas = d.feitas || 0, st = d.concluido ? 'ok' : feitas > 0 ? 'and' : 'nao';
+    const users = Object.values(d.users || {}).map(u => ({ nome: u.nome || u.email || 'usuário', n: Object.keys(u.feitas || {}).length, ultimo: u.ultimo || '' })).sort((a, b) => b.n - a.n);
+    return { t, d, total, feitas, pct: d.pct || 0, st, users, ultimo: d.atualizado || '' }; });
+  const n = k => linhas.filter(l => l.st === k).length;
+  const vis = linhas.filter(l => (f === 'todos' || l.st === f) && (!q || (l.t.nome || '').toLowerCase().includes(q))).sort((a, b) => ({ nao: 0, and: 1, ok: 2 }[a.st] - { nao: 0, and: 1, ok: 2 }[b.st]) || b.pct - a.pct || (a.t.nome || '').localeCompare(b.t.nome || ''));
+  const quando = s => { if (!s) return ''; const d = Math.floor((Date.now() - new Date(s)) / 864e5); return d <= 0 ? 'hoje' : d === 1 ? 'ontem' : `há ${d} dias`; };
+  const wa = l => { const tel = String(l.t.telefone || '').replace(/\D/g, ''); if (tel.length < 10) return '';
+    const txt = l.st === 'nao' ? `Olá! Aqui é da NEXUM. O treinamento em vídeo do sistema já está liberado para a ${l.t.nome}: são aulas curtas, com voz, no menu Treinamento do NEXUM RH. Quer ajuda para começar?` : `Olá! Aqui é da NEXUM. Vimos que a ${l.t.nome} já assistiu ${l.feitas} de ${l.total} aulas do treinamento. Faltam poucas: é só abrir o menu Treinamento no NEXUM RH e clicar em Continuar.`;
+    return `<a class="btn ghost sm" target="_blank" rel="noopener" href="https://wa.me/${tel.length <= 11 ? '55' : ''}${tel}?text=${encodeURIComponent(txt)}">Lembrar no WhatsApp</a>`; };
+  const pill = { ok: '<span class="pill ok">Assistiu tudo</span>', and: '<span class="pill warn">Parou no meio</span>', nao: '<span class="pill bad">Não começou</span>' };
+  const kpi = (v, t, k) => `<button class="kpi tr-k${f === k ? ' on' : ''}" data-tf="${k}"><b>${v}</b><span>${t}</span></button>`;
+  el.innerHTML = `<section class="panel"><h2 style="margin:0 0 4px">Treinamento em vídeo dos clientes</h2><p class="hint" style="margin:0 0 12px">As aulas seguem em ordem e não dá para adiantar, então “assistiu tudo” quer dizer que alguém da empresa viu todas até o fim. A empresa conta pela pessoa que mais avançou.</p>
+    <div class="kpis" style="margin-bottom:12px">${kpi(linhas.length, 'empresas', 'todos')}${kpi(n('ok'), 'assistiram tudo', 'ok')}${kpi(n('and'), 'pararam no meio', 'and')}${kpi(n('nao'), 'não começaram', 'nao')}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><input class="inp" id="tr-q" placeholder="Buscar empresa" value="${esc(A.treinQ || '')}" style="flex:1;min-width:200px" aria-label="Buscar empresa"><button class="btn sec sm" id="tr-at">Atualizar</button></div>
+    ${vis.length ? `<ul class="list">${vis.map(l => `<li><div class="av">${esc((l.t.nome || '?').slice(0, 2).toUpperCase())}</div><div class="t" style="flex:1;min-width:0"><div><b>${esc(l.t.nome)}</b> ${pill[l.st]}</div>
+      <div>${l.total ? `${l.feitas} de ${l.total} aulas · ${l.pct}%` : 'nenhuma aula assistida'}${l.ultimo ? ` · última atividade ${quando(l.ultimo)}` : ''}${l.st === 'and' && l.d.ultimaAula ? ` · parou em “${esc(l.d.ultimaAula)}”` : ''}${l.d.concluidoEm ? ` · concluiu em ${new Date(l.d.concluidoEm).toLocaleDateString('pt-BR')}` : ''}</div>
+      ${l.total ? `<div class="tr-bar"><i style="width:${l.pct}%"></i></div>` : ''}
+      ${l.users.length ? `<div class="hint" style="font-size:12px">${l.users.map(u => `${esc(u.nome)}: ${u.n} aula${u.n === 1 ? '' : 's'}`).join(' · ')}</div>` : ''}</div>${l.st !== 'ok' ? wa(l) : ''}</li>`).join('')}</ul>` : '<div class="empty">Nenhuma empresa neste filtro.</div>'}</section>${treinDuvidasHTML()}${treinLinksHTML(quando, pill)}`;
+  $$('[data-tdv]', el).forEach(b => b.onclick = async () => { const k = b.dataset.tdv, t = $(`[data-tdvt="${k}"]`, el).value.trim(); if (!t) return toast('Escreva a resposta.', true); b.disabled = true;
+    try { await FB.db.doc(`treinoLinks/${k.split('/')[0]}/duvidas/${k.split('/')[1]}`).update({ resposta: t, respondidoPor: 'Equipe NEXUM', respondidoEm: new Date().toISOString() }); toast('Resposta enviada. A pessoa vê no link das aulas.'); A.treinCache = null; vTrein(el); } catch (e) { b.disabled = false; toast('Não foi possível responder: ' + (e.code || e.message), true); } });
+  $$('[data-tl-off]', el).forEach(b => b.onclick = async () => { try { await FB.db.doc(`treinoLinks/${b.dataset.tlOff}`).update({ ativo: false }); A.treinCache = null; vTrein(el); } catch (e) { toast('Não foi possível desativar: ' + (e.code || e.message), true); } });
+  $$('[data-tf]', el).forEach(b => b.onclick = () => { A.treinF = b.dataset.tf; vTrein(el); });
+  $('#tr-at', el).onclick = () => { A.treinCache = null; vTrein(el); };
+  let tq; $('#tr-q', el).oninput = e => { clearTimeout(tq); tq = setTimeout(() => { A.treinQ = e.target.value; vTrein(el).then(() => { const i = $('#tr-q'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } }); }, 300); };
+}
+{ const _goTr = go; go = function (v, ms) { if (v === 'trein') { A.view = 'trein'; $$('.side .nav button[data-v]').forEach(b => b.classList.toggle('on', b.dataset.v === 'trein')); $('#side').classList.remove('open'); $('#t-view').textContent = 'Treinamento dos clientes'; const el = $('#view'); el.innerHTML = ''; vTrein(el); $('.content').scrollTop = 0; return; } return _goTr(v, ms); }; }
+(function () { const st = document.createElement('style'); st.textContent = `.tr-bar{height:6px;border-radius:99px;background:var(--line,#e3e8f0);overflow:hidden;margin:6px 0 4px;max-width:360px}.tr-bar i{display:block;height:100%;background:linear-gradient(90deg,#1f5eff,#f26a1b)}
+  button.kpi.tr-k{cursor:pointer;text-align:left;font:inherit;color:inherit;border:0;border-radius:0}button.kpi.tr-k:hover{background:var(--bg,#f4f6fa)}button.kpi.tr-k.on{box-shadow:inset 0 -3px 0 #1f5eff}`; document.head.appendChild(st); })();
+setTimeout(() => { try { if (A.user && document.getElementById('view') && !document.querySelector('.side .nav button[data-v="trein"]')) renderApp(); } catch (e) { } }, 0);
+</script>
+
 </body>
 </html>

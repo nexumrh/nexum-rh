@@ -1,7 +1,7 @@
 /* NEXUM RH — service worker
    Páginas: busca sempre a versão nova na internet; sem internet, abre a última salva.
    Reconhecimento facial (jsdelivr) e os arquivos do Firebase: baixa uma vez e guarda. Os dados do Firebase nunca passam pelo cache. */
-const VERSAO = 'nexum-v4';
+const VERSAO = 'nexum-v5';
 const BASE = ['./', './index.html', './nexum_portal.html', './manifest-rh.webmanifest', './manifest-portal.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(VERSAO).then(c => Promise.all(BASE.map(u => c.add(u).catch(() => { })))).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== VERSAO).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
@@ -18,6 +18,7 @@ self.addEventListener('fetch', e => {
     return;
   }
   if (u.origin !== location.origin) return;
+  if (/\.(mp4|webm)$/.test(u.pathname)) return; /* videoaulas: o navegador busca em partes, não guarda no cache */
   if (r.mode === 'navigate' || r.destination === 'document') {
     e.respondWith(fetch(r).then(n => { const cp = n.clone(); caches.open(VERSAO).then(c => c.put(r, cp)); return n; }).catch(() => caches.match(r, { ignoreSearch: true }).then(h => h || caches.match('./'))));
     return;
