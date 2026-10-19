@@ -2690,6 +2690,17 @@ if (typeof vNum === 'function') { const _vnPv = vNum; vNum = async function (el)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 <script>
 /* =====================================================================
    TREINAMENTO DOS CLIENTES: quem já assistiu todas as videoaulas,
@@ -3093,5 +3104,75 @@ vTrein = async function (el) {
 { const _goEm = go; go = function (v, ms) { const r = _goEm(v, ms); if (v === 'plat') setTimeout(() => painelEmail($('#view')).catch(() => { }), 500); return r; }; }
 
 </script>
+<script>
+/* =====================================================================
+   LOTE 31 (Painel do Dono): menu lateral organizado em grupos que abrem e
+   fecham, igual ao NEXUM RH. Os itens que outros módulos acrescentam
+   depois entram sozinhos no grupo certo.
+   ===================================================================== */
+const MENU_GRUPOS = [
+  ['ATENDIMENTO', ['crmnx', 'sup', 'crm', 'sug']],
+  ['CLIENTES', ['empresas', 'saude', 'canc', 'impl']],
+  ['TREINAMENTO', ['trein', 'reun', 'demo']],
+  ['FINANCEIRO', ['num', 'pag', 'asaas', 'nf', 'ped', 'cupons']],
+  ['VENDAS E DIVULGAÇÃO', ['leads', 'indic', 'rst', 'rev', 'depo', 'novid', 'avisos']],
+  ['PLATAFORMA', ['equipe', 'gest', 'stat', 'plat', 'chave']]
+];
+const MENU_CHEV = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+const menuGrupoDe = v => (MENU_GRUPOS.find(g => g[1].includes(v)) || [])[0] || '';
+const menuSalvos = () => { try { return JSON.parse(localStorage.getItem('nx:menu')) || null; } catch (e) { return null; } };
+let _menuOcupado = false;
+function agruparMenu() {
+  const nav = document.querySelector('.side .nav'); if (!nav || _menuOcupado) return;
+  const soltos = [...nav.querySelectorAll(':scope > button[data-v]')].filter(b => menuGrupoDe(b.dataset.v)); if (!soltos.length) return;
+  _menuOcupado = true;
+  try {
+    const salvos = menuSalvos(), atual = menuGrupoDe(A.view);
+    MENU_GRUPOS.forEach(([g, ks]) => {
+      let sec = nav.querySelector(`:scope > .nav-sec[data-g="${g}"]`);
+      if (!sec) { const id = 'g-' + g.normalize('NFD').replace(/[^A-Za-z]/g, '').toLowerCase(), aberto = g === atual || (salvos ? salvos.includes(g) : g === 'ATENDIMENTO');
+        sec = document.createElement('div'); sec.className = 'nav-sec' + (aberto ? ' aberto' : ''); sec.dataset.g = g;
+        sec.innerHTML = `<button class="nav-g" type="button" aria-expanded="${aberto}" aria-controls="${id}"><span>${g}</span><span class="bdg bdg-g"></span>${MENU_CHEV}</button><div class="nav-itens" id="${id}"><div></div></div>`;
+        sec.querySelector('.nav-g').onclick = e => { e.stopPropagation(); abrirGrupoMenu(g); };
+        const prim = ks.map(k => nav.querySelector(`:scope > button[data-v="${k}"]`)).find(Boolean); if (prim) nav.insertBefore(sec, prim); else nav.appendChild(sec); }
+      const cx = sec.querySelector('.nav-itens > div');
+      ks.forEach(k => { const b = nav.querySelector(`:scope > button[data-v="${k}"]`); if (b) cx.appendChild(b); });
+      [...cx.children].sort((a, b) => ks.indexOf(a.dataset.v) - ks.indexOf(b.dataset.v)).forEach(b => cx.appendChild(b));
+    });
+    /* grupos na ordem da lista, depois dos itens soltos (Visão geral, Monitor...) */
+    MENU_GRUPOS.forEach(([g]) => { const s = nav.querySelector(`:scope > .nav-sec[data-g="${g}"]`); if (s) nav.appendChild(s); });
+    menuBadges();
+  } finally { _menuOcupado = false; }
+}
+function abrirGrupoMenu(g, abrir) {
+  const sec = document.querySelector(`.side .nav-sec[data-g="${g}"]`); if (!sec) return;
+  const on = abrir === undefined ? !sec.classList.contains('aberto') : abrir;
+  sec.classList.toggle('aberto', on); sec.querySelector('.nav-g').setAttribute('aria-expanded', on);
+  try { localStorage.setItem('nx:menu', JSON.stringify([...document.querySelectorAll('.side .nav-sec.aberto')].map(x => x.dataset.g))); } catch (e) { }
+}
+function menuBadges() {
+  document.querySelectorAll('.side .nav-sec').forEach(sec => {
+    const bs = [...sec.querySelectorAll('.nav-itens button[data-v]')]; if (sec.hidden !== !bs.length) sec.hidden = !bs.length;
+    const n = bs.reduce((t, b) => t + ([...b.querySelectorAll('.bdg')].reduce((s, x) => s + (parseInt(x.textContent) || 0), 0)), 0);
+    const g = sec.querySelector('.bdg-g'), t = n ? String(n) : ''; if (g && g.textContent !== t) g.textContent = t;
+  });
+}
+{ const _ra31 = renderApp; renderApp = function () { const r = _ra31.apply(this, arguments); agruparMenu(); const nav = document.querySelector('.side .nav');
+    if (nav && !nav._obs) { nav._obs = new MutationObserver(() => { if (!_menuOcupado) agruparMenu(); }); nav._obs.observe(nav, { childList: true }); }
+    return r; }; }
+{ const _go31 = go; go = function (v) { const r = _go31.apply(this, arguments); const g = menuGrupoDe(v); if (g && !document.querySelector(`.side .nav-sec[data-g="${g}"].aberto`)) abrirGrupoMenu(g, true); return r; }; }
+(function () { const st = document.createElement('style'); st.textContent = `
+  .side .nav .nav-g{width:100%;font-size:11px;font-weight:700;letter-spacing:.08em;color:rgba(255,255,255,.45);padding:12px 12px 6px;margin-top:6px;gap:8px;border-radius:8px}
+  .side .nav .nav-g:hover{background:rgba(255,255,255,.05);color:#fff}
+  .side .nav .nav-g .bdg-g{margin-left:auto}.side .nav .nav-g .bdg-g:empty{display:none}.side .nav .nav-g .bdg-g:empty+.chev{margin-left:auto}
+  .side .nav .nav-g .chev{width:16px;height:16px;margin-left:6px;transition:transform .2s;opacity:.8;flex:0 0 16px}
+  .side .nav .nav-g[aria-expanded="true"] .chev{transform:rotate(180deg);margin-left:auto}.side .nav .nav-g[aria-expanded="true"] .bdg-g{display:none}
+  .side .nav-itens{display:grid;grid-template-rows:0fr;transition:grid-template-rows .22s ease}
+  .side .nav-itens>div{overflow:hidden;display:flex;flex-direction:column;gap:2px;min-height:0}
+  .side .nav-sec.aberto .nav-itens{grid-template-rows:1fr}.side .nav-sec[hidden]{display:none}`; document.head.appendChild(st); })();
+setTimeout(() => { try { if (A.user && document.querySelector('.side .nav')) { agruparMenu(); const nav = document.querySelector('.side .nav'); if (!nav._obs) renderApp(); } } catch (e) { } }, 0);
+setInterval(() => { try { menuBadges(); } catch (e) { } }, 3000);
+</script>
+
 </body>
 </html>
