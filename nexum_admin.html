@@ -2657,6 +2657,39 @@ if (typeof vNum === 'function') { const _vnPv = vNum; vNum = async function (el)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <script>
 /* =====================================================================
    TREINAMENTO DOS CLIENTES: quem já assistiu todas as videoaulas,
@@ -3005,5 +3038,60 @@ if (typeof supChat === 'function') { const _scL28 = supChat; supChat = function 
   return r; }; }
 </script>
 
+<script>
+/* =====================================================================
+   LOTE 30 (Painel do Dono): e-mail dos avisos (Brevo ou Resend), convite de reunião
+   e lembrete do treinamento por e-mail. A chave do provedor vai só para o conector
+   (segredos/email); o navegador nunca guarda a chave.
+   ===================================================================== */
+async function emailStatus() { try { return await asaasCall('/api/email/status', {}); } catch (e) { return { erro: e.message }; } }
+async function painelEmail(el) {
+  if (!el || $('#em-p', el) || A.papel !== 'dono' && A.papel) return;
+  const sec = document.createElement('section'); sec.className = 'panel'; sec.id = 'em-p';
+  sec.innerHTML = '<h2 style="margin:0 0 4px">E-mail dos avisos</h2><p class="hint" style="margin:0">Lendo a configuração…</p>';
+  const sm = $('#sm-p', el); if (sm) sm.after(sec); else el.prepend(sec);
+  const st = await emailStatus(), c = (st && st.config) || null, uso = (st && st.uso) || {}, hojeU = uso.dia === new Date(Date.now() - 3 * 36e5).toISOString().slice(0, 10) ? uso.n || 0 : 0;
+  sec.innerHTML = `<h2 style="margin:0 0 4px">E-mail dos avisos</h2>
+    <p class="hint" style="margin:0 0 10px">Com o e-mail ligado, os avisos também chegam na caixa de entrada: etapa do candidato (aprovado, reprovado, entrevista, proposta), holerite, férias, documentos e comunicados para o funcionário, pedidos para o RH, confirmação da demonstração e boas-vindas para empresa nova.</p>
+    ${c && c.ativo ? `<p style="margin:0 0 10px"><span class="pill ok">Ligado</span> Envia como <b>${esc(c.nome || 'NEXUM')}</b> &lt;${esc(c.remetente)}&gt; pelo ${c.provedor === 'resend' ? 'Resend' : 'Brevo'} · hoje: ${hojeU} de ${c.limiteDia} e-mails</p>` : st && st.erro ? `<p class="hint" style="margin:0 0 10px">${esc(st.erro)}</p>` : '<p style="margin:0 0 10px"><span class="pill warn">Desligado</span> Os avisos saem só no celular (e no WhatsApp, quando ligado).</p>'}
+    <details ${c && c.ativo ? '' : 'open'}><summary style="cursor:pointer;font-weight:600">${c && c.ativo ? 'Trocar a configuração' : 'Como ligar (grátis, 5 minutos)'}</summary>
+    <ol class="hint" style="margin:8px 0 10px;padding-left:18px;line-height:1.6"><li>Crie a conta grátis em <a href="https://www.brevo.com/" target="_blank" rel="noopener">brevo.com</a> (300 e-mails por dia sem pagar).</li><li>Em <b>Senders, Domains &amp; Dedicated IPs</b>, cadastre e confirme o e-mail que vai enviar (o ideal é um do domínio nexumdp.com.br, como avisos@nexumdp.com.br).</li><li>Em <b>SMTP &amp; API</b> &gt; <b>API Keys</b>, gere uma chave e cole abaixo.</li><li>Clique em <b>Salvar e testar</b>: chega um e-mail de teste no seu endereço.</li></ol>
+    <div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:8px"><select class="inp" id="em-pv" aria-label="Provedor" style="max-width:160px"><option value="brevo">Brevo</option><option value="resend"${c && c.provedor === 'resend' ? ' selected' : ''}>Resend</option></select>
+      <input class="inp" id="em-k" type="password" autocomplete="off" placeholder="${c && c.ativo ? 'Chave guardada (deixe vazio para manter)' : 'Chave da API'}" style="flex:1;min-width:220px" aria-label="Chave da API"></div>
+    <div class="row" style="gap:8px;flex-wrap:wrap"><input class="inp" id="em-r" type="email" placeholder="E-mail remetente confirmado" value="${esc((c && c.remetente) || '')}" style="flex:1;min-width:200px" aria-label="E-mail remetente">
+      <input class="inp" id="em-n" placeholder="Nome que aparece" value="${esc((c && c.nome) || 'NEXUM')}" style="max-width:180px" aria-label="Nome do remetente">
+      <input class="inp" id="em-l" inputmode="numeric" placeholder="Limite por dia" value="${esc(String((c && c.limiteDia) || ''))}" style="max-width:130px" aria-label="Limite de e-mails por dia">
+      <button class="btn" id="em-ok">Salvar e testar</button></div></details>`;
+  $('#em-ok', sec).onclick = async ev => { const b = ev.currentTarget; b.disabled = true; b.textContent = 'Testando…';
+    try { const r = await asaasCall('/api/email/config', { provedor: $('#em-pv', sec).value, chave: $('#em-k', sec).value.trim(), remetente: $('#em-r', sec).value.trim(), nome: $('#em-n', sec).value.trim(), limiteDia: +$('#em-l', sec).value.replace(/\D/g, '') || 0 });
+      toast(`E-mail ligado. O teste foi para ${r.teste}.`); sec.remove(); painelEmail(el); }
+    catch (e) { b.disabled = false; b.textContent = 'Salvar e testar'; toast(e.message, true); } };
+}
+/* manda uma lista de e-mails pelo conector (a equipe NEXUM responde pelo próprio e-mail) */
+async function emailEquipe(lista) { const l = lista.filter(x => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(x.para || ''))); if (!l.length) throw new Error('Nenhuma empresa com e-mail cadastrado.'); return asaasCall('/api/notificar', { lista: l }); }
+const _reunMandarWa30 = reunMandarWa;
+reunMandarWa = function (r) {
+  _reunMandarWa30(r);
+  const ts = (r.tids || []).map(t => A.tenants.find(x => x.id === t)).filter(Boolean), f = $('#modal-root .modal-f'); if (!f || !ts.length) return;
+  const b = document.createElement('button'); b.className = 'btn'; b.textContent = `Mandar por e-mail (${ts.filter(t => t.email).length})`; f.prepend(b);
+  b.onclick = async () => { b.disabled = true;
+    try { const x = await emailEquipe(ts.map(t => ({ para: t.email, nome: t.nome, assunto: `Convite: ${r.titulo}`, titulo: r.titulo, texto: reunTexto(r, '', t.nome, t.id).replace(/\*/g, '').replace(/\n[^\n]*https?:\/\/\S+/, '').trim(), url: `${REUN_URL}${r.id}&e=${encodeURIComponent(t.nome)}&t=${encodeURIComponent(t.id)}`, botao: 'Confirmar presença e entrar' })));
+      toast(x.enviados ? `Convite enviado para ${x.enviados} e-mail(s).` : x.motivo === 'sem_email' ? 'Ligue o e-mail em Dados da plataforma.' : 'Nenhum e-mail enviado (limite do dia).', !x.enviados); }
+    catch (e) { toast(e.message, true); } b.disabled = false; };
+};
+const _vTrein30 = vTrein;
+vTrein = async function (el) {
+  await _vTrein30(el); if (A.view !== 'trein' || !A.treinCache || $('#tr-em', el)) return;
+  const m = A.treinCache.m, faltam = (A.tenants || []).filter(t => !t.bloqueado && t.email && !(m[t.id] || {}).concluido), bar = $('#tr-at', el); if (!bar || !faltam.length) return;
+  const b = document.createElement('button'); b.className = 'btn sec sm'; b.id = 'tr-em'; b.textContent = `Lembrar por e-mail (${faltam.length})`; bar.after(b);
+  b.onclick = async () => { if (!confirm(`Mandar um lembrete do treinamento por e-mail para ${faltam.length} empresa(s) que ainda não terminaram?`)) return; b.disabled = true;
+    try { const x = await emailEquipe(faltam.map(t => { const d = m[t.id] || {}; return { para: t.email, nome: t.nome, assunto: 'Seu treinamento do NEXUM RH', titulo: d.feitas ? 'Faltam poucas aulas' : 'Seu treinamento está liberado',
+        texto: d.feitas ? `A ${t.nome} já assistiu ${d.feitas} de ${d.total} aulas do treinamento. Para terminar, entre no NEXUM RH, abra o menu Treinamento e clique em Continuar.` : `O treinamento em vídeo do NEXUM RH já está liberado para a ${t.nome}: aulas curtas, com voz, mostrando cada tela. É só entrar no sistema e abrir o menu Treinamento.`, url: 'https://rh.nexumdp.com.br/', botao: 'Abrir o treinamento' }; }));
+      toast(`${x.enviados} lembrete(s) enviados por e-mail.`); }
+    catch (e) { toast(e.message, true); } b.disabled = false; };
+};
+{ const _goEm = go; go = function (v, ms) { const r = _goEm(v, ms); if (v === 'plat') setTimeout(() => painelEmail($('#view')).catch(() => { }), 500); return r; }; }
+
+</script>
 </body>
 </html>

@@ -3210,7 +3210,7 @@ async function pushEnviar(para, titulo, corpo, url, tag) {
   try {
     if (!FB_ON || !FB.tid || !FB.auth.currentUser) return; const base = await pushBase(); if (!base) return;
     const tk = await FB.auth.currentUser.getIdToken();
-    fetch(base + '/api/push', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tk }, body: JSON.stringify({ tid: FB.tid, para, titulo: String(titulo).slice(0, 80), corpo: String(corpo || '').slice(0, 180), url: url || '', tag: tag || '' }) }).catch(() => { });
+    fetch(base + '/api/push', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tk }, body: JSON.stringify({ tid: FB.tid, para, titulo: String(titulo).slice(0, 80), corpo: String(corpo || '').slice(0, 500), url: url || '', tag: tag || '' }) }).catch(() => { });
   } catch (e) { }
 }
 /* compara a lista antes e depois de cada gravação para descobrir o que aconteceu */
@@ -3506,6 +3506,22 @@ function painelComparar(el) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <script>
 /* =====================================================================
    LOTE 28 (Portal): treinamentos da empresa com vídeo dentro do portal,
@@ -3666,5 +3682,28 @@ if (typeof go === 'function') { const _goL29 = go; go = function (v) { const r =
   return r; }; }
 </script>
 
+<script>
+/* =====================================================================
+   LOTE 30 (Portal): atalhos no ícone do celular. Segurando o ícone do
+   NEXUM Ponto aparecem "Bater ponto", "Holerites", "Falar com o RH" e
+   "Minha escala"; o portal abre direto na tela escolhida (depois do login).
+   Em "Bater ponto" a câmera já abre para registrar.
+   ===================================================================== */
+let IR_PORTAL = (() => { try { const v = (new URLSearchParams(location.search).get('ir') || location.hash.slice(1) || '').replace(/[^a-z]/g, ''); return v; } catch (e) { return ''; } })();
+let IR_ATE = 0, IR_CLICOU = false;
+{ const _goIr = go; go = function (v) {
+  if (IR_PORTAL && typeof PNAV !== 'undefined' && P.c && PNAV.some(n => n[0] === IR_PORTAL)) {
+    if (!IR_ATE) { IR_ATE = Date.now() + 4000; try { const u = new URL(location.href); u.searchParams.delete('ir'); u.hash = ''; history.replaceState(null, '', u.pathname + u.search); } catch (e) { } }
+    if (Date.now() > IR_ATE) IR_PORTAL = '';
+    else if (v === 'inicio' || v === 'integracao' || v === P.view || v === IR_PORTAL) {
+      const alvo = IR_PORTAL, r = _goIr.call(this, alvo);
+      if (alvo === 'ponto' && !IR_CLICOU) { IR_CLICOU = true; setTimeout(() => { const b = document.getElementById('pc-reg'); if (P.view !== 'ponto' || !b) return; if (!document.querySelector('#modal-root .ov')) b.click(); else b.focus(); }, 700); }
+      return r;
+    } else IR_PORTAL = '';
+  }
+  return _goIr.apply(this, arguments);
+}; }
+
+</script>
 </body>
 </html>

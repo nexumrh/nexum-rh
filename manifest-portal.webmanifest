@@ -28,5 +28,56 @@
   "description": "Bata o ponto, veja holerites, férias e documentos.",
   "id": "./nexum_portal.html?app=portal",
   "start_url": "./nexum_portal.html?app=portal",
-  "scope": "./"
+  "scope": "./",
+  "shortcuts": [
+    {
+      "name": "Bater ponto",
+      "short_name": "Bater ponto",
+      "description": "Abre direto a tela de bater o ponto",
+      "url": "./nexum_portal.html?app=portal&ir=ponto",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Meus holerites",
+      "short_name": "Holerites",
+      "url": "./nexum_portal.html?app=portal&ir=holerites",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Falar com o RH",
+      "short_name": "Chat RH",
+      "url": "./nexum_portal.html?app=portal&ir=chat",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Minha escala",
+      "short_name": "Escala",
+      "url": "./nexum_portal.html?app=portal&ir=escala",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
 }
