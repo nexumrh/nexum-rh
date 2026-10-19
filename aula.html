@@ -58,7 +58,18 @@ const tok = new URLSearchParams(location.search).get('t') || '';
 let CONT = null, DVS = [];
 let db = null, ref = null, L = null, lista = [], P = { feitas: {}, pos: {} }, atual = null, salvoEm = 0;
 function erro(t) { $('#app').innerHTML = `<div class="card erro"><h1>Link não encontrado</h1><p class="mut">${t}</p></div>`; }
+/* modo direto (sem código): usado dentro do sistema de Recrutamento quando o link não pôde ser criado; o progresso fica neste aparelho */
+const QM = new URLSearchParams(location.search), MODO = QM.get('m') || '';
+async function initDireto() {
+  L = { mod: MODO, nome: QM.get('n') || '', empresa: QM.get('e') || '', ativo: true, direto: true };
+  lista = CAT.filter(a => a.mod === L.mod);
+  let loc = {}; try { loc = JSON.parse(localStorage.getItem('nx-aula-direto-' + MODO) || '{}'); } catch (e) { }
+  P.feitas = loc.feitas || {}; P.pos = loc.pos || {}; P.quiz = loc.quiz || null;
+  $('#sub').textContent = 'Treinamento · ' + MODS[L.mod][0];
+  const prox = lista.find(a => !P.feitas[a.id]); if (!prox && QUIZ[L.mod] && !(P.quiz && P.quiz.acertos === P.quiz.total)) quizTela(); else desenhar(prox ? prox.id : lista[0].id);
+}
 async function init() {
+  if (!tok && MODS[MODO] && MODO !== 'portal') return initDireto();
   if (!/^[A-Za-z0-9]{12,40}$/.test(tok)) return erro('Este link de treinamento está incompleto. Peça um novo link para a NEXUM.');
   try { firebase.initializeApp(FIREBASE_CONFIG); db = firebase.firestore(); ref = db.collection('treinoLinks').doc(tok); const d = await ref.get(); if (!d.exists) return erro('Este link não existe ou foi desativado. Peça um novo link para a NEXUM.'); L = d.data(); }
   catch (e) { return erro('Não foi possível abrir o treinamento agora. Confira a internet e tente de novo.'); }
@@ -71,6 +82,7 @@ async function init() {
   const prox = lista.find(a => !P.feitas[a.id]); if (!prox && QUIZ[L.mod] && !(P.quiz && P.quiz.acertos === P.quiz.total)) quizTela(); else desenhar(prox ? prox.id : lista[0].id);
 }
 function salvar(agora) {
+  if (L && L.direto) { try { localStorage.setItem('nx-aula-direto-' + MODO, JSON.stringify(P)); } catch (e) { } return; }
   try { localStorage.setItem('nx-aula-' + tok, JSON.stringify(P)); } catch (e) { }
   if (!agora && Date.now() - salvoEm < 15000) return; salvoEm = Date.now();
   const n = lista.filter(a => P.feitas[a.id]).length, qok = !QUIZ[L.mod] || (P.quiz && P.quiz.acertos === P.quiz.total), d = { feitas: P.feitas, pos: P.pos, pct: Math.round(n / lista.length * 100), concluido: n >= lista.length && !!qok, atualizado: new Date().toISOString(), ...(P.quiz ? { quiz: P.quiz } : {}) };
@@ -133,8 +145,9 @@ function tocar(a, feita, i) {
   $('#fs').onclick = () => { const w = $('#pl'); try { document.fullscreenElement ? document.exitFullscreen() : (w.requestFullscreen || w.webkitRequestFullscreen).call(w); } catch (e) { } };
   v.play().catch(() => { $('#msg').textContent = 'Toque em ▶ para começar a aula.'; pp.focus(); });
 }
-const DEST = () => L.mod === 'portal' && L.tid ? 'Escreva o que ficou com dúvida. Ela vai para o RH da sua empresa, e a resposta aparece aqui nesta página.' : 'Escreva o que ficou com dúvida. Ela vai para a equipe NEXUM, e a resposta aparece aqui nesta página.';
+const DEST = () => !ref ? 'Neste modo a dúvida vai pelo suporte do sistema (balão no canto da tela).' : L.mod === 'portal' && L.tid ? 'Escreva o que ficou com dúvida. Ela vai para o RH da sua empresa, e a resposta aparece aqui nesta página.' : 'Escreva o que ficou com dúvida. Ela vai para a equipe NEXUM, e a resposta aparece aqui nesta página.';
 async function enviarDuvida(a, n) {
+  if (!ref) { $('#msg').textContent = 'Mande sua dúvida pelo suporte do sistema, no balão do canto da tela.'; $('#dv').hidden = true; return; }
   const t = $('#dvt').value.trim(); if (!t) { $('#dvt').focus(); return; } const b = $('#dvok'); b.disabled = true; const em = new Date().toISOString();
   const d = { texto: t.slice(0, 1500), aula: a.id, aulaTitulo: a.titulo, aulaN: n, em, nome: L.nome || '', tid: L.tid || '', mod: L.mod, para: L.mod === 'portal' && L.tid ? 'rh' : 'adm' };
   try { const r = await ref.collection('duvidas').add(d); DVS.unshift({ id: r.id, ...d }); L.duvidas = (L.duvidas || 0) + 1; ref.update({ duvidas: L.duvidas, duvidaEm: em }).catch(() => { });
