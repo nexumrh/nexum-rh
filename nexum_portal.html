@@ -3528,6 +3528,20 @@ function painelComparar(el) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <script>
 /* =====================================================================
    LOTE 28 (Portal): treinamentos da empresa com vídeo dentro do portal,
@@ -3711,5 +3725,42 @@ let IR_ATE = 0, IR_CLICOU = false;
 }; }
 
 </script>
+<script>
+/* =====================================================================
+   LOTE 32 (Portal): contato de emergência em Meu perfil.
+   ===================================================================== */
+const EMERG_KEY = () => `nexum:${P.t.id}:emergencia:${me()}`;
+async function emergLer() {
+  if (FB_ON && FB.db && FB.tid) { try { const d = await FB.col('emergencia').doc(me()).get(); return d.exists ? d.data() : null; } catch (e) { return null; } }
+  try { return JSON.parse(localStorage.getItem(EMERG_KEY()) || 'null'); } catch (e) { return null; }
+}
+async function emergSalvar(contatos) {
+  const d = { id: me(), colabId: me(), contatos, em: new Date().toISOString() };
+  if (FB_ON && FB.db && FB.tid) await FB.col('emergencia').doc(me()).set(d); else localStorage.setItem(EMERG_KEY(), JSON.stringify(d));
+  return d;
+}
+function emergForm(el, d) {
+  const l = ((d && d.contatos) || []).concat([{}, {}]).slice(0, 2), f = (x, n) => `<fieldset class="em-f"><legend>Contato ${n + 1}${n ? ' (opcional)' : ''}</legend><div class="fld"><label for="em-n${n}">Nome</label><input class="inp" id="em-n${n}" maxlength="60" value="${esc(x.nome || '')}" autocomplete="off"></div>
+    <div class="row" style="gap:8px"><div class="fld" style="flex:1"><label for="em-p${n}">Parentesco</label><input class="inp" id="em-p${n}" maxlength="30" placeholder="Mãe, esposo(a)…" value="${esc(x.parentesco || '')}"></div><div class="fld" style="flex:1"><label for="em-t${n}">Telefone</label><input class="inp" id="em-t${n}" inputmode="tel" maxlength="20" placeholder="(45) 99999-9999" value="${esc(x.tel || '')}"></div></div></fieldset>`;
+  modal('Contato de emergência', `<p class="hint" style="margin-top:0">Quem a empresa deve chamar se acontecer alguma coisa com você no trabalho. Só o RH vê.</p>${l.map(f).join('')}
+    <div class="fld"><label for="em-o">Alguma informação importante? (opcional)</label><input class="inp" id="em-o" maxlength="120" placeholder="Ex.: tipo sanguíneo, alergia a remédio" value="${esc((((d && d.contatos) || [])[0] || {}).obs || '')}"></div>`,
+    { foot: '<button class="btn sec" data-close>Cancelar</button><button class="btn" id="em-ok">Salvar</button>', onMount: m => $('#em-ok', m).onclick = async ev => {
+      const c = [0, 1].map(n => ({ nome: $(`#em-n${n}`, m).value.trim().slice(0, 60), parentesco: $(`#em-p${n}`, m).value.trim().slice(0, 30), tel: $(`#em-t${n}`, m).value.trim().slice(0, 20) })).filter(x => x.nome || x.tel);
+      if (!c.length) return toast('Preencha pelo menos um contato.', true); if (c.some(x => !x.nome || String(x.tel).replace(/\D/g, '').length < 10)) return toast('Informe nome e telefone com DDD.', true);
+      const o = $('#em-o', m).value.trim().slice(0, 120); if (o) c[0].obs = o;
+      ev.currentTarget.disabled = true; try { await emergSalvar(c); closeModal(); toast('Contato de emergência salvo.'); go('perfil'); } catch (e) { ev.currentTarget.disabled = false; toast('Não foi possível salvar agora. Tente de novo.', true); }
+    } });
+}
+{ const _vp32 = vPerfil; vPerfil = function (el) { const r = _vp32.apply(this, arguments); try {
+  const sec = el.querySelector('section.panel'); if (!sec || $('#em-c', el)) return r;
+  const box = document.createElement('section'); box.className = 'panel'; box.id = 'em-c'; box.innerHTML = '<h2 style="margin:0 0 4px">Contato de emergência</h2><p class="hint" style="margin:0">Carregando…</p>'; sec.after(box);
+  emergLer().then(d => { const l = (d && d.contatos) || []; if (!box.isConnected) return;
+    box.innerHTML = `<h2 style="margin:0 0 4px">Contato de emergência</h2>${l.length ? `<div class="res">${l.map(x => `<div><span class="hint">${esc(x.parentesco || 'Contato')}</span><span style="text-align:right">${esc(x.nome)} · ${esc(x.tel)}</span></div>`).join('')}</div>` : '<p class="hint" style="margin:0 0 10px">Cadastre quem a empresa deve chamar numa emergência. Só o RH vê.</p>'}
+      <div class="row end" style="margin-top:10px"><button class="btn ${l.length ? 'sec' : ''}" id="em-ed">${l.length ? 'Atualizar' : 'Cadastrar contato'}</button></div>`;
+    $('#em-ed', box).onclick = () => emergForm(el, d); });
+} catch (e) { console.warn(e); } return r; }; }
+(function () { const st = document.createElement('style'); st.textContent = 'body:has(#modal-root .ov) #sup-b{display:none!important}.em-f{border:1px solid var(--line);border-radius:12px;padding:8px 12px;margin:0 0 10px}.em-f legend{font-weight:600;padding:0 6px;font-size:14px}'; document.head.appendChild(st); })();
+</script>
+
 </body>
 </html>
