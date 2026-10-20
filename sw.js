@@ -1,7 +1,8 @@
 /* NEXUM RH — service worker
-   Páginas: busca sempre a versão nova na internet; sem internet, abre a última salva.
+   Páginas: abrem na hora com a última versão salva e, ao mesmo tempo, buscam a nova na internet.
+   Se chegou versão nova, o app avisa "Nova versão disponível". Sem internet, abre a última salva.
    Reconhecimento facial (jsdelivr) e os arquivos do Firebase: baixa uma vez e guarda. Os dados do Firebase nunca passam pelo cache. */
-const VERSAO = 'nexum-v6';
+const VERSAO = 'nexum-v7';
 const BASE = ['./', './index.html', './nexum_portal.html', './manifest-rh.webmanifest', './manifest-portal.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(VERSAO).then(c => Promise.all(BASE.map(u => c.add(u).catch(() => { })))).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== VERSAO).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
@@ -20,7 +21,12 @@ self.addEventListener('fetch', e => {
   if (u.origin !== location.origin) return;
   if (/\.(mp4|webm)$/.test(u.pathname)) return; /* videoaulas: o navegador busca em partes, não guarda no cache */
   if (r.mode === 'navigate' || r.destination === 'document') {
-    e.respondWith(fetch(r).then(n => { const cp = n.clone(); caches.open(VERSAO).then(c => c.put(r, cp)); return n; }).catch(() => caches.match(r, { ignoreSearch: true }).then(h => h || caches.match('./'))));
+    e.respondWith((async () => {
+      const c = await caches.open(VERSAO), h = await c.match(r, { ignoreSearch: true });
+      const rede = fetch(r).then(async n => { if (n.ok) { const novo = n.clone(), txt = await n.clone().text(); const velho = h ? await h.clone().text() : null; await c.put(r, novo); if (h && velho !== txt) { const cl = await self.clients.matchAll({ type: 'window' }); cl.forEach(x => x.postMessage('nexum-nova-versao')); } } return n; });
+      if (h) { e.waitUntil(rede.catch(() => { })); return h; }
+      try { return await rede; } catch (er) { return (await caches.match('./')) || Response.error(); }
+    })());
     return;
   }
   e.respondWith(caches.match(r).then(h => { const n = fetch(r).then(x => { if (x.ok) caches.open(VERSAO).then(c => c.put(r, x.clone())); return x; }).catch(() => h); return h || n; }));
