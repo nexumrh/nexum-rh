@@ -3566,6 +3566,24 @@ function painelComparar(el) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <script>
 /* =====================================================================
    LOTE 28 (Portal): treinamentos da empresa com vídeo dentro do portal,
@@ -3921,6 +3939,204 @@ function cpResponder({ titulo, intro, chave, salvar, aoFim }) {
   .cp-res{display:grid;gap:10px}.cp-rec{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:10px 12px;border-radius:12px}.cp-rec b{font-size:17px}.cp-rec span{font-size:13px;opacity:.8}.cp-ok.cp-rec,.cp-rec.cp-ok{background:rgba(22,163,74,.12);color:#15803d}.cp-rec.cp-warn{background:rgba(217,119,6,.13);color:#b45309}.cp-rec.cp-bad{background:rgba(198,45,70,.12);color:#b91c3c}
   .cp-rs{margin:0;line-height:1.5}.cp-bars{display:grid;gap:5px}.cp-bar{display:grid;grid-template-columns:minmax(120px,190px) 1fr 34px;gap:8px;align-items:center;font-size:13px}.cp-bar i{height:8px;border-radius:99px;background:rgba(127,127,127,.2);overflow:hidden}.cp-bar i b{display:block;height:100%;background:#1f5eff}.cp-bar em{font-style:normal;text-align:right;font-weight:700}
   .cp-conf,.cp-av{margin:0;font-size:12px;opacity:.75}.cp-l ul{margin:4px 0 0;padding-left:18px}.cp-l li{margin:2px 0;font-size:14px}`; document.head.appendChild(st); })();
+
+</script>
+<script>
+/* =====================================================================
+   LOTE 35 (Portal): ponto biométrico mais esperto.
+   - Lembrete da volta do almoço e "Esqueceu a saída?" com atalho para justificar
+   - Ponto com o QR da loja (código que muda a cada 20 segundos no tablet/totem)
+   - Trava do almoço e aviso das 11 horas de descanso antes de registrar
+   - Cartão da batida mostra a loja (quando cobre outra loja), a previsão de saída e o banco de horas
+   - Aviso de rosto desatualizado e selo de pontualidade da semana
+   - Simulador "Se eu sair" (rescisão)
+   ===================================================================== */
+const P35 = { qrOk: null };
+const p35Marc = dia => (((G('ponto').find(p => p.colabId === me() && p.data === dia)) || {}).marc || []).filter(Boolean).slice().sort();
+const p35HM = min => { const m = ((Math.round(min) % 1440) + 1440) % 1440; return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; };
+const p35Agora = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
+const p35Loja = id => (P.cfg.lojas || []).find(l => l.id === id || l.nome === id) || null;
+const p35Norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+
+/* ---------- 1) lembretes com o app fechado: entrada, volta do almoço, saída e "esqueceu a saída?" ---------- */
+let _agT35 = 0;
+pushAgenda = function () {
+  clearTimeout(_agT35); _agT35 = setTimeout(async () => {
+    try {
+      if (!P.c || !FB_ON || !FB.auth.currentUser || !pushLigado()) return;
+      const uid = FB.auth.currentUser.uid, ref = FB.db.collection('pushAgenda').doc(uid);
+      if (localStorage.getItem('nexum:lembrete') === '0') return ref.delete().catch(() => { });
+      const futuros = p35Lembretes(Date.now());
+      await ref.set({ uid, tid: FB.tid, colabId: me(), itens: futuros, proximo: futuros.length ? futuros[0].em : '9999-12-31T00:00:00.000Z', em: new Date().toISOString() });
+    } catch (e) { console.warn('[push agenda]', e); }
+  }, 1500);
+};
+function p35Lembretes(agora) {
+  const itens = [];
+  for (let k = 0; k < 7; k++) {
+    const dt = addD(hoje(), k), t = turnoDia(P.c, dt, P.cfg); if (!t || !t.ent || !t.sai) continue;
+    const em = (hhmm, delta, prox) => { const [a, b] = hhmm.split(':').map(Number), d = new Date(dt); if (prox) d.setDate(d.getDate() + 1); d.setHours(a, b + delta, 0, 0); return d; };
+    const virou = t.sai <= t.ent, mm = k === 0 ? p35Marc(iso(dt)) : [], m = mm.length;
+    if (!m) { itens.push({ em: em(t.ent, -5).toISOString(), t: 'Hora de bater o ponto', c: `Seu turno começa às ${t.ent}. Registre a entrada pelo NEXUM.` });
+      itens.push({ em: em(t.ent, 10).toISOString(), t: 'Você ainda não registrou a entrada', c: 'Abra o NEXUM e registre o seu ponto.' }); }
+    /* volta do almoço: 3 minutos antes de completar o intervalo */
+    if (k === 0 && m === 2 && (+t.int || 0) > 0) { const v = minutos(mm[1]) + (+t.int); itens.push({ em: em(p35HM(v), -3).toISOString(), t: 'Seu intervalo termina já', c: `O intervalo acaba às ${p35HM(v)}. Registre a volta pelo NEXUM.` }); }
+    if (!(m >= 2 && m % 2 === 0 && (m >= 4 || !((+t.int || 0) > 0)))) {
+      itens.push({ em: em(t.sai, 0, virou).toISOString(), t: 'Fim do expediente', c: `Seu turno termina às ${t.sai}. Não esqueça de registrar a saída.` });
+      itens.push({ em: em(t.sai, 40, virou).toISOString(), t: 'Esqueceu de registrar a saída?', c: 'Toque aqui para justificar o horário em que você saiu.', u: './nexum_portal.html?acao=justificar' });
+    }
+  }
+  return itens.filter(i => Date.parse(i.em) > agora).sort((a, b) => a.em.localeCompare(b.em)).slice(0, 30);
+}
+/* atalho do aviso "Esqueceu a saída?": abre Meu ponto direto em "Dias para justificar" */
+(function () { let a = ''; try { a = new URLSearchParams(location.search).get('acao') || ''; } catch (e) { } if (a !== 'justificar') return; let n = 0;
+  const t = setInterval(() => { n++; if (n > 240) return clearInterval(t); if (!P.c) return; clearInterval(t);
+    try { const u = new URL(location.href); u.searchParams.delete('acao'); history.replaceState(null, '', u.pathname + u.search); } catch (e) { }
+    go('ponto'); setTimeout(() => { const pj = document.getElementById('pj'); if (pj) { pj.scrollIntoView({ block: 'start', behavior: 'smooth' }); pj.style.outline = '3px solid #F2A65A'; setTimeout(() => pj.style.outline = '', 4000); } else toast('Se você esqueceu de registrar a saída, peça o ajuste ao RH em Solicitações.'); }, 700); }, 500); })();
+
+/* ---------- 3) trava do almoço e 4) 11 horas de descanso: avisa ANTES de registrar ---------- */
+async function p35Conferir() {
+  const dia = iso(hoje()), m = p35Marc(dia), t = turnoDia(P.c, hoje(), P.cfg), agora = p35Agora();
+  if (m.length === 2 && t && (+(t.int ?? 60) || 0) > 0) {
+    const prev = +(t.int ?? 60), passou = agora - minutos(m[1]);
+    if (passou >= 0 && passou < prev - 5) return perguntarP(`<b>Seu intervalo ainda não terminou.</b><br>Ele é de ${prev} minutos e passaram ${passou}. Faltam <b>${prev - passou} minutos</b> (volta às ${p35HM(minutos(m[1]) + prev)}).<br><br>Voltar antes do tempo pode gerar multa para a empresa. Quer registrar a volta mesmo assim?`, 'Registrar mesmo assim', 'Esperar');
+  }
+  if (m.length === 0) {
+    const ant = G('ponto').filter(p => p.colabId === me() && p.data < dia && (p.marc || []).filter(Boolean).length >= 2).sort((a, b) => b.data.localeCompare(a.data))[0];
+    if (ant) { const u = ant.marc.filter(Boolean).slice().sort().pop(), desc = diffD(pd(ant.data), pd(dia)) * 1440 + agora - minutos(u);
+      if (desc >= 0 && desc < 660) { const lib = minutos(u) + 660; return perguntarP(`<b>Atenção ao descanso entre jornadas.</b><br>Você saiu ${diffD(pd(ant.data), pd(dia)) === 1 ? 'ontem' : 'em ' + fd(ant.data)} às ${u}. A lei pede 11 horas de descanso: o descanso completo termina às <b>${p35HM(lib)}</b>.<br><br>Se o RH pediu para você entrar agora, pode registrar. O RH vai ver o aviso.`, 'Registrar a entrada', 'Cancelar'); } }
+  }
+  return true;
+}
+{ const _rp35 = registrarPonto; registrarPonto = async function () { try { if (!(await p35Conferir())) return; } catch (e) { console.warn(e); } try { return await _rp35.apply(this, arguments); } finally { P35.qrOk = null; } }; }
+
+/* ---------- 2) ponto com o QR da loja ---------- */
+/* o tablet/totem da loja mostra um QR que muda a cada 20 segundos; ler o QR prova que a pessoa estava na loja (bom dentro de shopping, onde o GPS falha) */
+async function p35QrAtual(lojaId) {
+  try {
+    if (FB_ON && FB.db && FB.tid) { const d = await FB.col('qrTotem').doc(String(lojaId)).get(); return d.exists ? d.data() : null; }
+    return JSON.parse(localStorage.getItem(`nexum:${P.t.id}:qrTotem:${lojaId}`) || 'null');
+  } catch (e) { return null; }
+}
+async function p35LerQR(v, cv) {
+  if ('BarcodeDetector' in window) { try { const bd = new BarcodeDetector({ formats: ['qr_code'] }), r = await bd.detect(v); if (r && r[0]) return r[0].rawValue; } catch (e) { } }
+  if (!window.jsQR) return '';
+  const w = v.videoWidth, h = v.videoHeight; if (!w || !h) return ''; cv.width = w; cv.height = h; const x = cv.getContext('2d', { willReadFrequently: true }); x.drawImage(v, 0, 0, w, h);
+  const r = jsQR(x.getImageData(0, 0, w, h).data, w, h, { inversionAttempts: 'dontInvert' }); return r ? r.data : '';
+}
+function p35CarregarJsQR() { return window.jsQR || ('BarcodeDetector' in window) ? Promise.resolve() : new Promise(res => { const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js'; s.onload = res; s.onerror = res; document.head.appendChild(s); }); }
+async function p35PontoQR() {
+  let stream = null, fim = false;
+  const parar = () => { fim = true; if (stream) stream.getTracks().forEach(t => t.stop()); };
+  modal('Ponto com o QR da loja', `<p class="hint" style="margin-top:0">Aponte a câmera para o QR que aparece no tablet da loja. Depois o sistema confirma o seu rosto, como sempre.</p>
+    <div style="position:relative;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:3/4;max-height:52vh;margin:0 auto"><video id="q35-v" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover"></video><div style="position:absolute;inset:18%;border:3px solid rgba(255,255,255,.9);border-radius:16px;box-shadow:0 0 0 999px rgba(0,0,0,.35)"></div></div>
+    <p class="hint" id="q35-m" role="status" style="text-align:center;margin:10px 0 0">Abrindo a câmera…</p><canvas id="q35-c" hidden></canvas>`, { size: 'sm', onClose: parar, onMount: async m => {
+    const v = $('#q35-v', m), cv = $('#q35-c', m), msg = t => { const e = $('#q35-m', m); if (e) e.textContent = t; };
+    try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false }); v.srcObject = stream; } catch (e) { msg('Não foi possível abrir a câmera. Libere a permissão da câmera.'); return; }
+    await p35CarregarJsQR(); msg('Procurando o QR…'); const ini = Date.now();
+    while (!fim && Date.now() - ini < 60000) {
+      await new Promise(r => setTimeout(r, 250)); if (fim) return;
+      const txt = await p35LerQR(v, cv); if (!txt) continue;
+      const p = String(txt).split('|'); if (p[0] !== 'NXP' || p[1] !== String(P.t.id)) { msg('Este QR não é o do ponto da sua empresa.'); continue; }
+      msg('Conferindo o código…'); const q = await p35QrAtual(p[2]);
+      const valido = q && Array.isArray(q.codigos) && q.codigos.includes(p[3]) && Date.now() - Date.parse(q.em || 0) < 90000;
+      if (!valido) { msg('O código expirou. Aponte de novo para o QR da tela.'); await new Promise(r => setTimeout(r, 1200)); continue; }
+      const lj = p35Loja(p[2]) || { id: p[2], nome: q.loja || 'Loja' }; P35.qrOk = { loja: lj, em: Date.now() };
+      parar(); closeModal(); toast(`QR da ${lj.nome} confirmado.`); setTimeout(() => registrarPonto(), 250); return;
+    }
+    if (!fim) msg('Não encontramos o QR. Feche e tente de novo, mais perto da tela.');
+  } });
+}
+/* com o QR válido, a localização da batida é a da loja do QR */
+{ const _pg35 = pegarGeo; pegarGeo = async function () { const q = P35.qrOk; if (q && Date.now() - q.em < 120000 && q.loja && isFinite(+q.loja.lat) && isFinite(+q.loja.lng) && q.loja.lat !== '' && q.loja.lng !== '') return { lat: +q.loja.lat, lng: +q.loja.lng, acc: 0, qr: true, loja: q.loja.nome }; return _pg35.apply(this, arguments); }; }
+{ const _vp35 = vPonto; vPonto = function (el) { const r = _vp35.apply(this, arguments); try {
+  if (P.cfg.qrPonto && (P.cfg.lojas || []).length && !$('#pc-qr', el)) { const b = $('#pc-reg', el); if (b) { b.insertAdjacentHTML('afterend', '<button class="btn sec" id="pc-qr" style="margin-top:8px">Bater com o QR da loja</button>'); $('#pc-qr', el).onclick = p35PontoQR; } }
+} catch (e) { console.warn(e); } return r; }; }
+
+/* ---------- 5) e 8) o cartão da batida mostra a loja, a previsão e o banco de horas ---------- */
+function p35Extra(dia, h) {
+  const m = p35Marc(dia), i = m.indexOf(h), t = turnoDia(P.c, pd(dia), P.cfg), out = [];
+  const ev = ((G('ponto').find(p => p.colabId === me() && p.data === dia) || {}).ev || {})[h] || {}, minha = p35Loja(P.c.loja);
+  const onde = (ev.geo && ev.geo.loja) || (ev.cerca && ev.cerca.dentro && ev.cerca.loja) || '';
+  if (onde && minha && p35Norm(onde) !== p35Norm(minha.nome)) out.push(`📍 Registrado na <b>${esc(onde)}</b>: você está cobrindo outra loja hoje.`);
+  else if (ev.geo && ev.geo.qr) out.push(`📍 Confirmado pelo QR da ${esc(onde || 'loja')}.`);
+  if (t) {
+    const jorn = turnoMin(t), int = +(t.int ?? 0) || 0;
+    if (i === 0) out.push(`Hoje você sai por volta das <b>${p35HM(minutos(h) + jorn + int)}</b>${int ? `, com ${int} min de intervalo` : ''}.`);
+    else if (i === 1 && int) out.push(`Bom intervalo! Volte às <b>${p35HM(minutos(h) + int)}</b>.`);
+    else if (i === 2) { const feito = minutos(m[1]) - minutos(m[0]); out.push(`Sua saída fica para as <b>${p35HM(minutos(h) + Math.max(0, jorn - feito))}</b>.`); }
+    else if (i === 3 || (i === 1 && !int)) { const trab = horasTrab(m), d = trab - jorn; let s = null; try { s = extratoBH(me(), G('ponto'), G('bh'), P.c, P.cfg).saldo; } catch (e) { }
+      out.push(`Hoje: <b>${hm(trab)}</b> trabalhadas${Math.abs(d) > 10 ? ` (${d > 0 ? '+' : ''}${hm(d)} no banco)` : ''}${s != null ? ` · saldo do banco: <b>${hm(s + (Math.abs(d) > 10 ? d : 0))}</b>` : ''}.`); }
+  }
+  return out;
+}
+{ const _cb35 = cartaoBatida; cartaoBatida = function (dia, h) { const r = _cb35.apply(this, arguments); try {
+  const c = document.getElementById('cp-flash'), l = p35Extra(dia, h); if (!c || !l.length || c.querySelector('.p35x')) return r;
+  const lin = document.createElement('div'); lin.style.cssText = 'display:flex;align-items:center;gap:12px'; while (c.firstChild) lin.appendChild(c.firstChild); c.appendChild(lin); c.style.flexDirection = 'column'; c.style.alignItems = 'stretch'; c.style.gap = '8px';
+  c.insertAdjacentHTML('beforeend', `<div class="p35x" style="font-size:13px;line-height:1.45;color:#14203D;border-top:1px solid #EEF1F6;padding-top:8px">${l.join('<br>')}</div>`);
+} catch (e) { console.warn(e); } return r; }; }
+
+/* ---------- 6) rosto desatualizado e 9) selo de pontualidade ---------- */
+function p35RostoDificil() {
+  if (((P.cfg.bio || {}).modo || 'facial') !== 'facial') return null;
+  const face = G('faces').find(f => f.colabId === me()); if (!face || face.status !== 'aprovado') return null;
+  const desde = iso(addD(hoje(), -14)), evs = []; G('ponto').filter(p => p.colabId === me() && p.data >= desde).forEach(p => Object.values(p.ev || {}).forEach(e => { if (e && e.bio) evs.push(e.bio); }));
+  const ruins = evs.filter(b => b.status !== 'ok').length, falhas = G('bioFalhas').filter(f => f.colabId === me() && String(f.em || '') >= desde && /não confere|não encontrado/i.test(f.motivo || '')).length;
+  const oks = evs.filter(b => b.status === 'ok' && isFinite(b.dist)), media = oks.length >= 4 ? oks.reduce((s, b) => s + b.dist, 0) / oks.length : 0;
+  if (face.em && Date.now() - Date.parse(face.em) < 2 * 864e5) return null; // acabou de atualizar
+  return (ruins + falhas >= 3 || (media && media >= (BIO.LIM_OK - 0.03))) ? { ruins, falhas } : null;
+}
+function p35Semanas() {
+  const esc0 = d => turnoDia(P.c, d, P.cfg), semana = ini => { let dias = 0, ok = 0; for (let k = 0; k < 7; k++) { const d = addD(ini, k); if (d > hoje() || (P.c.admissao && iso(d) < P.c.admissao)) continue; const t = esc0(d); if (!t || !t.ent) continue; const m = p35Marc(iso(d)); if (iso(d) === iso(hoje()) && !m.length) continue; dias++; if (m.length && minutos(m[0]) - minutos(t.ent) <= 5) ok++; } return { dias, ok }; };
+  const seg = addD(hoje(), -((hoje().getDay() + 6) % 7)), atual = semana(seg); let seq = 0;
+  for (let w = 1; w <= 12; w++) { const s = semana(addD(seg, -7 * w)); if (s.dias && s.ok === s.dias) seq++; else break; }
+  return { atual, seq };
+}
+{ const _vi35 = vInicio; vInicio = function (el) { const r = _vi35.apply(this, arguments); try {
+  const hello = el.querySelector('.hello');
+  const rd = p35RostoDificil(); if (rd && !$('#rd35', el)) { const s = document.createElement('section'); s.className = 'panel'; s.id = 'rd35'; s.style.borderLeft = '4px solid #F2A65A';
+    s.innerHTML = `<h2 style="margin:0 0 4px">Seu rosto mudou?</h2><p class="hint" style="margin:0 0 10px">O reconhecimento facial está com dificuldade para confirmar você (barba, cabelo, óculos ou luz diferente). Atualize a foto do rosto: leva 1 minuto e o RH aprova.</p><button class="btn" id="rd35-b">Atualizar meu rosto</button>`;
+    (hello || el.firstElementChild).insertAdjacentElement('afterend', s); $('#rd35-b', s).onclick = async () => { const c = await cadastrarRosto(false, false); if (c && c.res === 'ok') { s.remove(); try { pushEnviar({ rh: true }, `${primeiroP(P.c.nome)} atualizou o rosto`, 'Aprove a nova biometria em Ponto Biométrico IA > Biometria.', './', 'face-' + me()); } catch (e) { } } }; }
+  const sm = p35Semanas(); if ((sm.atual.dias || sm.seq) && !$('#sp35', el)) { const b = document.createElement('section'); b.className = 'panel'; b.id = 'sp35';
+    const cheio = sm.atual.dias && sm.atual.ok === sm.atual.dias;
+    b.innerHTML = `<div class="row" style="gap:12px;align-items:center"><span style="font-size:30px" aria-hidden="true">${sm.seq >= 1 ? '🏅' : cheio ? '⭐' : '⏰'}</span><div style="flex:1"><b>Pontualidade da semana: ${sm.atual.ok} de ${sm.atual.dias} dia${sm.atual.dias === 1 ? '' : 's'} no horário</b><div class="hint">${sm.seq >= 2 ? `${sm.seq} semanas seguidas 100% no horário. Que sequência!` : sm.seq === 1 ? 'Selo conquistado: a semana passada foi 100% no horário.' : cheio ? 'Tudo no horário até agora. Continue assim para ganhar o selo!' : 'Chegar até 5 minutos depois do horário ainda conta como no horário.'}</div></div></div>`;
+    (el.querySelector('#rd35') || hello || el.firstElementChild).insertAdjacentElement('afterend', b); }
+} catch (e) { console.warn(e); } return r; }; }
+
+/* ---------- 13) simulador "Se eu sair" (rescisão) ---------- */
+function p35Resc(el) {
+  const c = P.c, sal = num(c.salario), adm = c.admissao ? pd(c.admissao) : null;
+  el.innerHTML = `<div class="tabs"><button data-a="ferias">Férias</button><button data-a="13">13º salário</button><button class="on" data-a="resc">Se eu sair</button></div>
+    <section class="panel"><div class="grid"><div class="fld"><label for="rs35-s">Salário base</label><input class="inp" id="rs35-s" type="number" step="0.01" value="${sal}"></div><div class="fld"><label for="rs35-m">Média de variáveis (comissões, extras)</label><input class="inp" id="rs35-m" type="number" step="0.01" value="0"></div>
+      <div class="fld"><label for="rs35-t">Como seria a saída</label><select class="inp" id="rs35-t">${opts([['pedido', 'Eu peço demissão'], ['dispensa', 'A empresa me dispensa (sem justa causa)'], ['acordo', 'Acordo entre as partes (art. 484-A)']], 'pedido')}</select></div>
+      <div class="fld"><label for="rs35-d">Último dia de trabalho</label><input class="inp" id="rs35-d" type="date" value="${iso(addD(hoje(), 30))}"></div>
+      <div class="fld" id="rs35-ac"><label for="rs35-a">Aviso prévio</label><select class="inp" id="rs35-a">${opts([['cumprir', 'Vou trabalhar os 30 dias'], ['nao', 'Não vou cumprir (é descontado)']], 'cumprir')}</select></div>
+      <label class="row hint" style="gap:8px;align-self:end"><input type="checkbox" id="rs35-v" ${(() => { try { return statusFerias(c, G('ferias')).saldo > 0 ? 'checked' : ''; } catch (e) { return ''; } })()}> Tenho férias vencidas (período completo sem tirar)</label></div>
+      <div id="rs35-r" style="margin-top:12px"></div>
+      <p class="note">Simulação aproximada com as tabelas de INSS e IRRF atuais${adm ? ` e admissão em ${fd(c.admissao)}` : ''}. Não inclui descontos de vale, faltas ou benefícios. O valor oficial é o do termo de rescisão emitido pelo RH.</p></section>`;
+  $$('.tabs button', el).forEach(b => b.onclick = () => b.dataset.a === 'resc' ? p35Resc(el) : vSimular(el, b.dataset.a));
+  const lin = (t, v, f) => `<tr><td>${t}</td><td class="n" style="${f ? 'font-weight:800' : ''}">${v < 0 ? '−' + brl(-v) : brl(v)}</td></tr>`;
+  const calc = () => {
+    const base = num($('#rs35-s', el).value) + num($('#rs35-m', el).value), tipo = $('#rs35-t', el).value, fimS = $('#rs35-d', el).value || iso(hoje()), fim = pd(fimS), dep = c.dependentes || 0;
+    $('#rs35-ac', el).style.display = tipo === 'pedido' ? '' : 'none';
+    const anos = adm ? anosEntre(adm, fim) : 0, diasAviso = Math.min(90, 30 + 3 * anos);
+    const avisoInd = tipo === 'dispensa' ? r2(base / 30 * diasAviso) : tipo === 'acordo' ? r2(base / 30 * diasAviso / 2) : 0, avisoDesc = tipo === 'pedido' && $('#rs35-a', el).value === 'nao' ? r2(base) : 0;
+    const proj = tipo === 'dispensa' ? addD(fim, diasAviso) : tipo === 'acordo' ? addD(fim, Math.round(diasAviso / 2)) : fim;
+    const saldo = r2(base / 30 * Math.min(30, fim.getDate()));
+    const ini13 = adm && adm.getFullYear() === proj.getFullYear() ? adm : new Date(proj.getFullYear(), 0, 1); let m13 = 0;
+    for (let mm = ini13.getMonth(); mm <= proj.getMonth(); mm++) { const a = mm === ini13.getMonth() ? ini13.getDate() : 1, b = mm === proj.getMonth() ? proj.getDate() : new Date(proj.getFullYear(), mm + 1, 0).getDate(); if (b - a + 1 >= 15) m13++; }
+    const d13 = r2(base * m13 / 12);
+    let mf = 0; if (adm) { const aniv = addM(adm, anosEntre(adm, proj) * 12); for (let k = 0; k < 12; k++) { const a = addM(aniv, k), b = addD(addM(aniv, k + 1), -1); if (a > proj) break; if (diffD(a, b > proj ? proj : b) + 1 >= 15) mf++; } }
+    const fp = r2(base * mf / 12), fp3 = r2(fp / 3), venc = $('#rs35-v', el).checked ? r2(base) : 0, venc3 = r2(venc / 3);
+    const inssS = calcINSS(saldo), irS = calcIRRF(saldo, inssS, dep), inss13 = calcINSS(d13), ir13 = calcIRRF(d13, inss13, dep);
+    const total = r2(saldo + avisoInd + d13 + fp + fp3 + venc + venc3 - avisoDesc - inssS - irS - inss13 - ir13);
+    const meses = adm ? Math.max(1, Math.round(diffD(adm, fim) / 30.4)) : 0, fgts = r2(base * 0.08 * meses), multa = tipo === 'dispensa' ? r2(fgts * 0.4) : tipo === 'acordo' ? r2(fgts * 0.2) : 0;
+    $('#rs35-r', el).innerHTML = `<table class="tbl">${lin(`Saldo de salário (${Math.min(30, fim.getDate())} dias)`, saldo)}${avisoInd ? lin(`Aviso prévio indenizado (${tipo === 'acordo' ? 'metade de ' : ''}${diasAviso} dias)`, avisoInd) : ''}${lin(`13º proporcional (${m13}/12)`, d13)}${venc ? lin('Férias vencidas', venc) + lin('1/3 das férias vencidas', venc3) : ''}${lin(`Férias proporcionais (${mf}/12)`, fp)}${lin('1/3 das férias proporcionais', fp3)}${avisoDesc ? lin('Desconto do aviso não cumprido', -avisoDesc) : ''}${lin('INSS', -(inssS + inss13))}${irS + ir13 ? lin('IRRF', -(irS + ir13)) : ''}${lin('Você recebe (até 10 dias depois da saída)', total, true)}</table>
+      <div class="panel" style="margin:12px 0 0;background:var(--bg,#F5F7FB)"><b>FGTS</b><p class="hint" style="margin:4px 0 0">${tipo === 'dispensa' ? `Você pode sacar todo o FGTS e recebe a multa de 40% (cerca de ${brl(multa)} sobre um saldo estimado de ${brl(fgts)}). Pode ter direito ao seguro-desemprego.` : tipo === 'acordo' ? `Você saca até 80% do FGTS e recebe multa de 20% (cerca de ${brl(multa)}). No acordo não há seguro-desemprego.` : 'Pedindo demissão, o FGTS fica guardado (não saca agora) e não há multa nem seguro-desemprego.'}</p></div>`;
+  };
+  $$('input,select', el).forEach(i => i.addEventListener('input', calc)); $$('select', el).forEach(i => i.addEventListener('change', calc)); calc();
+}
+{ const _vs35 = vSimular; vSimular = function (el, aba) { if (aba === 'resc') return p35Resc(el); const r = _vs35.apply(this, arguments); try { const t = el.querySelector('.tabs'); if (t && !t.querySelector('[data-a="resc"]')) { t.insertAdjacentHTML('beforeend', '<button data-a="resc">Se eu sair</button>'); t.querySelector('[data-a="resc"]').onclick = () => p35Resc(el); } } catch (e) { } return r; }; }
 
 </script>
 </body>
