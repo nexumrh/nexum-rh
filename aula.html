@@ -9,6 +9,80 @@
 <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<!-- AC41 --><script>
+/* =====================================================================
+   LOTE 41: proteção contra robôs (Firebase App Check com reCAPTCHA)
+   - Invisível: ninguém clica em nada. O Google confere em segundo plano se é o nosso site num navegador de verdade.
+   - Cada acesso ao Firebase (login, banco de dados) e ao conector leva um "selo" (token) do App Check.
+   - Com o bloqueio ligado no Firebase, acesso sem selo é recusado: robô com a chave copiada não entra.
+   - Chave vazia = desligado (o sistema funciona como antes).
+   ===================================================================== */
+(function () {
+  var CHAVES = { 'nexum-30044': '__AC_NEXUM__', 'recrutamento-bed5d': '__AC_RS__' }; // chaves do reCAPTCHA de cada projeto (são públicas)
+  Object.keys(CHAVES).forEach(function (p) { if (/^__/.test(CHAVES[p])) CHAVES[p] = ''; });
+  var PADRAO = 'nexum-30044';          // projeto deste sistema (para as chamadas ao conector)
+  var CFG = {
+    'nexum-30044': { apiKey: 'AIzaSyDdcLJdO2qnmiGsR1EsKFu-uJfs4FRNvA4', authDomain: 'nexum-30044.firebaseapp.com', projectId: 'nexum-30044', storageBucket: 'nexum-30044.firebasestorage.app', messagingSenderId: '988792881104', appId: '1:988792881104:web:c0517c2b62b6e9f14603d5' },
+    'recrutamento-bed5d': { apiKey: 'AIzaSyAlR1Iv8em7-K8yn8qHdKvq4n46wKSTiug', authDomain: 'recrutamento-bed5d.firebaseapp.com', projectId: 'recrutamento-bed5d', storageBucket: 'recrutamento-bed5d.firebasestorage.app', messagingSenderId: '587424133454', appId: '1:587424133454:web:d00f550ff7d9bfb2aaae1f' }
+  };
+  window.AC41 = { ligado: false, padrao: PADRAO };
+  if (!(CHAVES['nexum-30044'] || CHAVES['recrutamento-bed5d']) || typeof window.fetch !== 'function') return;
+  var V = '10.12.2', SDK = 'https://www.gstatic.com/firebasejs/' + V + '/', porProj = {}, feitos = {}, pronto = null;
+  var projDaChave = {}; Object.keys(CFG).forEach(function (p) { projDaChave[CFG[p].apiKey] = p; });
+  function ativar(app) {
+    try { if (!app || feitos[app.name]) return; var p = app.options && app.options.projectId; if (!CFG[p] || !CHAVES[p] || typeof app.appCheck !== 'function') return;
+      app.appCheck().activate(new firebase.appCheck.ReCaptchaEnterpriseProvider(CHAVES[p]), true); feitos[app.name] = 1; if (!porProj[p]) porProj[p] = app; window.AC41.ligado = true;
+    } catch (e) { try { console.warn('App Check:', e && e.message); } catch (x) { } }
+  }
+  function ligarSdk() {
+    if (!window.firebase || !firebase.initializeApp || firebase.__ac41) return;
+    firebase.__ac41 = true; var _ini = firebase.initializeApp;
+    firebase.initializeApp = function () { var a = _ini.apply(this, arguments); ativar(a); return a; };
+    try { (firebase.apps || []).forEach(ativar); } catch (e) { }
+  }
+  function carregar(src) { return new Promise(function (ok, er) { var s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = er; document.head.appendChild(s); }); }
+  /* páginas que já têm o Firebase: liga já (antes de o sistema criar o app). Páginas sem: baixa só o necessário quando precisar */
+  if (window.firebase && firebase.initializeApp && firebase.appCheck) { ligarSdk(); pronto = Promise.resolve(); }
+  function garantirSdk() {
+    if (pronto) return pronto;
+    pronto = (window.firebase && firebase.initializeApp ? Promise.resolve() : carregar(SDK + 'firebase-app-compat.js'))
+      .then(function () { return firebase.appCheck ? null : carregar(SDK + 'firebase-app-check-compat.js'); }).then(ligarSdk);
+    return pronto;
+  }
+  function appDe(p) {
+    if (porProj[p]) return porProj[p];
+    try { var a = (firebase.apps || []).filter(function (x) { return x.name === 'nx-ac41-' + p; })[0] || firebase.initializeApp(CFG[p], 'nx-ac41-' + p); ativar(a); return porProj[p] || a; } catch (e) { return null; }
+  }
+  /* selo do App Check para um projeto (no máximo 3 segundos; sem selo, segue sem) */
+  window.AC41.token = function (p) {
+    p = p || PADRAO; if (!CFG[p] || !CHAVES[p]) return Promise.resolve('');
+    var t = garantirSdk().then(function () { var a = appDe(p); return a && a.appCheck ? a.appCheck().getToken(false).then(function (r) { return (r && r.token) || ''; }) : ''; }).catch(function () { return ''; });
+    return Promise.race([t, new Promise(function (ok) { setTimeout(function () { ok(''); }, 3000); })]);
+  };
+  /* chamadas feitas "à mão" (sem o SDK): banco de dados, login e o conector levam o selo */
+  function alvo(url) {
+    var m = /^https:\/\/firestore\.googleapis\.com\/v1\/projects\/([\w-]+)\//.exec(url); if (m) return CFG[m[1]] ? m[1] : '';
+    if (/^https:\/\/(identitytoolkit|securetoken)\.googleapis\.com\//.test(url)) { var k = /[?&]key=([\w-]+)/.exec(url); return k && projDaChave[k[1]] || ''; }
+    var bases = [window.NX_ASAAS, window.__acWorker]; try { bases.push(PAY.url); } catch (e) { } try { bases.push(PUSH.url); } catch (e) { } try { bases.push(RS_AV.base); } catch (e) { } try { bases.push(localStorage.getItem('nx:asaasUrl')); } catch (e) { }
+    for (var i = 0; i < bases.length; i++) { var w = String(bases[i] || '').replace(/\/+$/, ''); if (/^https:\/\//.test(w) && url.indexOf(w + '/') === 0) return PADRAO; }
+    if (/^https:\/\/[\w.-]+\.workers\.dev\//.test(url)) return PADRAO;
+    return '';
+  }
+  var _f = window.fetch;
+  window.fetch = function (input, init) {
+    try {
+      if (typeof input !== 'string' && !(input instanceof URL)) return _f.apply(this, arguments);
+      var url = String(input), p = alvo(url); if (!p) return _f.apply(this, arguments);
+      var h = new Headers((init && init.headers) || {}); if (h.has('X-Firebase-AppCheck')) return _f.apply(this, arguments);
+      var self = this;
+      var r = window.AC41.token(p).then(function (t) { if (!t) return _f.call(self, input, init); h.set('X-Firebase-AppCheck', t); var i2 = Object.assign({}, init || {}); i2.headers = h; return _f.call(self, input, i2); });
+      if (/\/documents\/plataforma\/publico(\?|$)/.test(url)) r.then(function (res) { try { res.clone().json().then(function (j) { var u = j && j.fields && j.fields.asaasUrl && j.fields.asaasUrl.stringValue; if (u) window.__acWorker = u; }).catch(function () { }); } catch (e) { } });
+      return r;
+    } catch (e) { return _f.apply(this, arguments); }
+  };
+})();
+
+</script><!-- /AC41 -->
 <style>
 :root{--navy:#0b1f3a;--azul:#1f5eff;--lar:#f26a1b;--bg:#f4f6fa;--card:#fff;--tx:#14213a;--mut:#64748b;--line:#e3e8f0;--ok:#16a34a}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1324;--card:#121c33;--tx:#e8eefc;--mut:#94a3c0;--line:#22304d}}
