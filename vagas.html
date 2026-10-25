@@ -29,6 +29,7 @@ textarea.inp{min-height:110px;resize:vertical}.hint{color:var(--mut);font-size:1
 .check input{width:20px;height:20px;margin-top:2px;flex:none}
 footer{text-align:center;color:var(--mut);font-size:12px;padding-bottom:24px}
 .vaga.cf{padding-top:0;overflow:hidden}.vaga .vf{display:block;width:calc(100% + 2*18px);margin:0 calc(-1*18px) 14px;aspect-ratio:1200/630;object-fit:cover;background:#EEF2FA}.vaga .lj{font-weight:700;color:#1F5FE8;font-size:14px;margin-bottom:4px}
+.cep37{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px}.cep37 form{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.cep37 .inp{flex:1;min-width:140px;width:auto}.km37{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;background:#EAF1FF;color:#1F5FE8;font-size:12.5px;font-weight:700}
 </style>
 </head>
 <body>
@@ -141,6 +142,32 @@ async function telaProposta() {
     catch (x) { e.textContent = 'Não foi possível enviar este arquivo. Tente de novo.'; } });
 }
 
+/* ---------- Vagas 2.0: as vagas mais perto do CEP do candidato ---------- */
+const CEP37 = { ok: false, cep: '', loc: null, bairro: '', cidade: '' };
+try { const x = JSON.parse(localStorage.getItem('nexum:cep37') || 'null'); if (x && x.cep) Object.assign(CEP37, x, { ok: true }); } catch (e) { }
+const sa37 = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+const km37 = (a, b) => { const r = x => x * Math.PI / 180, dl = r(b.lat - a.lat), dg = r(b.lng - a.lng), h = Math.sin(dl / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dg / 2) ** 2; return 12742 * Math.asin(Math.sqrt(h)); };
+async function cep37Buscar(cep) {
+  cep = String(cep || '').replace(/\D/g, ''); if (cep.length !== 8) throw new Error('Digite os 8 números do CEP.'); let loc = null, bairro = '', cidade = '';
+  try { const r = await fetch('https://brasilapi.com.br/api/cep/v2/' + cep); if (r.ok) { const j = await r.json(), c = j.location && j.location.coordinates; if (c && +c.latitude && +c.longitude) loc = { lat: +c.latitude, lng: +c.longitude }; bairro = j.neighborhood || ''; cidade = j.city || ''; } } catch (e) { }
+  if (!bairro && !cidade) { try { const j = await (await fetch('https://viacep.com.br/ws/' + cep + '/json/')).json(); if (j.erro) throw 0; bairro = j.bairro || ''; cidade = j.localidade || ''; } catch (e) { throw new Error('Não encontramos esse CEP. Confira os números.'); } }
+  return { cep, loc, bairro, cidade };
+}
+const _lista37 = lista;
+lista = function (v) {
+  let l = v.slice();
+  if (CEP37.ok) { l.forEach(x => { x._km = CEP37.loc && x.geo && +x.geo.lat ? km37(CEP37.loc, x.geo) : null; const lb = sa37(x.lojaBairro); x._p = CEP37.bairro && lb.includes(sa37(CEP37.bairro)) ? 2 : CEP37.cidade && lb.includes(sa37(CEP37.cidade)) ? 1 : 0; });
+    l.sort((a, b) => (a._km == null ? 1e9 : a._km) - (b._km == null ? 1e9 : b._km) || b._p - a._p); }
+  _lista37(l); topo(v); if (v.length < 2) return;
+  const arts = [...document.querySelectorAll('#app article.vaga')];
+  if (CEP37.ok) arts.forEach((a, i) => { const x = l[i]; if (!x) return; const t = x._km != null ? `~${x._km < 1 ? 'menos de 1' : Math.round(x._km)} km de você` : x._p === 2 ? 'no seu bairro' : ''; if (t) { const h = a.querySelector('h2'); h && h.insertAdjacentHTML('beforeend', `<span class="km37">${t}</span>`); } });
+  $('#app').insertAdjacentHTML('afterbegin', `<section class="cep37"><b>${CEP37.ok ? `Vagas mais perto de ${esc(CEP37.bairro || CEP37.cidade || 'você')} primeiro` : 'Veja primeiro as vagas mais perto de você'}</b><div class="hint">${CEP37.ok ? 'Distância aproximada até a loja.' : 'Digite seu CEP. Ele fica só neste aparelho.'}</div>
+    <form id="cep37-f"><input class="inp" id="cep37" inputmode="numeric" maxlength="9" placeholder="Seu CEP" value="${esc(CEP37.cep ? CEP37.cep.replace(/^(\d{5})(\d{3})$/, '$1-$2') : '')}" aria-label="Seu CEP"><button class="btn">${CEP37.ok ? 'Trocar' : 'Ordenar por distância'}</button>${CEP37.ok ? '<button type="button" class="btn sec" id="cep37-x">Limpar</button>' : ''}</form><div class="erro" id="cep37-e" role="status"></div></section>`);
+  const i = $('#cep37'); i.oninput = () => { const d = i.value.replace(/\D/g, '').slice(0, 8); i.value = d.length > 5 ? d.slice(0, 5) + '-' + d.slice(5) : d; };
+  $('#cep37-f').onsubmit = async e => { e.preventDefault(); const b = $('#cep37-f .btn'); b.disabled = true; $('#cep37-e').textContent = '';
+    try { const r = await cep37Buscar(i.value); Object.assign(CEP37, r, { ok: true }); try { localStorage.setItem('nexum:cep37', JSON.stringify(r)); } catch (x) { } lista(v); } catch (er) { b.disabled = false; $('#cep37-e').textContent = er.message; } };
+  const x = $('#cep37-x'); if (x) x.onclick = () => { Object.assign(CEP37, { ok: false, cep: '', loc: null, bairro: '', cidade: '' }); try { localStorage.removeItem('nexum:cep37'); } catch (e) { } lista(v); };
+};
 if (PROP) telaProposta(); else carregarVagas().then(lista).catch(() => { topo([]); $('#app').innerHTML = '<div class="vazio">Não foi possível carregar as vagas. Verifique a internet e recarregue a página.</div>'; });
 </script>
 </body>
