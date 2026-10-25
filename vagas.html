@@ -170,5 +170,40 @@ lista = function (v) {
 };
 if (PROP) telaProposta(); else carregarVagas().then(lista).catch(() => { topo([]); $('#app').innerHTML = '<div class="vazio">Não foi possível carregar as vagas. Verifique a internet e recarregue a página.</div>'; });
 </script>
+<script>
+/* =====================================================================
+   LOTE 38 (Site): quando uma tela quebra no aparelho de alguém, o erro vai
+   para o Painel do Dono (Falhas dos clientes > Erros de tela).
+   ===================================================================== */
+window.ERRO38 = { sistema: 'Site', ctx: () => ({ tela: location.pathname }) };
+(function () {
+  if (window.__erro38) return; window.__erro38 = 1;
+  var C = window.ERRO38 || {}, PUB = 'https://firestore.googleapis.com/v1/projects/nexum-30044/databases/(default)/documents/plataforma/publico?key=AIzaSyDdcLJdO2qnmiGsR1EsKFu-uJfs4FRNvA4', baseP = null, vistos = {}, n = 0;
+  function base() { if (!baseP) baseP = fetch(PUB).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { var f = j && j.fields && j.fields.asaasUrl; return f ? String(f.stringValue || '').replace(/\/+$/, '') : ''; }).catch(function () { return ''; }); return baseP; }
+  function ctx() { try { return C.ctx ? C.ctx() || {} : {}; } catch (e) { return {}; } }
+  function token() { try { return C.token ? Promise.resolve(C.token()).catch(function () { return ''; }) : Promise.resolve(''); } catch (e) { return Promise.resolve(''); } }
+  function manda(msg, stack) {
+    msg = String(msg || '').slice(0, 300); if (!msg || n >= 8) return; var k = msg + '|' + (ctx().tela || ''); if (vistos[k]) return; vistos[k] = 1; n++;
+    var c = ctx();
+    Promise.all([base(), token()]).then(function (r) { if (!r[0]) return; var h = { 'Content-Type': 'application/json' }; if (r[1]) h.Authorization = 'Bearer ' + r[1];
+      return fetch(r[0] + '/api/erro-tela', { method: 'POST', headers: h, keepalive: true, body: JSON.stringify({ sistema: C.sistema, tela: c.tela || document.title, empresa: c.empresa || '', msg: msg, stack: String(stack || '').slice(0, 1200), url: location.pathname + location.hash, aparelho: navigator.userAgent }) }); }).catch(function () { });
+  }
+  window.addEventListener('error', function (e) {
+    if (!e || !e.message) return; var f = e.filename || '';
+    if (f && f.indexOf(location.origin) !== 0 && !/cdnjs|gstatic|jsdelivr|unpkg/.test(f)) return;
+    manda(e.message, e.error && e.error.stack ? e.error.stack : (f + ':' + (e.lineno || '') + ':' + (e.colno || '')));
+  });
+  window.addEventListener('unhandledrejection', function (e) {
+    var r = e && e.reason, m = r && (r.message || r.code) || String(r || '');
+    if (/permission-denied|insufficient permissions|unavailable|network|Failed to fetch|Load failed|auth\/|quota|deadline|offline|AbortError|NotAllowedError/i.test(m)) return;
+    manda('Erro sem tratamento: ' + m, r && r.stack);
+  });
+  window.erroTela38 = manda;
+})();
+
+/* no celular, todo botão tem pelo menos 40 px de altura */
+(function () { var st = document.createElement('style'); st.textContent = '@media (max-width:760px),(pointer:coarse) and (max-width:1024px){.btn,a.btn,button.btn,.btn.sm,.btn.ghost,.btn.sec{min-height:40px!important;height:auto}.modal-h button,button.x,header button,.tg-abre,button[aria-label^="Fechar"]{min-height:40px;min-width:40px}.tabs button,.chip,button.on,.nav button,.nav-g,.bnav button,.tb,select,select.inp,input.inp:not([type=checkbox]):not([type=radio]){min-height:40px}.menu-btn,.ib,.ferr{min-width:40px;min-height:40px}.f36{display:inline-flex;align-items:center;justify-content:center;min-width:36px;min-height:40px;margin-top:-10px;margin-bottom:-10px}.side .nav button,.side nav button{min-height:40px}}'; document.head.appendChild(st); })();
+
+</script>
 </body>
 </html>
