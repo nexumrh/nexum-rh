@@ -9,8 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<!-- AC41 --><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
-<script>
+<!-- AC41 --><script>
 /* =====================================================================
    LOTE 41: proteção contra robôs (Firebase App Check com reCAPTCHA)
    - Invisível: ninguém clica em nada. O Google confere em segundo plano se é o nosso site num navegador de verdade.
@@ -19,7 +18,7 @@
    - Chave vazia = desligado (o sistema funciona como antes).
    ===================================================================== */
 (function () {
-  var CHAVES = { 'nexum-30044': '6Lek2AAuAAAAAKGQ5K3vSkn7_Ho8mNcqRsZuDCbN', 'recrutamento-bed5d': '__AC_RS__' }; // chaves do reCAPTCHA de cada projeto (são públicas)
+  var CHAVES = { 'nexum-30044': '__AC_NEXUM__', 'recrutamento-bed5d': '__AC_RS__' }; // chaves do reCAPTCHA de cada projeto (são públicas)
   Object.keys(CHAVES).forEach(function (p) { if (/^__/.test(CHAVES[p])) CHAVES[p] = ''; });
   var PADRAO = 'nexum-30044';          // projeto deste sistema (para as chamadas ao conector)
   var CFG = {
