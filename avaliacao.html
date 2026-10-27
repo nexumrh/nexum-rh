@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Avaliação da experiência · NEXUM RH</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--pri:#1F5FE8;--nav:#0B1E4A;--bg:#F3F5FA;--line:#E1E6EF;--txt:#141B2E;--mut:#5F6880;--ok:#15803D;--okb:#DCFCE7;--warn:#B45309;--warnb:#FEF3C7;--bad:#B42318;--badb:#FDE7E7}
+*{box-sizing:border-box}html,body{margin:0}body{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--txt);font-size:15px;line-height:1.5}
+.top{background:linear-gradient(120deg,#0B1E4A,#123A8C);color:#fff;padding:22px 16px 56px}
+.top .in,.wrap{max-width:720px;margin:0 auto}.top small{opacity:.8;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase}.top h1{margin:6px 0 2px;font-size:22px;line-height:1.25}.top p{margin:0;opacity:.85;font-size:14px}
+.wrap{padding:0 16px 40px;margin-top:-40px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px;box-shadow:0 4px 18px rgba(15,30,70,.06)}
+.pess{display:flex;gap:14px;align-items:center}.av{width:48px;height:48px;border-radius:14px;background:#E8F0FF;color:var(--pri);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;flex:0 0 48px}
+.pess b{font-size:17px;display:block}.pess span{color:var(--mut);font-size:13.5px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.chip{background:var(--bg);border-radius:999px;padding:4px 10px;font-size:12.5px;color:var(--mut)}.chip b{color:var(--txt)}
+h2{font-size:16px;margin:0 0 4px}.hint{color:var(--mut);font-size:13.5px;margin:0 0 12px}
+.cr{padding:12px 0;border-top:1px solid var(--line)}.cr:first-of-type{border-top:0}.cr .t{font-weight:600}.cr .d{color:var(--mut);font-size:13px;margin-bottom:8px}
+.esc{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.esc button{border:1.5px solid var(--line);background:#fff;border-radius:10px;min-height:52px;font:inherit;font-size:12px;font-weight:600;color:var(--mut);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:4px 2px}
+.esc button b{font-size:16px;color:var(--txt)}.esc button.on{border-color:var(--pri);background:#EEF3FF;color:var(--pri)}.esc button.on b{color:var(--pri)}
+.nota{display:flex;align-items:center;gap:16px}.nota .n{font-size:40px;font-weight:800;line-height:1;color:var(--nav)}.nota .n small{font-size:16px;color:var(--mut);font-weight:600}
+.sel{display:inline-block;border-radius:999px;padding:4px 12px;font-weight:700;font-size:13px}.sel.ok{background:var(--okb);color:var(--ok)}.sel.warn{background:var(--warnb);color:var(--warn)}.sel.bad{background:var(--badb);color:var(--bad)}
+.op{display:flex;gap:10px;align-items:flex-start;border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-top:8px;cursor:pointer}.op input{margin-top:3px;width:18px;height:18px}.op.on{border-color:var(--pri);background:#F5F8FF}.op b{display:block}.op span{color:var(--mut);font-size:13px}
+label.l{display:block;font-weight:600;font-size:13.5px;margin:12px 0 6px}textarea,input[type=text]{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;font:inherit;font-size:15px;background:#fff;color:var(--txt)}textarea{min-height:110px;resize:vertical}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;background:var(--pri);color:#fff;font:inherit;font-weight:700;font-size:15.5px;min-height:50px;padding:0 22px;cursor:pointer;width:100%}.btn:disabled{opacity:.5;cursor:default}.btn.sec{background:#fff;color:var(--pri);border:1.5px solid var(--pri)}
+.msg{text-align:center;padding:30px 18px}.msg b{display:block;font-size:18px;margin-bottom:6px}
+.err{color:var(--bad);font-size:13.5px;margin-top:8px;min-height:18px}
+.rod{text-align:center;color:var(--mut);font-size:12px;margin-top:18px}
+@media (max-width:420px){.esc button{font-size:10.5px;min-height:56px}.top h1{font-size:19px}}
+#imp{display:none}
+@media print{body{background:#fff}.top,.wrap,.rod{display:none!important}#imp{display:block}}
+#imp{font-family:Arial,Helvetica,sans-serif;color:#111827;font-size:11.5px;max-width:780px;margin:0 auto}
+#imp .b{background:linear-gradient(120deg,#0B1E4A,#123A8C);color:#fff;padding:12px 16px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center;-webkit-print-color-adjust:exact;print-color-adjust:exact}#imp .b b{font-size:14px;letter-spacing:.04em;text-transform:uppercase}
+#imp .f{border:1px solid #0B1E4A;border-top:0;padding:6px 16px;font-size:10px;background:#EEF3FB;display:flex;justify-content:space-between;border-radius:0 0 8px 8px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#imp .q{background:#DCE6F5;border:1px solid #9FB3D3;border-bottom:0;padding:5px 9px;font-weight:700;font-size:10px;letter-spacing:.05em;margin-top:12px;text-transform:uppercase;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#imp table{width:100%;border-collapse:collapse}#imp td,#imp th{border:1px solid #9FB3D3;padding:5px 8px;text-align:left}#imp th{background:#F3F6FB;font-size:10px;text-transform:uppercase;-webkit-print-color-adjust:exact;print-color-adjust:exact}#imp td.n,#imp th.n{text-align:center}
+#imp .o{border:1px solid #9FB3D3;border-top:0;padding:8px 10px;white-space:pre-wrap}
+#imp .s{display:flex;gap:30px;margin-top:46px}#imp .s div{flex:1;border-top:1px solid #111;text-align:center;padding-top:4px;font-size:10.5px}
+</style></head><body>
+<div class="top"><div class="in"><small id="h-emp">NEXUM RH</small><h1 id="h-t">Avaliação do período de experiência</h1><p id="h-s">Carregando…</p></div></div>
+<main class="wrap" id="app"><div class="card msg"><b>Carregando a avaliação…</b></div></main>
+<div class="rod">NEXUM RH · avaliação enviada pelo RH da empresa</div>
+<div id="imp"></div>
+<script>
+const KEY = 'AIzaSyDdcLJdO2qnmiGsR1EsKFu-uJfs4FRNvA4', DOC = 'https://firestore.googleapis.com/v1/projects/nexum-30044/databases/(default)/documents/avalExp/';
+const CRIT = [
+  ['pontualidade', 'Pontualidade e assiduidade', 'Chega no horário, não falta sem aviso, respeita intervalos.'],
+  ['desempenho', 'Desempenho e evolução', 'Aprende rápido, evolui nas tarefas, atinge o que foi combinado.'],
+  ['atendimento', 'Atendimento ao cliente', 'Recebe bem, entende o que o cliente precisa, resolve e fideliza.'],
+  ['servico', 'Qualidade do serviço', 'Faz as tarefas com capricho, atenção e sem retrabalho.'],
+  ['cordialidade', 'Cordialidade e relacionamento', 'Educação e respeito com clientes, colegas e liderança.'],
+  ['iniciativa', 'Iniciativa e proatividade', 'Ajuda sem precisar pedir, propõe soluções.'],
+  ['normas', 'Normas, uniforme e postura', 'Segue regras da empresa, uso do uniforme, celular e conduta.'],
+  ['organizacao', 'Organização e cuidado', 'Mantém a loja, o estoque e os equipamentos em ordem.']];
+const ROT = ['', 'Ruim', 'Regular', 'Bom', 'Muito bom', 'Excelente'];
+const tok = new URLSearchParams(location.search).get('t') || '';
+const $ = s => document.querySelector(s), esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+const fd = s => { if (!s) return '—'; const [a, m, d] = String(s).slice(0, 10).split('-'); return d ? `${d}/${m}/${a}` : s; };
+const de = v => { if (!v) return null; if ('stringValue' in v) return v.stringValue; if ('integerValue' in v) return +v.integerValue; if ('doubleValue' in v) return +v.doubleValue; if ('booleanValue' in v) return v.booleanValue; if ('timestampValue' in v) return v.timestampValue; if ('nullValue' in v) return null; if ('mapValue' in v) { const o = {}; Object.entries(v.mapValue.fields || {}).forEach(([k, x]) => o[k] = de(x)); return o; } if ('arrayValue' in v) return (v.arrayValue.values || []).map(de); return null; };
+const para = v => typeof v === 'number' ? (Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v }) : typeof v === 'string' ? { stringValue: v } : (v && typeof v === 'object') ? { mapValue: { fields: Object.fromEntries(Object.entries(v).map(([k, x]) => [k, para(x)])) } } : { nullValue: null };
+let A = null, notas = {}, rec = '';
+function situacao(m) { return m >= 7 ? ['ok', 'Compensa continuar'] : m >= 5 ? ['warn', 'Atenção: conversar antes de decidir'] : ['bad', 'Não compensa continuar']; }
+function media() { const v = CRIT.map(([k]) => notas[k]).filter(Boolean); return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length * 2 * 10) / 10 : 0; }
+function opcoes() { return A.marco >= 90 ? [['efetivar', 'Efetivar', 'Contratar por prazo indeterminado ao fim da experiência.'], ['encerrar', 'Não efetivar', 'Encerrar o contrato no fim do prazo de experiência.']] : [['prorrogar', 'Continuar / prorrogar a experiência', 'Seguir com o funcionário e reavaliar no próximo marco.'], ['encerrar', 'Não continuar', 'Encerrar o contrato no fim do prazo de experiência.']]; }
+function ini(n) { const p = String(n || '').trim().split(/\s+/); return ((p[0] || '')[0] || '') + ((p.length > 1 ? p[p.length - 1][0] : '') || ''); }
+async function carregar() {
+  if (tok.length < 20) return fim('Link incompleto', 'Peça ao RH para enviar o link de novo.');
+  try { const r = await fetch(DOC + encodeURIComponent(tok) + '?key=' + KEY); if (r.status === 404 || r.status === 403) return fim('Avaliação não encontrada', 'O link pode ter sido cancelado pelo RH. Peça um novo.'); if (!r.ok) throw new Error(r.status);
+    const j = await r.json(); A = Object.fromEntries(Object.entries(j.fields || {}).map(([k, v]) => [k, de(v)])); }
+  catch (e) { return fim('Sem conexão', 'Não consegui abrir a avaliação. Confira a internet e recarregue a página.'); }
+  $('#h-emp').textContent = A.empresa || 'NEXUM RH'; $('#h-t').textContent = `Avaliação de ${A.marco} dias de experiência`;
+  $('#h-s').textContent = A.status === 'respondida' ? 'Avaliação já respondida. Obrigado!' : `Responda até ${fd(A.dataMarco)}. Leva cerca de 2 minutos.`;
+  if (A.status === 'respondida') return resumo();
+  if (A.expira && new Date(A.expira) < new Date()) return fim('Link vencido', 'O prazo desta avaliação terminou. Peça um novo link ao RH.');
+  form();
+}
+function fim(t, s) { $('#h-s').textContent = s; $('#app').innerHTML = `<div class="card msg"><b>${esc(t)}</b><span class="hint">${esc(s)}</span></div>`; }
+function pessoa() { return `<div class="card"><div class="pess"><div class="av">${esc(ini(A.colabNome).toUpperCase())}</div><div><b>${esc(A.colabNome)}</b><span>${esc(A.cargo || '')}${A.loja ? ' · ' + esc(A.loja) : ''}</span></div></div>
+  <div class="chips"><span class="chip">Admissão <b>${fd(A.admissao)}</b></span><span class="chip">Marco <b>${A.marco} dias</b> em ${fd(A.dataMarco)}</span>${A.gerente ? `<span class="chip">Avaliador <b>${esc(A.gerente)}</b></span>` : ''}</div></div>`; }
+function form() {
+  $('#app').innerHTML = `${pessoa()}
+  <div class="card"><h2>Como foi o período?</h2><p class="hint">Marque de 1 (ruim) a 5 (excelente) em cada item. Seja sincero: a avaliação ajuda o RH a decidir e o funcionário a melhorar.</p>
+    ${CRIT.map(([k, t, d]) => `<div class="cr"><div class="t">${t}</div><div class="d">${d}</div><div class="esc" role="radiogroup" aria-label="${t}">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-k="${k}" data-n="${n}" role="radio" aria-checked="false"><b>${n}</b>${ROT[n]}</button>`).join('')}</div></div>`).join('')}</div>
+  <div class="card"><div class="nota"><div class="n" id="nt">–<small>/10</small></div><div><b>Nota final</b><div id="sit" class="hint" style="margin:4px 0 0">Responda os itens para ver a nota.</div></div></div></div>
+  <div class="card"><h2>Sua recomendação</h2>${opcoes().map(([v, t, d]) => `<label class="op" data-op="${v}"><input type="radio" name="rec" value="${v}"><span><b>${t}</b><span>${d}</span></span></label>`).join('')}
+    <label class="l" for="obs">Pontos fortes e o que precisa melhorar</label><textarea id="obs" maxlength="1500" placeholder="Ex.: ótimo com clientes; precisa melhorar a pontualidade aos sábados."></textarea>
+    <label class="l" for="av">Seu nome</label><input type="text" id="av" maxlength="80" value="${esc(A.gerente || '')}" autocomplete="name">
+    <div class="err" id="er"></div><button class="btn" id="env">Enviar avaliação ao RH</button></div>`;
+  document.querySelectorAll('.esc button').forEach(b => b.onclick = () => { const k = b.dataset.k; notas[k] = +b.dataset.n; document.querySelectorAll(`.esc button[data-k="${k}"]`).forEach(x => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-checked', on); }); pintar(); });
+  document.querySelectorAll('.op').forEach(l => l.onclick = () => { rec = l.dataset.op; document.querySelectorAll('.op').forEach(x => x.classList.toggle('on', x === l)); l.querySelector('input').checked = true; });
+  $('#env').onclick = enviar;
+}
+function pintar() { const m = media(), n = CRIT.filter(([k]) => notas[k]).length; $('#nt').innerHTML = `${m ? String(m).replace('.', ',') : '–'}<small>/10</small>`; const s = situacao(m); $('#sit').innerHTML = n === CRIT.length ? `<span class="sel ${s[0]}">${s[1]}</span>` : `Faltam ${CRIT.length - n} ite${CRIT.length - n === 1 ? 'm' : 'ns'}.`; }
+async function enviar() {
+  const er = $('#er'), falta = CRIT.filter(([k]) => !notas[k]), av = $('#av').value.trim(), obs = $('#obs').value.trim();
+  if (falta.length) return er.textContent = `Marque a nota de: ${falta.map(x => x[1]).join(', ')}.`;
+  if (!rec) return er.textContent = 'Escolha sua recomendação.'; if (av.length < 2) return er.textContent = 'Informe seu nome.';
+  er.textContent = ''; const b = $('#env'); b.disabled = true; b.textContent = 'Enviando…';
+  const dados = { notas, media: media(), recomendacao: rec, obs, avaliador: av, respondidoEm: new Date().toISOString(), status: 'respondida' };
+  const q = Object.keys(dados).map(k => 'updateMask.fieldPaths=' + k).join('&');
+  try { const r = await fetch(`${DOC}${encodeURIComponent(tok)}?key=${KEY}&${q}&currentDocument.exists=true`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fields: Object.fromEntries(Object.entries(dados).map(([k, v]) => [k, para(v)])) }) });
+    if (!r.ok) throw new Error(r.status === 403 ? 'Esta avaliação já foi respondida ou o prazo terminou.' : 'Não consegui enviar agora. Tente de novo em instantes.');
+    Object.assign(A, dados); $('#h-s').textContent = 'Avaliação enviada. Obrigado!'; resumo(true); }
+  catch (e) { b.disabled = false; b.textContent = 'Enviar avaliação ao RH'; er.textContent = e.message || 'Não consegui enviar.'; }
+}
+function resumo(agora) {
+  const m = +A.media || 0, s = situacao(m), o = opcoes().concat([['prorrogar', 'Continuar / prorrogar'], ['efetivar', 'Efetivar'], ['encerrar', 'Não continuar']]).find(x => x[0] === A.recomendacao) || ['', '—'];
+  $('#app').innerHTML = `${pessoa()}<div class="card">${agora ? '<p style="margin:0 0 10px;color:var(--ok);font-weight:700">✓ Avaliação enviada ao RH.</p>' : ''}<div class="nota"><div class="n">${String(m).replace('.', ',')}<small>/10</small></div><div><span class="sel ${s[0]}">${s[1]}</span><div class="hint" style="margin:6px 0 0">Recomendação: <b>${esc(o[1])}</b> · por ${esc(A.avaliador || '')} em ${new Date(A.respondidoEm).toLocaleString('pt-BR')}</div></div></div>
+    <div style="margin-top:14px">${CRIT.map(([k, t]) => `<div class="cr" style="display:flex;justify-content:space-between;gap:10px;padding:8px 0"><span>${t}</span><b>${(A.notas || {})[k] || '–'} · ${ROT[(A.notas || {})[k]] || ''}</b></div>`).join('')}</div>
+    ${A.obs ? `<p class="hint" style="margin:12px 0 0;white-space:pre-wrap"><b>Observações:</b> ${esc(A.obs)}</p>` : ''}
+    <button class="btn sec" id="pdf" style="margin-top:16px">Baixar PDF</button></div>`;
+  $('#pdf').onclick = () => { $('#imp').innerHTML = relatorio(); setTimeout(() => window.print(), 50); };
+}
+function relatorio() {
+  const m = +A.media || 0, s = situacao(m), o = { prorrogar: 'Continuar / prorrogar a experiência', efetivar: 'Efetivar', encerrar: A.marco >= 90 ? 'Não efetivar' : 'Não continuar' }[A.recomendacao] || '—';
+  return `<div class="b"><b>Avaliação do período de experiência · ${A.marco} dias</b><span>${esc(A.empresa || '')}</span></div><div class="f"><span>Código <b>${esc(tok.slice(0, 8).toUpperCase())}</b></span><span>Respondida em ${new Date(A.respondidoEm).toLocaleString('pt-BR')}</span></div>
+  <div class="q">Funcionário avaliado</div><table><tr><th>Nome</th><th>Cargo</th><th>Loja</th><th>Admissão</th><th>Marco</th></tr><tr><td>${esc(A.colabNome)}</td><td>${esc(A.cargo || '')}</td><td>${esc(A.loja || '—')}</td><td>${fd(A.admissao)}</td><td>${A.marco} dias (${fd(A.dataMarco)})</td></tr></table>
+  <div class="q">Critérios (1 a 5)</div><table><tr><th>Critério</th><th class="n">Nota</th><th>Conceito</th></tr>${CRIT.map(([k, t]) => `<tr><td>${t}</td><td class="n">${(A.notas || {})[k] || '–'}</td><td>${ROT[(A.notas || {})[k]] || ''}</td></tr>`).join('')}<tr><th>Nota final (0 a 10)</th><th class="n">${String(m).replace('.', ',')}</th><th>${s[1]}</th></tr></table>
+  <div class="q">Recomendação do avaliador</div><div class="o"><b>${esc(o)}</b>${A.obs ? '\n\n' + esc(A.obs) : ''}</div>
+  <div class="s"><div>${esc(A.avaliador || '')}<br>Avaliador(a)</div><div>RH · ${esc(A.empresa || '')}</div></div>`;
+}
+carregar();
+</script></body></html>
