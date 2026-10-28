@@ -42,10 +42,19 @@ main.com-nav{padding-bottom:96px}.duo{display:grid;grid-template-columns:1fr 1fr
 .cartao{border-radius:18px;padding:16px;background:linear-gradient(135deg,#1F5FE8,#0B1E4A);margin-bottom:12px;font-family:Inter}.cartao small{display:block;opacity:.8;font-size:12px}.cartao b{display:block;letter-spacing:.18em;margin:14px 0 6px;font-size:16px}
 .emp .tag{margin-top:6px}
 .cb .op button{display:block;background:rgba(255,255,255,.03);border:1.5px solid var(--linha);border-radius:14px;text-align:left;padding:10px 12px;min-height:54px}.cb .op button.on{border-color:var(--azul);background:rgba(31,123,255,.12)}.cb .op button small{display:block}
+#sp-bol{position:fixed;right:16px;bottom:96px;z-index:7;width:56px;height:56px;border-radius:50%;border:0;background:linear-gradient(135deg,#1F8BFF,#1663F0);color:#fff;font-size:24px;box-shadow:0 10px 26px rgba(31,123,255,.45);cursor:pointer}#sp-bol i{position:absolute;top:4px;right:4px;width:12px;height:12px;border-radius:50%;background:var(--bad);border:2px solid #050E26}
+#sp-pn{position:fixed;right:12px;bottom:160px;z-index:8;width:min(380px,calc(100% - 24px));height:min(560px,calc(100dvh - 190px));background:#0A1636;border:1px solid var(--linha);border-radius:20px;box-shadow:0 24px 60px rgba(0,0,0,.55);display:flex;flex-direction:column;overflow:hidden}
+.sp-h{display:flex;align-items:center;gap:8px;padding:12px 12px 12px 16px;border-bottom:1px solid var(--linha)}.sp-h b{flex:1}.sp-h button{border:0;background:rgba(255,255,255,.06);color:#fff;width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer}
+.sp-s{padding:6px 16px;font-size:12px;color:var(--mut);border-bottom:1px solid var(--linha)}.sp-b{flex:1;overflow:auto;padding:12px}.sp-it{display:block;width:100%;text-align:left;border:1px solid var(--linha);background:var(--card);color:#fff;border-radius:14px;padding:10px 12px;margin-top:8px;font:inherit;cursor:pointer}.sp-it span{display:block;color:var(--mut);font-size:12px}.sp-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bad)}
+.sp-m{max-width:86%;background:rgba(255,255,255,.07);border-radius:14px 14px 14px 4px;padding:8px 11px;margin:0 0 8px;font-size:13.5px;line-height:1.45}.sp-m.eu{margin-left:auto;background:rgba(31,123,255,.28);border-radius:14px 14px 4px 14px}.sp-m small{display:block;color:#8EC5FF;font-size:11px;margin-bottom:2px}.sp-m em{display:block;font-style:normal;color:var(--mut);font-size:10.5px;text-align:right;margin-top:2px}
+.sp-op{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}.sp-op button{border:1.5px solid var(--azul);background:none;color:#fff;border-radius:999px;padding:7px 11px;font:inherit;font-size:12.5px;cursor:pointer;min-height:36px}
+.sp-av{text-align:center;border:1px solid var(--linha);border-radius:14px;padding:10px;margin-top:6px}.sp-av div{display:flex;flex-direction:column;gap:4px;margin-top:6px}.sp-av button{border:0;background:rgba(255,255,255,.06);color:#FBBF24;border-radius:10px;padding:6px;cursor:pointer;font-size:15px}
+.sp-f{display:flex;gap:8px;align-items:center;padding:10px;border-top:1px solid var(--linha)}.sp-f input{flex:1;min-width:0;height:44px;border-radius:999px;border:1.5px solid var(--linha);background:var(--card);color:#fff;padding:0 14px;font:inherit}.sp-f #sp-env,.sp-ax{width:44px;height:44px;border-radius:50%;border:0;background:var(--azul);color:#fff;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none}.sp-ax{background:rgba(255,255,255,.08)}
 .hide{display:none!important}
 </style></head><body><main id="app"></main>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 (function () {
   var CFG = { apiKey: 'AIzaSyDdcLJdO2qnmiGsR1EsKFu-uJfs4FRNvA4', authDomain: 'nexum-30044.firebaseapp.com', projectId: 'nexum-30044', storageBucket: 'nexum-30044.firebasestorage.app', messagingSenderId: '988792881104', appId: '1:988792881104:web:c0517c2b62b6e9f14603d5' };
@@ -108,7 +117,7 @@ main.com-nav{padding-bottom:96px}.duo{display:grid;grid-template-columns:1fr 1fr
   var PODE = function () { return ESTADO.papel !== 'ver'; };
   function telaLista() {
     app.innerHTML = topo() + '<div class="vazio">Carregando a sua conta…</div>'; ligar();
-    api('/api/pay/minhas', {}, true).then(function (j) { ESTADO = j; desenhar(); pedirPushSilencioso(); })
+    api('/api/pay/minhas', {}, true).then(function (j) { ESTADO = j; desenhar(); pedirPushSilencioso(); spLigar(); })
       .catch(function (e) { if (e.codigo === 'verificar') return telaCodigo(); app.innerHTML = topo() + '<div class="vazio">' + esc(e.message) + '</div>'; ligar(); });
   }
   function desenhar() { app.classList.add('com-nav'); var f = { inicio: abaInicio, plano: abaPlano, docs: abaDocs, mais: abaMais }[ABA] || abaInicio; app.innerHTML = topo() + f() + rodape + nav(); ligar(); (ligarAba[ABA] || function () { })(); }
@@ -144,7 +153,7 @@ main.com-nav{padding-bottom:96px}.duo{display:grid;grid-template-columns:1fr 1fr
   }
   function abaMais() {
     var j = ESTADO, i = j.indicacao || {};
-    return (j.papel === 'dono' ? '<h2>Quem pode ver e pagar</h2>' + (j.pessoas || []).map(function (p) { return '<div class="cb"><div class="t"><b>' + esc(p.email) + '</b><span>' + (p.papel === 'ver' ? 'Só ver' : 'Ver e pagar') + '</span></div><a class="s" data-rem="' + esc(p.email) + '">Tirar</a></div>'; }).join('') +
+    return '<h2>Ajuda</h2><div class="cb"><div class="t"><b>Problema com um pagamento?</b><span>Atendimento com protocolo, igual aos sistemas NEXUM</span></div><button id="b-sup">Suporte</button></div>' + (j.papel === 'dono' ? '<h2>Quem pode ver e pagar</h2>' + (j.pessoas || []).map(function (p) { return '<div class="cb"><div class="t"><b>' + esc(p.email) + '</b><span>' + (p.papel === 'ver' ? 'Só ver' : 'Ver e pagar') + '</span></div><a class="s" data-rem="' + esc(p.email) + '">Tirar</a></div>'; }).join('') +
       '<div class="cb" style="display:block"><label class="in" style="margin-bottom:8px;height:50px"><input id="pe-e" type="email" placeholder="E-mail da pessoa"></label><div class="op" style="margin:0 0 8px"><button class="on" data-pp="pagar">Ver e pagar<small>financeiro</small></button><button data-pp="ver">Só ver<small>contador</small></button></div><button class="bt" id="b-conv" style="height:48px;font-size:15px">Mandar convite</button><p class="dt" style="margin:8px 0 0;font-size:12px">A pessoa só vê os pagamentos: não entra no NEXUM RH.</p></div>' : '') +
       '<h2>Indique e ganhe</h2><div class="cb" style="display:block;text-align:center"><small class="dt">Cada empresa que assinar com o seu código</small><div style="font-size:26px;font-weight:700">+1 mês grátis</div><div class="cp" style="background:rgba(255,255,255,.06);color:#fff;border-color:var(--linha);margin:10px 0">' + esc(i.link || '') + '</div><div class="duo"><a class="bt" style="height:46px;font-size:14px;text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent('Conhece o NEXUM RH? Ponto pelo rosto, folha e holerite no celular. Assine pelo meu link: ' + (i.link || '')) + '">WhatsApp</a><button class="bt2" id="b-ind" style="height:46px">Copiar link</button></div><div class="ln2"><span>Indicações</span><b>' + (i.total || 0) + '</b></div><div class="ln2"><span>Assinaram</span><b>' + (i.assinaram || 0) + '</b></div><div class="ln2"><span>Meses ganhos</span><b style="color:var(--ok)">' + (i.meses || 0) + '</b></div></div>' +
       '<h2>App e avisos</h2><div class="cb" style="display:block"><b>Instalar o NEXUM PAY</b><p class="dt" style="margin:4px 0 8px">Fica na tela do celular como um app e avisa antes de vencer e quando o pagamento é confirmado.</p><button class="bt" id="b-inst" style="height:48px;font-size:15px">Instalar e ligar os avisos</button><p class="dt" id="inst-ios" style="display:none;margin:8px 0 0;font-size:12.5px">No iPhone: toque em Compartilhar e em "Adicionar à Tela de Início". Depois abra pelo ícone e toque de novo aqui para ligar os avisos.</p></div>';
@@ -173,6 +182,7 @@ main.com-nav{padding-bottom:96px}.duo{display:grid;grid-template-columns:1fr 1fr
       [].forEach.call(app.querySelectorAll('[data-rem]'), function (x) { x.onclick = function () { if (!confirm('Tirar o acesso de ' + x.dataset.rem + '?')) return; api('/api/pay/pessoas', { email: x.dataset.rem, remover: true }, true).then(function () { msg('Acesso retirado.'); ABA = 'mais'; telaLista(); }).catch(function (er) { msg(er.message, true); }); }; });
       document.getElementById('b-ind').onclick = function () { navigator.clipboard.writeText((ESTADO.indicacao || {}).link || '').then(function () { msg('Link copiado!'); }); };
       document.getElementById('b-inst').onclick = instalar;
+      document.getElementById('b-sup').onclick = function () { window.nxPaySuporte(); };
       if (/iphone|ipad/i.test(navigator.userAgent) && !navigator.standalone) document.getElementById('inst-ios').style.display = 'block';
     }
   };
@@ -263,12 +273,88 @@ main.com-nav{padding-bottom:96px}.duo{display:grid;grid-template-columns:1fr 1fr
       if (!c.pago && c.status !== 'DELETED') { var conta = 0, t = setInterval(function () { if (++conta > 60 || !document.getElementById('jp')) return clearInterval(t); api('/api/pay/ver', { c: id, k: k }).then(function (n) { if (n.cobranca.pago) { clearInterval(t); c = n.cobranca; j = n; desenha(); msg('Pagamento confirmado! 🎉'); } }).catch(function () { }); }, 10000); }
     }).catch(function (e) { app.innerHTML = marca + '<div class="vazio">' + esc(e.message) + '</div>' + rodape; });
   }
+  /* ---------- suporte: o mesmo atendimento dos sistemas NEXUM (protocolo, assistente, atendente, anexos e avaliação) ---------- */
+  var SP = { aberto: false, lista: [], doc: null, prot: null, unsubL: null, unsub: null, tela: 'lista' };
+  var SP_ST = { bot: 'Com o assistente', analise: 'Em análise', concluido: 'Concluído', cancelado: 'Cancelado' };
+  var SP_OP = [['liberou', 'Paguei e não liberou'], ['cartao', 'Cartão recusado'], ['errada', 'Cobrança errada'], ['vencido', 'Boleto vencido'], ['dobro', 'Paguei em dobro'], ['nota', 'Nota fiscal'], ['atendente', 'Falar com atendente']];
+  function spUid() { var u = firebase.auth().currentUser; return u ? u.uid : ''; }
+  function spProt() { var d = new Date(); return String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') + String(Math.floor(1000 + Math.random() * 9000)); }
+  function spMsg(de, t) { return { id: Math.random().toString(36).slice(2, 10), de: de, t: String(t).slice(0, 4000), em: new Date().toISOString(), por: de === 'rh' ? ((firebase.auth().currentUser || {}).email || '') : '' }; }
+  function spHora(i) { return new Date(i).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); }
+  function db() { return firebase.firestore(); }
+  function spAdd(m, extra) { var d = SP.doc; d.msgs = (d.msgs || []).concat([m]); Object.assign(d, extra || {}); spRender(); return db().doc('suporte/' + d.protocolo).update(Object.assign({ msgs: firebase.firestore.FieldValue.arrayUnion(m), atualizadoEm: m.em }, extra || {})); }
+  function spBot(t, extra) { return spAdd(spMsg('bot', t), extra); }
+  function spLigar() {
+    if (SP.unsubL || !window.firebase || !firebase.auth().currentUser || !firebase.firestore) return;
+    if (!document.getElementById('sp-bol')) { document.body.insertAdjacentHTML('beforeend', '<button id="sp-bol" aria-label="Suporte">💬<i id="sp-nl" class="hide"></i></button><div id="sp-pn" class="hide" role="dialog" aria-label="Suporte"></div>'); document.getElementById('sp-bol').onclick = function () { SP.aberto = !SP.aberto; if (SP.aberto) { SP.tela = SP.doc ? 'chat' : 'lista'; } spRender(); }; }
+    SP.unsubL = db().collection('suporte').where('uid', '==', spUid()).onSnapshot(function (s) { SP.lista = s.docs.map(function (d) { return d.data(); }).sort(function (a, b) { return String(b.atualizadoEm || '').localeCompare(String(a.atualizadoEm || '')); }); var nl = SP.lista.some(function (x) { return x.naoLidoRh; }); var e = document.getElementById('sp-nl'); if (e) e.classList.toggle('hide', !nl); if (SP.aberto && SP.tela === 'lista') spRender(); }, function () { });
+  }
+  function spDesligar() { if (SP.unsubL) SP.unsubL(); if (SP.unsub) SP.unsub(); SP.unsubL = SP.unsub = null; SP.doc = null; ['sp-bol', 'sp-pn'].forEach(function (i) { var e = document.getElementById(i); if (e) e.remove(); }); }
+  function spAbrir(prot) { if (SP.unsub) SP.unsub(); SP.prot = prot; SP.tela = 'chat'; SP.doc = SP.lista.find(function (x) { return x.protocolo === prot; }) || SP.doc;
+    SP.unsub = db().doc('suporte/' + prot).onSnapshot(function (s) { SP.doc = s.data() || null; if (SP.doc && SP.doc.naoLidoRh && SP.aberto) db().doc('suporte/' + prot).update({ naoLidoRh: false }).catch(function () { }); spRender(); }, function () { }); spRender(); }
+  function spNovo() {
+    var prot = spProt(), u = firebase.auth().currentUser, d = { protocolo: prot, origem: 'pay', tid: ESTADO.tid || '', empresa: ESTADO.empresa || '', uid: u.uid, nome: u.email || '', email: u.email || '', status: 'bot', criadoEm: new Date().toISOString(), atualizadoEm: new Date().toISOString(), naoLidoDono: false, naoLidoRh: false,
+      msgs: [spMsg('bot', 'Olá! Seja bem-vindo(a) ao suporte do NEXUM PAY. 😊\nSeu protocolo é ' + prot + '.\n\nEscolha abaixo o que aconteceu com o pagamento, ou escreva a sua dúvida. Se preferir falar com uma pessoa, toque em "Falar com atendente".')] };
+    db().doc('suporte/' + prot).set(d).then(function () { SP.lista = [d].concat(SP.lista); SP.doc = d; spAbrir(prot); }).catch(function (e) { msg('Não foi possível abrir o atendimento: ' + (e.code || e.message), true); });
+  }
+  function spAtendente(motivo) { var d = SP.doc; if (!d || d.status !== 'bot') return Promise.resolve();
+    return spBot((motivo ? motivo + '\n\n' : '') + 'Pronto! Chamei um atendente da NEXUM. Seu protocolo ' + d.protocolo + ' está em análise.\nPode escrever aqui os detalhes e mandar o comprovante pelo 📎: a resposta aparece neste chat, mesmo se você fechar e abrir de novo (atendimento em dias úteis, das 9h às 18h).', { status: 'analise', naoLidoDono: true }); }
+  function spOpcao(k) {
+    var d = SP.doc; if (!d) return; var nome = (SP_OP.find(function (x) { return x[0] === k; }) || [])[1]; spAdd(spMsg('rh', nome)).catch(function () { });
+    if (k === 'atendente') return spAtendente();
+    if (k === 'liberou') { spBot('Vou conferir agora no banco os seus pagamentos em aberto… ⏳').catch(function () { });
+      return api('/api/pay/conferir', {}, true).then(function (r) { if (r.liberou) { spBot('✅ Encontrei o pagamento de ' + r.achados.map(function (a) { return brl(a.valor); }).join(' e ') + ' e já liberei o acesso' + (r.validade ? ' até ' + dt(r.validade) : '') + '. Desculpe a demora!\nO comprovante e a nota fiscal chegam no seu e-mail. Se ainda tiver problema, toque em "Falar com atendente".'); telaListaSilenciosa(); }
+        else spAtendente('Ainda não encontrei o pagamento no banco. O PIX costuma cair na hora; o boleto leva até 2 dias úteis.' + (r.abertas ? '' : ' Não há cobrança em aberto agora.') + '\nSe você já pagou, mande o comprovante pelo 📎 que um atendente confere.'); })
+        .catch(function (e) { spAtendente('Não consegui conferir agora (' + e.message + ').'); }); }
+    var R = { cartao: 'Quando o cartão é recusado, normalmente é limite, cartão vencido ou bloqueio do banco para compras pela internet.\n\n1. Confira o limite e se o cartão está liberado para compras online.\n2. Tente de novo pelo botão "Pagar" da cobrança.\n3. Ou pague no PIX, que libera na hora.\n\nSe o débito automático falhou, você não perde o acesso: pague no PIX e depois cadastre o cartão de novo em Início > Débito automático.',
+      vencido: 'Sem problema: a mesma cobrança continua valendo depois do vencimento. Abra a cobrança em Início > Em aberto > Pagar e pague no PIX (libera na hora) ou pelo boleto atualizado, já com a multa e os juros do atraso.\n\nSe estiver difícil pagar tudo de uma vez, use o botão "Negociar" no Início.',
+      nota: 'A nota fiscal sai sozinha depois que o pagamento é confirmado e a prefeitura autoriza (pode levar até 1 dia útil). Ela chega no seu e-mail e fica em Documentos > Notas fiscais.\n\nSe passou disso e a nota não chegou, toque em "Falar com atendente".' };
+    if (R[k]) return spBot(R[k]).catch(function () { });
+    if (k === 'errada' || k === 'dobro') return spAtendente(k === 'dobro' ? 'Vamos conferir o pagamento em dobro e devolver o que foi pago a mais (ou usar como crédito na próxima mensalidade, se preferir).' : 'Vamos conferir a cobrança.');
+  }
+  var SP_FAQ = [[/libera|liberou|compensa|caiu|confirm/i, 'liberou'], [/cart[aã]o|recus|negad/i, 'cartao'], [/vencid|atras|2[ªa] via|segunda via/i, 'vencido'], [/nota|nfs|fiscal/i, 'nota'], [/dobro|duas vezes|duplic/i, 'dobro'], [/errad|valor|cobran[cç]a/i, 'errada']];
+  function spEnviar() {
+    var t = document.getElementById('sp-t'), txt = t.value.trim(), d = SP.doc; if (!txt || !d || ['concluido', 'cancelado'].indexOf(d.status) >= 0) return; t.value = '';
+    spAdd(spMsg('rh', txt), d.status === 'analise' ? { naoLidoDono: true } : {}).catch(function (e) { msg('Mensagem não enviada: ' + (e.code || e.message), true); });
+    if (d.status !== 'bot') return; var f = SP_FAQ.find(function (x) { return x[0].test(txt); });
+    if (f) { if (f[1] === 'liberou' || f[1] === 'errada' || f[1] === 'dobro') return spOpcao(f[1]); return spBot({ cartao: 'Parece que o cartão foi recusado. Toque em "Cartão recusado" abaixo que eu explico o que fazer.', vencido: 'Para cobrança vencida, toque em "Boleto vencido" abaixo.', nota: 'Sobre a nota fiscal, toque em "Nota fiscal" abaixo.' }[f[1]]).catch(function () { }); }
+    spBot('Não tenho certeza da resposta. Escolha uma das opções abaixo ou toque em "Falar com atendente" que uma pessoa da NEXUM responde por aqui.').catch(function () { });
+  }
+  function spAnexar(f) {
+    var d = SP.doc; if (!d || !f) return; msg('Enviando o anexo…');
+    new Promise(function (ok, er) { if (/^image\//.test(f.type)) { var u = URL.createObjectURL(f), i = new Image(); i.onload = function () { var k = Math.min(1, 1600 / Math.max(i.width, i.height)), c = document.createElement('canvas'); c.width = Math.round(i.width * k); c.height = Math.round(i.height * k); c.getContext('2d').drawImage(i, 0, 0, c.width, c.height); URL.revokeObjectURL(u); var q = .82, x = c.toDataURL('image/jpeg', q); while (x.length > 850000 && q > .3) { q -= .12; x = c.toDataURL('image/jpeg', q); } ok({ nome: String(f.name || 'foto').replace(/\.\w+$/, '') + '.jpg', tipo: 'image/jpeg', data: x }); }; i.onerror = function () { er(new Error('Não consegui ler a imagem.')); }; i.src = u; }
+      else { if (f.size > 640 * 1024) return er(new Error('Arquivo grande demais (máximo 640 KB). Mande uma foto ou um PDF menor.')); var r = new FileReader(); r.onload = function () { ok({ nome: String(f.name || 'arquivo').slice(0, 120), tipo: f.type || 'application/octet-stream', data: r.result }); }; r.onerror = function () { er(new Error('Não consegui ler o arquivo.')); }; r.readAsDataURL(f); } })
+      .then(function (a) { var id = Math.random().toString(36).slice(2, 12); return db().doc('suporte/' + d.protocolo + '/anexos/' + id).set(Object.assign({}, a, { em: new Date().toISOString(), de: 'rh' })).then(function () { var m = Object.assign(spMsg('rh', '📎 ' + a.nome), { anexo: { id: id, nome: a.nome, tipo: a.tipo } }); return spAdd(m, d.status === 'bot' ? { status: 'analise', naoLidoDono: true } : { naoLidoDono: true }); })
+        .then(function () { if (d.status === 'bot' || SP.doc.status === 'analise') { if (d.msgs.filter(function (x) { return x.de === 'bot' && /passei para um atendente/.test(x.t); }).length === 0) spBot('Recebi o seu arquivo e já passei para um atendente da NEXUM, que vai responder por aqui.').catch(function () { }); } msg('Anexo enviado.'); }); })
+      .catch(function (e) { msg(e.message || 'Não foi possível enviar o anexo.', true); });
+  }
+  function spRender() {
+    var p = document.getElementById('sp-pn'); if (!p) return; p.classList.toggle('hide', !SP.aberto); if (!SP.aberto) return;
+    var cab = '<div class="sp-h">' + (SP.tela === 'chat' ? '<button data-sp="lista" aria-label="Voltar">‹</button>' : '') + '<b>Suporte NEXUM PAY</b><button data-sp="fechar" aria-label="Fechar">×</button></div>';
+    if (SP.tela === 'lista' || !SP.doc) {
+      p.innerHTML = cab + '<div class="sp-b"><button class="bt" data-sp="novo" style="height:48px;font-size:15px">Novo atendimento</button>' + (SP.lista.length ? SP.lista.map(function (x) { var u = (x.msgs || [])[(x.msgs || []).length - 1] || {}; return '<button class="sp-it" data-spp="' + esc(x.protocolo) + '"><b>Protocolo ' + esc(x.protocolo) + (x.naoLidoRh ? ' <i class="sp-dot"></i>' : '') + '</b><span>' + esc(SP_ST[x.status] || x.status) + ' · ' + esc(String(u.t || '').slice(0, 60)) + '</span></button>'; }).join('') : '<p class="dt" style="text-align:center;margin-top:16px">Nenhum atendimento ainda. Problema com um pagamento? Toque em "Novo atendimento".</p>') + '<a class="lnk" href="https://wa.me/5545998524338?text=' + encodeURIComponent('Olá! Preciso de ajuda com um pagamento no NEXUM PAY.') + '" target="_blank" rel="noopener">Urgente? Falar no WhatsApp</a></div>';
+    } else {
+      var d = SP.doc, fim = ['concluido', 'cancelado'].indexOf(d.status) >= 0;
+      p.innerHTML = cab + '<div class="sp-s">Protocolo ' + esc(d.protocolo) + ' · ' + esc(SP_ST[d.status] || d.status) + '</div><div class="sp-b sp-ms" id="sp-ms">' + (d.msgs || []).map(function (m) { var eu = m.de === 'rh'; return '<div class="sp-m ' + (eu ? 'eu' : '') + '">' + (eu ? '' : '<small>' + (m.de === 'bot' ? 'Assistente NEXUM' : esc(m.por || 'Equipe NEXUM')) + '</small>') + esc(m.t).replace(/\n/g, '<br>') + '<em>' + spHora(m.em) + '</em></div>'; }).join('') +
+        (d.status === 'bot' ? '<div class="sp-op">' + SP_OP.map(function (o) { return '<button data-spo="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</div>' : '') +
+        (d.status === 'concluido' && !d.avaliacao ? '<div class="sp-av"><b>Como foi o atendimento?</b><div>' + [1, 2, 3, 4, 5].map(function (n) { return '<button data-spa="' + n + '">' + '★'.repeat(n) + '</button>'; }).join('') + '</div></div>' : '') + '</div>' +
+        (fim ? '<div class="sp-f"><button class="bt2" data-sp="novo" style="height:44px">Abrir outro atendimento</button></div>' : '<div class="sp-f"><label class="sp-ax" title="Anexar comprovante">📎<input type="file" id="sp-fx" accept="image/*,application/pdf" hidden></label><input id="sp-t" placeholder="Escreva aqui…" autocomplete="off"><button id="sp-env" aria-label="Enviar">➤</button></div>');
+      var ms = document.getElementById('sp-ms'); if (ms) ms.scrollTop = ms.scrollHeight;
+      var t = document.getElementById('sp-t'); if (t) { t.onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); spEnviar(); } }; document.getElementById('sp-env').onclick = spEnviar; document.getElementById('sp-fx').onchange = function (e) { spAnexar(e.target.files[0]); e.target.value = ''; }; }
+      [].forEach.call(p.querySelectorAll('[data-spo]'), function (b) { b.onclick = function () { spOpcao(b.dataset.spo); }; });
+      [].forEach.call(p.querySelectorAll('[data-spa]'), function (b) { b.onclick = function () { db().doc('suporte/' + d.protocolo).update({ avaliacao: { nota: +b.dataset.spa, em: new Date().toISOString() } }).then(function () { msg('Obrigado pela avaliação!'); }).catch(function () { }); }; });
+    }
+    [].forEach.call(p.querySelectorAll('[data-sp]'), function (b) { b.onclick = function () { var a = b.dataset.sp; if (a === 'fechar') { SP.aberto = false; spRender(); } else if (a === 'lista') { if (SP.unsub) SP.unsub(); SP.unsub = null; SP.doc = null; SP.tela = 'lista'; spRender(); } else if (a === 'novo') spNovo(); }; });
+    [].forEach.call(p.querySelectorAll('[data-spp]'), function (b) { b.onclick = function () { spAbrir(b.dataset.spp); }; });
+  }
+  function telaListaSilenciosa() { api('/api/pay/minhas', {}, true).then(function (j) { ESTADO = j; if (document.querySelector('.bnav')) desenhar(); }).catch(function () { }); }
+  window.nxPaySuporte = function () { SP.aberto = true; SP.tela = 'lista'; spRender(); };
   /* ---------- início ---------- */
   fetch('https://firestore.googleapis.com/v1/projects/nexum-30044/databases/(default)/documents/plataforma/publico?key=' + CFG.apiKey).then(function (r) { return r.json(); }).then(function (j) { BASE = String(((j.fields || {}).asaasUrl || {}).stringValue || '').replace(/\/+$/, ''); }).catch(function () { })
     .then(function () {
       if (!BASE) { app.innerHTML = marca + '<div class="vazio">O NEXUM PAY está em manutenção. Tente de novo em instantes.</div>' + rodape; return; }
       if (q.get('c') && q.get('k')) return telaPagar(q.get('c'), q.get('k'), false);
-      firebase.initializeApp(CFG); firebase.auth().onAuthStateChanged(function (u) { if (u) { if (sesLer()) telaLista(); else telaCodigo(); } else telaLogin(); });
+      firebase.initializeApp(CFG); firebase.auth().onAuthStateChanged(function (u) { if (u) { if (sesLer()) telaLista(); else telaCodigo(); } else { spDesligar(); app.classList.remove('com-nav'); telaLogin(); } });
     });
 })();
 </script>
