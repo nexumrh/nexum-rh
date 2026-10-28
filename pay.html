@@ -47,9 +47,29 @@ h2{font-size:15px;margin:18px 0 10px;color:var(--mut);font-weight:600;letter-spa
   function msg(t, bad) { var m = document.createElement('div'); m.className = 'msg' + (bad ? ' bad' : ''); m.textContent = t; document.body.appendChild(m); setTimeout(function () { m.remove(); }, 4200); }
   var NOME = { essencial: 'Ponto Essencial', profissional: 'Profissional', empresa: 'Empresa' };
   var marca = '<div class="mk"><div><img src="email-logo.png" alt="NEXUM"><span class="py">PAY</span></div></div>', rodape = '<div class="pe">🛡️ Nexum Pay<span>Seu pagamento, nossa prioridade.</span></div>';
-  function api(rota, corpo, auth) { return (auth && firebase.auth().currentUser ? firebase.auth().currentUser.getIdToken() : Promise.resolve('')).then(function (tk) {
-    return fetch(BASE + rota, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, tk ? { Authorization: 'Bearer ' + tk } : {}), body: JSON.stringify(corpo || {}) }); })
-    .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.erro || 'Não foi possível agora.'); return j; }); }); }
+  function chaveSes() { var u = window.firebase && firebase.apps.length && firebase.auth().currentUser; return u ? 'nxpay:s:' + u.uid : ''; }
+  function sesLer() { try { var k = chaveSes(), x = k && JSON.parse(localStorage.getItem(k) || sessionStorage.getItem(k) || 'null'); return x && x.ate > Date.now() ? x.token : ''; } catch (e) { return ''; } }
+  function api(rota, corpo, auth) { return (auth && firebase.auth().currentUser ? firebase.auth().currentUser.getIdToken() : Promise.resolve('')).then(function (tk) { var ses = auth ? sesLer() : '';
+    return fetch(BASE + rota, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, tk ? { Authorization: 'Bearer ' + tk } : {}, ses ? { 'X-Pay-Sessao': ses } : {}), body: JSON.stringify(corpo || {}) }); })
+    .then(function (r) { return r.json().then(function (j) { if (!r.ok) { var e = new Error(j.erro || 'Não foi possível agora.'); e.codigo = j.codigo || ''; throw e; } return j; }); }); }
+  /* ---------- confirmação por e-mail ---------- */
+  function telaCodigo(jaPedido) {
+    app.innerHTML = marca + '<h1>Confirme que<br><span>é você</span></h1><p class="sb" id="cd-s">Mandando um código de 6 números para o seu e-mail…</p>' +
+      '<form id="fc"><label class="in" style="justify-content:center"><input id="cd" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" style="text-align:center;letter-spacing:.5em;font-size:24px;font-weight:700"></label>' +
+      '<div class="lin"><label><input type="checkbox" id="lm" checked>Lembrar este aparelho por 30 dias</label></div><button class="bt" id="cd-ok">Confirmar ' + I.seta + '</button></form>' +
+      '<a class="lnk" id="cd-re">Mandar outro código</a><a class="lnk" id="cd-sa">Entrar com outra conta</a>' + rodape;
+    var pedir = function () { var re = document.getElementById('cd-re'); re.style.pointerEvents = 'none'; re.style.opacity = '.5';
+      api('/api/pay/codigo', {}, true).then(function (j) { document.getElementById('cd-s').innerHTML = 'Mandamos um código de 6 números para <b style="color:#fff">' + esc(j.email) + '</b>. Ele vale por 10 minutos.'; })
+        .catch(function (e) { document.getElementById('cd-s').textContent = e.message; })
+        .then(function () { setTimeout(function () { var r = document.getElementById('cd-re'); if (r) { r.style.pointerEvents = ''; r.style.opacity = ''; } }, 60000); }); };
+    if (!jaPedido) pedir(); else document.getElementById('cd-s').textContent = 'Digite o código que mandamos para o seu e-mail.';
+    document.getElementById('cd').oninput = function (e) { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6); if (e.target.value.length === 6) document.getElementById('cd-ok').click(); };
+    document.getElementById('cd-re').onclick = pedir; document.getElementById('cd-sa').onclick = function () { firebase.auth().signOut(); };
+    document.getElementById('fc').onsubmit = function (ev) { ev.preventDefault(); var b = document.getElementById('cd-ok'), lm = document.getElementById('lm').checked; if (document.getElementById('cd').value.length !== 6) return msg('Digite os 6 números do código.', true); b.disabled = true;
+      api('/api/pay/confirmar', { codigo: document.getElementById('cd').value, lembrar: lm }, true).then(function (j) { try { (lm ? localStorage : sessionStorage).setItem(chaveSes(), JSON.stringify({ token: j.token, ate: j.ate })); } catch (e) { } telaLista(); })
+        .catch(function (e) { b.disabled = false; msg(e.message, true); document.getElementById('cd').value = ''; }); };
+    setTimeout(function () { var c = document.getElementById('cd'); if (c) c.focus(); }, 100);
+  }
   /* ---------- login ---------- */
   function telaLogin() {
     app.innerHTML = marca + '<h1>Bem-vindo ao<br><span>Nexum Pay</span></h1><p class="sb">Mais praticidade, segurança e<br>controle para o seu dia a dia.</p>' +
@@ -80,7 +100,7 @@ h2{font-size:15px;margin:18px 0 10px;color:var(--mut);font-weight:600;letter-spa
       [].forEach.call(app.querySelectorAll('[data-r]'), function (b) { b.onclick = function () { telaPagar(b.dataset.r, b.dataset.k, true); }; });
       var bc = document.getElementById('b-carne'); if (bc) bc.onclick = function () { var n = prompt('Em quantas parcelas mensais? (de 2 a 12)', '12'); if (!n) return; bc.disabled = true; bc.textContent = 'Gerando o carnê…';
         api('/api/pay/carne', { parcelas: +n }, true).then(function (r) { msg('Carnê gerado com ' + r.parcelas + ' parcelas de ' + brl(r.mensal) + '.'); window.open(BASE + r.pdf, '_blank'); telaLista(); }).catch(function (e) { msg(e.message, true); bc.disabled = false; bc.textContent = 'Gerar carnê (boletos mensais)'; }); };
-    }).catch(function (e) { app.innerHTML = '<div class="top"><img src="email-logo.png" alt="NEXUM"><span class="py">PAY</span><span class="sp"></span><button id="sair">Sair</button></div><div class="vazio">' + esc(e.message) + '</div>'; document.getElementById('sair').onclick = function () { firebase.auth().signOut(); }; });
+    }).catch(function (e) { if (e.codigo === 'verificar') return telaCodigo(); app.innerHTML = '<div class="top"><img src="email-logo.png" alt="NEXUM"><span class="py">PAY</span><span class="sp"></span><button id="sair">Sair</button></div><div class="vazio">' + esc(e.message) + '</div>'; document.getElementById('sair').onclick = function () { firebase.auth().signOut(); }; });
   }
   /* ---------- pagar uma cobrança ---------- */
   function telaPagar(id, k, voltar) {
@@ -115,7 +135,7 @@ h2{font-size:15px;margin:18px 0 10px;color:var(--mut);font-weight:600;letter-spa
     .then(function () {
       if (!BASE) { app.innerHTML = marca + '<div class="vazio">O NEXUM PAY está em manutenção. Tente de novo em instantes.</div>' + rodape; return; }
       if (q.get('c') && q.get('k')) return telaPagar(q.get('c'), q.get('k'), false);
-      firebase.initializeApp(CFG); firebase.auth().onAuthStateChanged(function (u) { if (u) telaLista(); else telaLogin(); });
+      firebase.initializeApp(CFG); firebase.auth().onAuthStateChanged(function (u) { if (u) { if (sesLer()) telaLista(); else telaCodigo(); } else telaLogin(); });
     });
 })();
 </script>
