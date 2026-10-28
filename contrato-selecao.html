@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Contrato de seleção · NEXUM</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--pri:#1F5FE8;--nav:#0B1E4A;--bg:#F3F5FA;--line:#E1E6EF;--txt:#141B2E;--mut:#5F6880;--ok:#15803D;--okb:#DCFCE7;--bad:#B42318}
+*{box-sizing:border-box}html,body{margin:0}body{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--txt);font-size:15px;line-height:1.5}
+.top{background:linear-gradient(120deg,#0B1E4A,#123A8C);color:#fff;padding:20px 16px 56px}.top .in,.wrap{max-width:860px;margin:0 auto}
+.top img{height:30px;display:block;margin-bottom:12px}.top small{opacity:.8;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase}.top h1{margin:6px 0 2px;font-size:21px;line-height:1.25}.top p{margin:0;opacity:.85;font-size:14px}
+.wrap{padding:0 16px 40px;margin-top:-40px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px;box-shadow:0 4px 18px rgba(15,30,70,.06)}
+.doc{font-family:Georgia,'Times New Roman',serif;font-size:14.5px;color:#1b1b1b;line-height:1.6}.doc h2{font-family:Inter,sans-serif;text-align:center;font-size:16px;letter-spacing:.03em;margin:4px 0 2px}.doc .ct{text-align:center;color:#555;font-size:12.5px;margin-bottom:16px;font-family:Inter,sans-serif}
+.doc p{text-align:justify;margin:0 0 10px}.doc b.cl{font-family:Inter,sans-serif;font-size:13.5px}.doc table{width:100%;border-collapse:collapse;font-family:Inter,sans-serif;font-size:13px;margin:6px 0 12px}.doc td,.doc th{border:1px solid #CBD5E8;padding:6px 8px;text-align:left}.doc th{background:#EEF2FA}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:12px}.fld label{display:block;font-size:13px;font-weight:600;margin-bottom:5px}.inp{width:100%;min-height:46px;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit}
+canvas{width:100%;height:160px;border:1.5px dashed #9AA8C7;border-radius:12px;touch-action:none;background:#fff;display:block}
+.ft{width:100%;height:160px;border-radius:12px;background:#E8EEF8;display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--mut);font-size:13.5px;text-align:center;padding:8px}.ft video,.ft img{width:100%;height:100%;object-fit:cover;border-radius:10px}.ft video{transform:scaleX(-1)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:10px 16px;font:inherit;font-weight:700;min-height:46px;cursor:pointer;color:var(--nav)}.btn.p{background:var(--pri);border-color:var(--pri);color:#fff}.btn:disabled{opacity:.6}
+.ck{display:flex;gap:10px;align-items:flex-start;margin:12px 0}.ck input{width:22px;height:22px;flex:none}
+.sel{display:inline-block;border-radius:999px;padding:4px 12px;font-weight:700;font-size:13px;background:var(--okb);color:var(--ok)}.hint{color:var(--mut);font-size:13px}
+.cert{border:1px solid #CBD5E8;border-radius:12px;padding:12px 14px;background:#F7F9FF;font-size:13px}.cert td{padding:4px 6px;vertical-align:top}.cert img{max-height:110px;border-radius:8px}
+.msg{padding:16px;text-align:center}.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#0B1E4A;color:#fff;padding:12px 18px;border-radius:12px;font-weight:600;z-index:9;max-width:calc(100% - 24px)}.toast.bad{background:var(--bad)}
+@media (max-width:640px){.g{grid-template-columns:1fr}.card{padding:14px}.doc p{text-align:left}}
+@media print{.top,.nao-imp{display:none!important}.wrap{margin:0}.card{box-shadow:none;border:0}}
+</style></head><body>
+<div class="top"><div class="in"><img src="email-logo.png" alt="NEXUM"><small>Recrutamento e seleção terceirizados</small><h1 id="t">Contrato de prestação de serviços</h1><p id="st">Carregando…</p></div></div>
+<div class="wrap"><div class="card" id="c-doc"><div class="msg">Carregando o contrato…</div></div><div id="c-ass"></div></div>
+<script>
+(function () {
+  var API = 'AIzaSyDdcLJdO2qnmiGsR1EsKFu-uJfs4FRNvA4', FS = 'https://firestore.googleapis.com/v1/projects/nexum-30044/databases/(default)/documents/';
+  var tok = (new URLSearchParams(location.search).get('c') || '').replace(/[^\w-]/g, ''), D = null, PUB = {}, DOC = { html: '', texto: '' }, foto = '', stream = null, riscou = false;
+  var $ = function (s) { return document.querySelector(s); };
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function brl(v) { return 'R$ ' + (+v || 0).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+  function fmtDoc(d) { var x = String(d || '').replace(/\D/g, ''); return x.length === 14 ? x.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5') : x.length === 11 ? x.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : String(d || ''); }
+  function toast(m, bad) { var t = document.createElement('div'); t.className = 'toast' + (bad ? ' bad' : ''); t.textContent = m; document.body.appendChild(t); setTimeout(function () { t.remove(); }, 4200); }
+  function val(v) { if (!v) return null; if ('stringValue' in v) return v.stringValue; if ('integerValue' in v) return +v.integerValue; if ('doubleValue' in v) return v.doubleValue; if ('booleanValue' in v) return v.booleanValue; if ('timestampValue' in v) return v.timestampValue; if ('nullValue' in v) return null;
+    if ('arrayValue' in v) return (v.arrayValue.values || []).map(val); if ('mapValue' in v) { var o = {}; Object.keys(v.mapValue.fields || {}).forEach(function (k) { o[k] = val(v.mapValue.fields[k]); }); return o; } return null; }
+  function obj(j) { var o = {}; Object.keys((j && j.fields) || {}).forEach(function (k) { o[k] = val(j.fields[k]); }); return o; }
+  function montar() {
+    var v = D.valores || {}, mod = D.modalidade || 'ambos', vagas = D.vagas || [], c = PUB, n = 0, cl = function (t) { n++; return '<p><b class="cl">CLÁUSULA ' + n + 'ª – ' + t + '.</b> '; };
+    var precoTxt = mod === 'contratado' ? brl(v.porContratado) + ' por candidato efetivamente contratado pela CONTRATANTE, cobrado somente após a admissão'
+      : mod === 'apresentado' ? brl(v.porCandidato) + ' por candidato apresentado com parecer, independentemente de contratação'
+      : brl(v.porCandidato) + ' por candidato apresentado com parecer e ' + brl(v.porContratado) + ' por candidato efetivamente contratado' + (v.somar ? ', valores que se somam no caso do candidato contratado' : ', valendo para o candidato contratado apenas o valor de contratação');
+    var h = '<h2>CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE RECRUTAMENTO E SELEÇÃO DE PESSOAL</h2><div class="ct">Instrumento particular · Nº ' + esc(D.numero || tok.slice(0, 8).toUpperCase()) + ' · Proposta comercial e contrato</div>' +
+      '<p><b class="cl">CONTRATADA:</b> ' + esc(c.razao || 'NEXUM RH') + (c.cnpj ? ', inscrita no CNPJ sob o nº ' + esc(c.cnpj) : '') + (c.endereco ? ', com sede em ' + esc(c.endereco) : ', com sede em Foz do Iguaçu/PR') + ', doravante denominada <b>NEXUM</b>.</p>' +
+      '<p><b class="cl">CONTRATANTE:</b> ' + esc(D.empresa || '') + (D.cnpj ? ', inscrita no CNPJ/CPF sob o nº ' + esc(fmtDoc(D.cnpj)) : '') + (D.cidade ? ', estabelecida em ' + esc(D.cidade) : '') + ', neste ato representada por quem assina eletronicamente este instrumento, doravante denominada <b>CONTRATANTE</b>.</p>' +
+      '<p>As partes acima qualificadas celebram o presente contrato, que se regerá pelas cláusulas e condições seguintes e, no que for omisso, pelos arts. 593 a 609 do Código Civil (Lei 10.406/2002).</p>' +
+      cl('DO OBJETO') + 'Prestação, pela NEXUM, de serviços de recrutamento e seleção de pessoal para as vagas abaixo, compreendendo: divulgação da vaga, triagem de currículos, aplicação de testes, entrevista por vídeo e apresentação à CONTRATANTE dos candidatos aderentes ao perfil, acompanhados de parecer.</p>' +
+      '<table><tr><th>Cargo</th><th>Loja / local</th><th>Vagas</th><th>Salário informado</th></tr>' + (vagas.length ? vagas.map(function (x) { return '<tr><td>' + esc(x.cargo || '') + '</td><td>' + esc(x.loja || '') + '</td><td>' + esc(x.qtd || 1) + '</td><td>' + esc(x.salario || '') + '</td></tr>'; }).join('') : '<tr><td colspan="4">Conforme o pedido da CONTRATANTE</td></tr>') + '</table>' +
+      '<p>Parágrafo único. A decisão de contratar é exclusiva da CONTRATANTE, que realiza a admissão em seu nome, assumindo todos os encargos trabalhistas, previdenciários e fiscais do empregado contratado. Não há qualquer vínculo empregatício entre o candidato e a NEXUM.</p>' +
+      cl('DO PREÇO') + 'Pelos serviços, a CONTRATANTE pagará à NEXUM ' + precoTxt + '. Não há mensalidade, taxa de adesão ou fidelidade.</p>' +
+      cl('DA FORMA DE PAGAMENTO') + 'Os valores serão cobrados por PIX, boleto ou cartão, por meio da plataforma de pagamentos da NEXUM, com vencimento em até 5 (cinco) dias corridos da apresentação dos candidatos ou da data de admissão, conforme o caso. A nota fiscal de serviço será emitida em nome da CONTRATANTE após cada pagamento.</p>' +
+      cl('DO PRAZO DE EXECUÇÃO') + 'A NEXUM apresentará os primeiros candidatos em até 10 (dez) dias úteis contados da assinatura deste contrato e do recebimento de todas as informações da vaga, podendo o prazo ser prorrogado por comum acordo em razão do perfil ou da oferta do mercado.</p>' +
+      cl('DA GARANTIA DE REPOSIÇÃO') + 'Se o candidato contratado por indicação da NEXUM for desligado, ou pedir demissão, em até 30 (trinta) dias da admissão, a NEXUM realizará nova seleção para a mesma vaga sem cobrança adicional, desde que a CONTRATANTE esteja em dia com os pagamentos e comunique o desligamento em até 5 (cinco) dias.</p>' +
+      cl('DAS OBRIGAÇÕES DA NEXUM') + 'São obrigações da NEXUM: (a) executar os serviços com zelo e técnica; (b) apresentar somente candidatos aderentes ao perfil informado; (c) manter a CONTRATANTE informada do andamento; (d) não divulgar o endereço da loja aos candidatos antes da etapa final; (e) tratar os dados pessoais conforme a cláusula de proteção de dados.</p>' +
+      cl('DAS OBRIGAÇÕES DA CONTRATANTE') + 'São obrigações da CONTRATANTE: (a) fornecer informações verdadeiras e completas sobre as vagas; (b) dar retorno sobre os candidatos apresentados em até 5 (cinco) dias úteis; (c) informar à NEXUM a contratação de qualquer candidato apresentado; (d) efetuar os pagamentos nos prazos; (e) não praticar discriminação de qualquer natureza no processo seletivo (Lei 9.029/1995).</p>' +
+      cl('DA NÃO CONTRATAÇÃO DIRETA') + 'Caso a CONTRATANTE, ou empresa do mesmo grupo econômico, contrate qualquer candidato apresentado pela NEXUM, de forma direta ou por intermédio de terceiros, no prazo de 6 (seis) meses contados da apresentação, sem comunicar a NEXUM, ficará obrigada ao pagamento do valor por contratação previsto na cláusula do preço, acrescido de multa de 20% (vinte por cento).</p>' +
+      cl('DA PROTEÇÃO DE DADOS E DA CONFIDENCIALIDADE') + 'As partes tratarão os dados pessoais dos candidatos exclusivamente para as finalidades deste contrato, observando a Lei 13.709/2018 (LGPD). A CONTRATANTE atua como controladora dos dados dos candidatos que vier a contratar e se compromete a não compartilhar com terceiros os dados dos candidatos apresentados. As informações comerciais trocadas entre as partes são confidenciais.</p>' +
+      cl('DO INADIMPLEMENTO') + 'O atraso no pagamento sujeitará a CONTRATANTE a multa moratória de 2% (dois por cento), juros de 1% (um por cento) ao mês, pro rata die, e correção monetária pelo IPCA, além da suspensão dos serviços em andamento. Persistindo o atraso por mais de 30 (trinta) dias, a NEXUM poderá, após notificação prévia com prazo mínimo de 10 (dez) dias, incluir o débito nos órgãos de proteção ao crédito (SPC/Serasa), nos termos do art. 43, § 2º, do Código de Defesa do Consumidor, e promover a cobrança extrajudicial ou judicial, com honorários de 10% (dez por cento) sobre o débito.</p>' +
+      cl('DA VIGÊNCIA E DA RESCISÃO') + 'Este contrato vigora desde a assinatura até a conclusão da seleção das vagas descritas, podendo ser rescindido por qualquer das partes mediante aviso por escrito, ficando devidos os valores referentes aos candidatos já apresentados ou contratados até a data da rescisão.</p>' +
+      cl('DA ASSINATURA ELETRÔNICA') + 'As partes reconhecem como válida, eficaz e vinculante a assinatura eletrônica deste instrumento, realizada com o registro de data, hora, endereço IP, localização aproximada, fotografia do signatário, assinatura manuscrita digitalizada e código de integridade (SHA-256), nos termos do art. 10, § 2º, da Medida Provisória 2.200-2/2001, da Lei 14.063/2020 e dos arts. 107 e 425 do Código Civil, dispensando-se o reconhecimento de firma. O signatário declara ter poderes para representar a CONTRATANTE.</p>' +
+      cl('DO FORO') + 'Fica eleito o foro da Comarca de ' + esc(c.foro || 'Foz do Iguaçu/PR') + ' para dirimir quaisquer questões oriundas deste contrato, com renúncia a qualquer outro, por mais privilegiado que seja.</p>' +
+      '<p>E, por estarem assim justas e contratadas, as partes firmam o presente instrumento eletronicamente, para que produza seus jurídicos e legais efeitos.</p><p style="text-align:center">Foz do Iguaçu/PR, data da assinatura eletrônica.</p>';
+    return h;
+  }
+  function certHtml(d) {
+    var q = d.assinadoEm ? new Date(d.assinadoEm).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : '';
+    return '<div class="cert"><b>Certificado de assinatura eletrônica</b><table>' + [['Assinado por', d.nome], ['CPF', d.cpf ? String(d.cpf).replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : ''], ['Em nome de', D.empresa], ['Data e hora (Brasília)', q], ['IP', d.ip], ['Cidade aproximada', d.cidadeIp], ['Aparelho', d.aparelho], ['Código de integridade (SHA-256)', d.hash]].filter(function (x) { return x[1]; }).map(function (x) { return '<tr><td class="hint">' + esc(x[0]) + '</td><td><b style="word-break:break-all">' + esc(x[1]) + '</b></td></tr>'; }).join('') + '</table>' +
+      '<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:10px">' + (d.assinatura ? '<div style="text-align:center"><img src="' + d.assinatura + '" alt="Assinatura" style="background:#fff;border:1px solid #CBD5E8;max-width:260px"><div class="hint">Assinatura</div></div>' : '') + (d.foto ? '<div style="text-align:center"><img src="' + d.foto + '" alt="Foto de quem assinou"><div class="hint">Foto no momento da assinatura</div></div>' : '') + '</div></div>';
+  }
+  function telaAssinada() {
+    $('#st').innerHTML = '<span class="sel">Assinado em ' + new Date(D.assinadoEm).toLocaleDateString('pt-BR') + '</span>';
+    $('#c-doc').innerHTML = '<div class="doc">' + (D.html || DOC.html) + '</div>' + certHtml(D);
+    $('#c-ass').innerHTML = '<div class="card nao-imp" style="text-align:center"><p style="margin:0 0 10px"><b>Contrato assinado.</b> Uma cópia vai para o e-mail da empresa.</p><button class="btn p" id="b-pr">Imprimir ou salvar em PDF</button></div>';
+    $('#b-pr').onclick = function () { print(); };
+  }
+  function telaAssinar() {
+    $('#st').textContent = 'Leia o contrato e assine no final. Leva 2 minutos.';
+    $('#c-doc').innerHTML = '<div class="doc">' + DOC.html + '</div>';
+    $('#c-ass').innerHTML = '<div class="card nao-imp"><h2 style="margin:0 0 6px;font-size:17px">Assinar o contrato</h2><label class="ck"><input type="checkbox" id="li"><span>Li o contrato acima e aceito todas as cláusulas, em nome de <b>' + esc(D.empresa || '') + '</b>, e declaro ter poderes para representá-la.</span></label>' +
+      '<div class="g"><div class="fld"><label for="nm">Nome completo de quem assina</label><input class="inp" id="nm" value="' + esc(D.responsavel || '') + '" autocomplete="name"></div><div class="fld"><label for="cp">CPF</label><input class="inp" id="cp" inputmode="numeric" placeholder="000.000.000-00"></div></div>' +
+      '<div class="g" style="margin-top:12px"><div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b style="font-size:14px">Assinatura</b><button class="btn" id="lp" style="min-height:36px;padding:6px 10px">Limpar</button></div><canvas id="cv"></canvas><div class="hint">Desenhe com o dedo ou o mouse.</div></div>' +
+      '<div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b style="font-size:14px">Foto de quem assina</b><button class="btn" id="bf" style="min-height:36px;padding:6px 10px">Ligar a câmera</button></div><div class="ft" id="fx">A foto ao vivo comprova quem assinou o contrato.</div></div></div>' +
+      '<p class="hint" style="margin:12px 0">Ficam registrados data, hora, IP, cidade aproximada, a foto e um código do contrato.</p><button class="btn p" id="ok" style="width:100%">Assinar contrato</button></div>';
+    var cv = $('#cv'), ctx = cv.getContext('2d'), r = cv.getBoundingClientRect(); cv.width = r.width * 2; cv.height = r.height * 2; ctx.scale(2, 2); ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.strokeStyle = '#0B1E4A';
+    var des = false, pt = function (e) { var b = cv.getBoundingClientRect(); return [e.clientX - b.left, e.clientY - b.top]; };
+    cv.onpointerdown = function (e) { des = true; cv.setPointerCapture(e.pointerId); var p = pt(e); ctx.beginPath(); ctx.moveTo(p[0], p[1]); };
+    cv.onpointermove = function (e) { if (!des) return; var p = pt(e); ctx.lineTo(p[0], p[1]); ctx.stroke(); riscou = true; };
+    cv.onpointerup = cv.onpointercancel = function () { des = false; };
+    $('#lp').onclick = function () { ctx.clearRect(0, 0, cv.width, cv.height); riscou = false; };
+    $('#cp').oninput = function (e) { var v = e.target.value.replace(/\D/g, '').slice(0, 11); e.target.value = v.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2'); };
+    $('#bf').onclick = function () { var fx = $('#fx'), b = this;
+      if (stream) { var v = fx.querySelector('video'), c = document.createElement('canvas'), s = Math.min(v.videoWidth, v.videoHeight) || 320; c.width = c.height = 320; c.getContext('2d').drawImage(v, (v.videoWidth - s) / 2, (v.videoHeight - s) / 2, s, s, 0, 0, 320, 320); foto = c.toDataURL('image/jpeg', 0.8); stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; fx.innerHTML = '<img src="' + foto + '" alt="Foto">'; b.textContent = 'Tirar de novo'; return; }
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640 }, audio: false }).then(function (s) { stream = s; fx.innerHTML = '<video autoplay playsinline muted></video>'; fx.querySelector('video').srcObject = s; b.textContent = 'Tirar a foto'; foto = ''; })
+        .catch(function () { fx.textContent = 'Não consegui abrir a câmera. Libere a câmera nas permissões do navegador e toque de novo.'; }); };
+    $('#ok').onclick = function () { var b = this, nome = $('#nm').value.trim(), cpf = $('#cp').value.replace(/\D/g, '');
+      if (!$('#li').checked) return toast('Marque que leu e aceita o contrato.', true); if (nome.split(' ').filter(Boolean).length < 2) return toast('Escreva o nome completo.', true);
+      if (cpf.length !== 11) return toast('Confira o CPF.', true); if (!riscou) return toast('Desenhe a assinatura no quadro.', true); if (!foto) return toast('Tire a foto de quem assina (botão "Ligar a câmera").', true);
+      b.disabled = true; b.textContent = 'Assinando…';
+      fetch((PUB.asaasUrl || '').replace(/\/+$/, '') + '/api/rs/contrato', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ c: tok, nome: nome, cpf: cpf, assinatura: cv.toDataURL('image/png'), foto: foto, html: DOC.html, texto: DOC.texto }) })
+        .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.erro || 'Não foi possível assinar agora.'); return j; }); })
+        .then(function (j) { Object.assign(D, j.dados || {}, { status: 'assinado' }); toast('Contrato assinado. Obrigado!'); telaAssinada(); scrollTo(0, 0); })
+        .catch(function (e) { toast(e.message, true); b.disabled = false; b.textContent = 'Assinar contrato'; }); };
+  }
+  if (!tok) { $('#st').textContent = 'Link incompleto.'; $('#c-doc').innerHTML = '<div class="msg">Este link está incompleto. Peça um novo para a NEXUM.</div>'; return; }
+  Promise.all([fetch(FS + 'rsContratos/' + tok + '?key=' + API).then(function (r) { return r.ok ? r.json() : null; }), fetch(FS + 'plataforma/publico?key=' + API).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })])
+    .then(function (x) { if (!x[0]) throw new Error('nao'); D = obj(x[0]); PUB = obj(x[1]);
+      $('#t').textContent = 'Contrato de seleção · ' + (D.empresa || '');
+      if (D.status === 'cancelado') { $('#st').textContent = 'Este contrato foi cancelado.'; $('#c-doc').innerHTML = '<div class="msg">Este link foi cancelado pela NEXUM. Fale com a gente para receber um novo.</div>'; return; }
+      DOC.html = montar(); var tmp = document.createElement('div'); tmp.innerHTML = DOC.html; DOC.texto = tmp.textContent.replace(/\s+/g, ' ').trim();
+      if (D.status === 'assinado') telaAssinada(); else telaAssinar(); })
+    .catch(function () { $('#st').textContent = 'Link não encontrado.'; $('#c-doc').innerHTML = '<div class="msg">Não encontramos este contrato. Confira o link ou peça um novo para a NEXUM.</div>'; });
+})();
+</script>
+</body></html>

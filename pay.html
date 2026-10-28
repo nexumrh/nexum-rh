@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NEXUM PAY</title>
+<meta name="theme-color" content="#050E26"><meta name="robots" content="noindex">
+<link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--azul:#1F7BFF;--azul2:#1663F0;--fundo:#050E26;--card:rgba(10,24,60,.72);--linha:#233A6E;--txt:#EAF1FF;--mut:#9FB2D9;--ok:#22C55E;--bad:#F87171;--warn:#FBBF24}
+*{box-sizing:border-box}html{background:#030918}html,body{margin:0;min-height:100%}body{font-family:Poppins,Inter,system-ui,sans-serif;color:var(--txt);background:radial-gradient(120% 70% at 50% 0%,#0A1E4A 0%,#050E26 55%,#030918 100%) fixed;min-height:100dvh;overflow-x:hidden}
+body:before,body:after{content:"";position:fixed;width:300px;height:300px;border-radius:64px;border:1.5px solid rgba(46,147,255,.45);background:linear-gradient(135deg,rgba(31,95,232,.22),rgba(31,95,232,0));transform:rotate(45deg);z-index:0;pointer-events:none}
+body:before{right:-210px;top:200px}body:after{left:-210px;bottom:-90px}
+main{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:20px 20px 40px;min-height:100dvh;display:flex;flex-direction:column}
+.mk{display:flex;justify-content:center;margin:36px 0 26px}.mk>div{display:inline-flex;flex-direction:column;align-items:flex-end}.mk img{height:52px}.mk .py{color:var(--azul);font-weight:700;letter-spacing:.34em;font-size:26px;margin:-4px -8px 0 0}
+h1{text-align:center;font-size:26px;line-height:1.2;margin:0}h1 span{color:#2E93FF}.sb{text-align:center;color:var(--mut);font-size:14px;margin:10px 0 26px}
+.in{display:flex;align-items:center;gap:12px;border:1.5px solid var(--linha);background:var(--card);border-radius:16px;padding:0 16px;height:58px;margin-bottom:14px;color:var(--mut)}.in:focus-within{border-color:var(--azul)}
+.in svg{width:22px;height:22px;flex:none}.in input{flex:1;min-width:0;border:0;outline:0;background:none;color:var(--txt);font:inherit;font-size:15.5px;height:100%}.in input::placeholder{color:var(--mut)}.in button{border:0;background:none;color:var(--mut);cursor:pointer;padding:6px;min-width:36px;min-height:36px}
+.lin{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin:4px 0 20px;gap:8px}.lin label{display:flex;align-items:center;gap:8px;cursor:pointer}.lin input{width:18px;height:18px;accent-color:var(--azul)}.lin a{color:#2E93FF;font-weight:700;cursor:pointer;text-decoration:none}
+.bt{width:100%;height:58px;border-radius:999px;border:0;background:linear-gradient(90deg,#1F8BFF,#1663F0);color:#fff;font:inherit;font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 10px 30px rgba(31,123,255,.35);cursor:pointer}.bt:disabled{opacity:.6}
+.bt2{width:100%;height:54px;border-radius:999px;border:1.5px solid var(--azul);background:none;color:#fff;font:inherit;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;text-decoration:none}
+.ou{display:flex;align-items:center;gap:14px;color:#7E90B8;font-size:13px;margin:18px 0}.ou:before,.ou:after{content:"";flex:1;height:1px;background:var(--linha)}
+.pe{margin-top:auto;padding-top:28px;text-align:center;font-size:14px}.pe span{display:block;color:var(--mut);font-size:12.5px;margin-top:2px}
+.top{display:flex;align-items:center;gap:10px;margin:4px 0 18px}.top img{height:30px}.top .py{color:var(--azul);font-weight:700;letter-spacing:.2em;font-size:15px}.top .sp{flex:1}.top button{border:1px solid var(--linha);background:none;color:var(--mut);border-radius:999px;padding:7px 14px;font:inherit;font-size:13px;cursor:pointer;min-height:36px}
+.emp{border:1px solid var(--linha);background:linear-gradient(135deg,rgba(31,123,255,.25),rgba(10,24,60,.75));border-radius:22px;padding:18px 18px 16px;margin-bottom:18px}.emp small{color:var(--mut);font-size:12.5px}.emp b{display:block;font-size:19px}.emp .v{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:13px;color:var(--mut)}.emp .v strong{color:#fff}
+h2{font-size:15px;margin:18px 0 10px;color:var(--mut);font-weight:600;letter-spacing:.02em}
+.cb{border:1px solid var(--linha);background:var(--card);border-radius:18px;padding:14px 16px;margin-bottom:10px;display:flex;gap:12px;align-items:center}.cb .t{flex:1;min-width:0}.cb .t b{display:block;font-size:17px}.cb .t span{color:var(--mut);font-size:12.5px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cb button,.cb a{border:0;border-radius:999px;background:var(--azul);color:#fff;font:inherit;font-weight:700;font-size:13.5px;padding:9px 16px;cursor:pointer;text-decoration:none;white-space:nowrap;min-height:40px;display:inline-flex;align-items:center}.cb a.s{background:none;border:1px solid var(--linha);color:var(--txt)}
+.tag{display:inline-block;border-radius:999px;padding:2px 9px;font-size:11.5px;font-weight:700;margin-top:4px}.tag.at{background:rgba(248,113,113,.15);color:var(--bad)}.tag.ab{background:rgba(251,191,36,.15);color:var(--warn)}.tag.ok{background:rgba(34,197,94,.15);color:var(--ok)}
+.vazio{border:1px dashed var(--linha);border-radius:18px;padding:18px;text-align:center;color:var(--mut);font-size:14px}
+.pg{border:1px solid var(--linha);background:var(--card);border-radius:22px;padding:18px;margin-bottom:16px}.pg .vl{font-size:34px;font-weight:700}.pg .dt{color:var(--mut);font-size:13.5px}
+.op{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}.op button{border:1.5px solid var(--linha);background:rgba(255,255,255,.03);color:#fff;border-radius:14px;padding:12px;text-align:left;font:inherit;font-weight:700;font-size:14px;cursor:pointer;min-height:58px}.op button small{display:block;color:var(--mut);font-weight:500;font-size:11.5px}.op button.on{border-color:var(--azul);background:rgba(31,123,255,.12)}
+.qr{background:#fff;border-radius:16px;padding:14px;text-align:center;color:#0B1E4A}.qr img{width:210px;height:210px;display:block;margin:4px auto 10px}.cp{width:100%;border:1px solid #CBD5E8;border-radius:10px;padding:10px;font:12px monospace;color:#33415F;word-break:break-all;background:#F7F9FF;margin-bottom:10px;max-height:72px;overflow:auto}
+.qr .bt{height:48px;font-size:15px}.lnk{display:block;text-align:center;color:#2E93FF;font-weight:600;margin-top:12px;font-size:14px;cursor:pointer;text-decoration:none}
+.ok-t{text-align:center;padding:26px 10px}.ok-t .i{width:72px;height:72px;border-radius:50%;background:rgba(34,197,94,.15);color:var(--ok);display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 12px}
+.msg{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#0B1E4A;border:1px solid var(--linha);color:#fff;padding:12px 18px;border-radius:14px;font-weight:600;font-size:14px;z-index:9;max-width:calc(100% - 24px)}.msg.bad{border-color:var(--bad)}
+.hide{display:none!important}
+</style></head><body><main id="app"></main>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+(function () {
+  var CFG = { apiKey: 'AIzaSyDdcLJdO2qnmiGsR1EsKFu-uJfs4FRNvA4', authDomain: 'nexum-30044.firebaseapp.com', projectId: 'nexum-30044' };
+  var app = document.getElementById('app'), q = new URLSearchParams(location.search), BASE = '', ESTADO = {};
+  var I = { user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>', lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>', eye: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>', seta: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>', add: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="8" r="4"/><path d="M3 21c1.3-3.6 4-5.5 7-5.5M18 14v6M15 17h6"/></svg>' };
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function brl(v) { return 'R$ ' + (+v || 0).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+  function dt(d) { return String(d || '').slice(0, 10).split('-').reverse().join('/'); }
+  function msg(t, bad) { var m = document.createElement('div'); m.className = 'msg' + (bad ? ' bad' : ''); m.textContent = t; document.body.appendChild(m); setTimeout(function () { m.remove(); }, 4200); }
+  var NOME = { essencial: 'Ponto Essencial', profissional: 'Profissional', empresa: 'Empresa' };
+  var marca = '<div class="mk"><div><img src="email-logo.png" alt="NEXUM"><span class="py">PAY</span></div></div>', rodape = '<div class="pe">🛡️ Nexum Pay<span>Seu pagamento, nossa prioridade.</span></div>';
+  function api(rota, corpo, auth) { return (auth && firebase.auth().currentUser ? firebase.auth().currentUser.getIdToken() : Promise.resolve('')).then(function (tk) {
+    return fetch(BASE + rota, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, tk ? { Authorization: 'Bearer ' + tk } : {}), body: JSON.stringify(corpo || {}) }); })
+    .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.erro || 'Não foi possível agora.'); return j; }); }); }
+  /* ---------- login ---------- */
+  function telaLogin() {
+    app.innerHTML = marca + '<h1>Bem-vindo ao<br><span>Nexum Pay</span></h1><p class="sb">Mais praticidade, segurança e<br>controle para o seu dia a dia.</p>' +
+      '<form id="f"><label class="in">' + I.user + '<input id="em" type="email" autocomplete="username" placeholder="E-mail do NEXUM RH" required></label><label class="in">' + I.lock + '<input id="se" type="password" autocomplete="current-password" placeholder="Senha" required><button type="button" id="olho" aria-label="Mostrar a senha">' + I.eye + '</button></label>' +
+      '<div class="lin"><label><input type="checkbox" id="lb" checked>Lembrar meu acesso</label><a id="esq">Esqueceu sua senha?</a></div><button class="bt" id="ent">Entrar ' + I.seta + '</button></form>' +
+      '<div class="ou">ou</div><a class="bt2" href="https://nexumdp.com.br/#planos">' + I.add + ' Criar minha conta</a>' + rodape;
+    document.getElementById('olho').onclick = function () { var s = document.getElementById('se'); s.type = s.type === 'password' ? 'text' : 'password'; };
+    document.getElementById('esq').onclick = function () { var e = document.getElementById('em').value.trim(); if (!/@/.test(e)) return msg('Escreva o seu e-mail e toque de novo em "Esqueceu sua senha?".', true);
+      firebase.auth().sendPasswordResetEmail(e).then(function () { msg('Mandamos o link para criar uma senha nova no seu e-mail.'); }).catch(function () { msg('Não consegui mandar o link. Confira o e-mail.', true); }); };
+    document.getElementById('f').onsubmit = function (ev) { ev.preventDefault(); var b = document.getElementById('ent'); b.disabled = true;
+      firebase.auth().setPersistence(document.getElementById('lb').checked ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION)
+        .then(function () { return firebase.auth().signInWithEmailAndPassword(document.getElementById('em').value.trim(), document.getElementById('se').value); })
+        .catch(function (e) { b.disabled = false; msg(/wrong-password|invalid-credential|user-not-found|invalid-login/.test(e.code || '') ? 'E-mail ou senha incorretos.' : 'Não foi possível entrar agora.', true); }); };
+  }
+  /* ---------- minhas cobranças ---------- */
+  function telaLista() {
+    app.innerHTML = '<div class="top"><img src="email-logo.png" alt="NEXUM"><span class="py">PAY</span><span class="sp"></span><button id="sair">Sair</button></div><div class="vazio">Carregando as suas cobranças…</div>';
+    document.getElementById('sair').onclick = function () { firebase.auth().signOut(); };
+    api('/api/pay/minhas', {}, true).then(function (j) { ESTADO = j;
+      var ab = j.abertas || [], pg = j.pagas || [], hoje = new Date().toISOString().slice(0, 10);
+      app.innerHTML = '<div class="top"><img src="email-logo.png" alt="NEXUM"><span class="py">PAY</span><span class="sp"></span><button id="sair">Sair</button></div>' +
+        '<div class="emp"><small>Sua empresa</small><b>' + esc(j.empresa) + '</b><div class="v"><span>Plano <strong>' + esc(NOME[j.plano] || j.plano) + '</strong>' + (j.fidelidade ? ' · Fidelidade' : '') + '</span><span>Mensalidade <strong>' + brl(j.mensal) + '</strong></span><span>Acesso até <strong>' + dt(j.validade) + '</strong></span></div></div>' +
+        '<h2>Em aberto</h2>' + (ab.length ? ab.map(function (c) { var at = c.status === 'OVERDUE' || c.vencimento < hoje; return '<div class="cb"><div class="t"><b>' + brl(c.valor) + '</b><span>' + esc(c.parcela ? 'Parcela ' + c.parcela : (c.tipo === 'multa' ? 'Multa do Plano Fidelidade' : 'Mensalidade')) + ' · vence ' + dt(c.vencimento) + '</span><span class="tag ' + (at ? 'at">Em atraso' : 'ab">Em aberto') + '</span></div><button data-p="' + esc(c.id) + '" data-k="' + esc(c.k) + '">Pagar</button></div>'; }).join('') : '<div class="vazio">Nada em aberto. Tudo em dia! ✅</div>') +
+        (j.carne && j.carne.pdf ? '<a class="lnk" href="' + BASE + esc(j.carne.pdf) + '" id="lk-carne" target="_blank" rel="noopener">Baixar o carnê em PDF</a>' : (ab.length ? '' : '<button class="bt2" id="b-carne" style="margin-top:6px">Gerar carnê (boletos mensais)</button>')) +
+        '<h2>Pagas</h2>' + (pg.length ? pg.map(function (c) { return '<div class="cb"><div class="t"><b>' + brl(c.valor) + '</b><span>' + esc(c.parcela ? 'Parcela ' + c.parcela : (c.tipo === 'multa' ? 'Multa do Plano Fidelidade' : 'Mensalidade')) + ' · paga em ' + dt(c.pagoEm || c.vencimento) + (c.forma ? ' · ' + esc(c.forma) : '') + '</span><span class="tag ok">Paga</span></div>' + (c.nf && c.nf.pdf ? '<a class="s" href="' + esc(c.nf.pdf) + '" target="_blank" rel="noopener">Nota</a>' : '') + '<button class="s" style="background:none;border:1px solid var(--linha)" data-r="' + esc(c.id) + '" data-k="' + esc(c.k) + '">Recibo</button></div>'; }).join('') : '<div class="vazio">Nenhum pagamento ainda.</div>') + rodape;
+      document.getElementById('sair').onclick = function () { firebase.auth().signOut(); };
+      [].forEach.call(app.querySelectorAll('[data-p]'), function (b) { b.onclick = function () { telaPagar(b.dataset.p, b.dataset.k, true); }; });
+      [].forEach.call(app.querySelectorAll('[data-r]'), function (b) { b.onclick = function () { telaPagar(b.dataset.r, b.dataset.k, true); }; });
+      var bc = document.getElementById('b-carne'); if (bc) bc.onclick = function () { var n = prompt('Em quantas parcelas mensais? (de 2 a 12)', '12'); if (!n) return; bc.disabled = true; bc.textContent = 'Gerando o carnê…';
+        api('/api/pay/carne', { parcelas: +n }, true).then(function (r) { msg('Carnê gerado com ' + r.parcelas + ' parcelas de ' + brl(r.mensal) + '.'); window.open(BASE + r.pdf, '_blank'); telaLista(); }).catch(function (e) { msg(e.message, true); bc.disabled = false; bc.textContent = 'Gerar carnê (boletos mensais)'; }); };
+    }).catch(function (e) { app.innerHTML = '<div class="top"><img src="email-logo.png" alt="NEXUM"><span class="py">PAY</span><span class="sp"></span><button id="sair">Sair</button></div><div class="vazio">' + esc(e.message) + '</div>'; document.getElementById('sair').onclick = function () { firebase.auth().signOut(); }; });
+  }
+  /* ---------- pagar uma cobrança ---------- */
+  function telaPagar(id, k, voltar) {
+    app.innerHTML = '<div class="top"><img src="email-logo.png" alt="NEXUM"><span class="py">PAY</span><span class="sp"></span>' + (voltar ? '<button id="volta">Voltar</button>' : '') + '</div><div class="vazio">Carregando a cobrança…</div>';
+    if (voltar) document.getElementById('volta').onclick = telaLista;
+    api('/api/pay/ver', { c: id, k: k }).then(function (j) { var c = j.cobranca, forma = 'pix';
+      function desenha() {
+        var topo = '<div class="top"><img src="email-logo.png" alt="NEXUM"><span class="py">PAY</span><span class="sp"></span>' + (voltar ? '<button id="volta">Voltar</button>' : '') + '</div>';
+        if (c.pago) { app.innerHTML = topo + '<div class="pg ok-t"><div class="i">✓</div><b style="font-size:20px">Pagamento confirmado</b><p class="dt">' + brl(c.valor) + (c.pagoEm ? ' · pago em ' + dt(c.pagoEm) : '') + '</p><p class="dt">' + esc(j.empresa) + (j.validade ? ' · acesso liberado até <b style="color:#fff">' + dt(j.validade) + '</b>' : '') + '</p>' +
+          (c.recibo ? '<a class="bt2" href="' + esc(c.recibo) + '" target="_blank" rel="noopener" style="margin-top:14px">Comprovante de pagamento</a>' : '') + (c.nf && c.nf.pdf ? '<a class="bt2" href="' + esc(c.nf.pdf) + '" target="_blank" rel="noopener" style="margin-top:10px">Nota fiscal nº ' + esc(c.nf.numero) + '</a>' : '<p class="dt" style="margin-top:12px">A nota fiscal chega no seu e-mail assim que a prefeitura autorizar.</p>') + '<a class="bt" href="https://rh.nexumdp.com.br/" style="margin-top:14px;text-decoration:none">Abrir o NEXUM RH</a></div>' + rodape; }
+        else if (c.status === 'DELETED') { app.innerHTML = topo + '<div class="vazio">Esta cobrança foi cancelada.</div>' + rodape; }
+        else {
+          var corpo = forma === 'pix' ? (c.pix ? '<div class="qr"><b>Pague com PIX</b><img src="data:image/png;base64,' + c.pix.img + '" alt="QR code do PIX"><div class="cp" id="cp">' + esc(c.pix.copia) + '</div><button class="bt" id="cpb">Copiar código PIX</button><p style="font-size:12.5px;color:#5E6782;margin:10px 0 0">O pagamento é confirmado na hora e o acesso é liberado sozinho.</p></div>' : '<div class="vazio">O PIX não está disponível para esta cobrança. Use o boleto ou o cartão.</div>')
+            : forma === 'boleto' ? (c.linha || c.boleto ? '<div class="qr"><b>Boleto</b>' + (c.linha ? '<div class="cp" id="cp" style="margin-top:10px">' + esc(c.linha) + '</div><button class="bt" id="cpb">Copiar a linha digitável</button>' : '') + (c.boleto ? '<a class="lnk" href="' + esc(c.boleto) + '" target="_blank" rel="noopener" style="color:#1663F0">Abrir o boleto em PDF</a>' : '') + '<p style="font-size:12.5px;color:#5E6782;margin:10px 0 0">O boleto leva até 2 dias úteis para ser confirmado.</p></div>' : '<div class="vazio">O boleto não está disponível para esta cobrança.</div>')
+            : forma === 'cartao' ? '<div class="qr"><b>Cartão de crédito</b><p style="font-size:13.5px;color:#33415F">Você digita os dados do cartão no ambiente seguro do Asaas, a instituição de pagamento que processa as cobranças da NEXUM. Os dados do cartão nunca passam pelo NEXUM.</p><a class="bt" href="' + esc(c.fatura) + '" target="_blank" rel="noopener" style="text-decoration:none">Pagar com cartão</a></div>'
+            : '<div class="qr"><b>Carnê</b><p style="font-size:13.5px;color:#33415F">Para pagar as mensalidades em boletos mensais, entre no NEXUM PAY com o seu login e toque em "Gerar carnê". Cada parcela paga renova o acesso por mais um mês.</p></div>';
+          app.innerHTML = topo + '<div class="pg"><div class="dt">' + esc(j.empresa) + '</div><div class="vl">' + brl(c.valor) + '</div><div class="dt">' + esc(c.parcela ? 'Parcela ' + c.parcela + ' · ' : '') + 'vence em ' + dt(c.vencimento) + '</div>' +
+            '<div class="op"><button data-f="pix" class="' + (forma === 'pix' ? 'on' : '') + '">PIX<small>libera na hora</small></button><button data-f="cartao" class="' + (forma === 'cartao' ? 'on' : '') + '">Cartão de crédito<small>no ambiente seguro</small></button><button data-f="boleto" class="' + (forma === 'boleto' ? 'on' : '') + '">Boleto<small>1 a 2 dias úteis</small></button><button data-f="carne" class="' + (forma === 'carne' ? 'on' : '') + '">Carnê<small>parcelas mensais</small></button></div>' + corpo +
+            '<a class="lnk" id="jp">Já paguei? Atualizar</a></div>' + rodape;
+          [].forEach.call(app.querySelectorAll('[data-f]'), function (b) { b.onclick = function () { forma = b.dataset.f; desenha(); }; });
+          var cpb = document.getElementById('cpb'); if (cpb) cpb.onclick = function () { navigator.clipboard.writeText(document.getElementById('cp').textContent).then(function () { msg('Copiado! Cole no app do seu banco.'); }).catch(function () { msg('Selecione e copie o código.', true); }); };
+          document.getElementById('jp').onclick = function () { telaPagar(id, k, voltar); };
+        }
+        var v = document.getElementById('volta'); if (v) v.onclick = telaLista;
+      }
+      desenha();
+      if (!c.pago && c.status !== 'DELETED') { var conta = 0, t = setInterval(function () { if (++conta > 60 || !document.getElementById('jp')) return clearInterval(t); api('/api/pay/ver', { c: id, k: k }).then(function (n) { if (n.cobranca.pago) { clearInterval(t); c = n.cobranca; j = n; desenha(); msg('Pagamento confirmado! 🎉'); } }).catch(function () { }); }, 10000); }
+    }).catch(function (e) { app.innerHTML = marca + '<div class="vazio">' + esc(e.message) + '</div>' + rodape; });
+  }
+  /* ---------- início ---------- */
+  fetch('https://firestore.googleapis.com/v1/projects/nexum-30044/databases/(default)/documents/plataforma/publico?key=' + CFG.apiKey).then(function (r) { return r.json(); }).then(function (j) { BASE = String(((j.fields || {}).asaasUrl || {}).stringValue || '').replace(/\/+$/, ''); }).catch(function () { })
+    .then(function () {
+      if (!BASE) { app.innerHTML = marca + '<div class="vazio">O NEXUM PAY está em manutenção. Tente de novo em instantes.</div>' + rodape; return; }
+      if (q.get('c') && q.get('k')) return telaPagar(q.get('c'), q.get('k'), false);
+      firebase.initializeApp(CFG); firebase.auth().onAuthStateChanged(function (u) { if (u) telaLista(); else telaLogin(); });
+    });
+})();
+</script>
+</body></html>

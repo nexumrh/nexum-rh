@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Proposta de plano · NEXUM RH</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--pri:#1F5FE8;--nav:#0B1E4A;--bg:#F3F5FA;--line:#E1E6EF;--txt:#141B2E;--mut:#5F6880;--ok:#15803D;--okb:#DCFCE7;--bad:#B42318}
+*{box-sizing:border-box}html,body{margin:0}body{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--txt);font-size:15px;line-height:1.5}
+.top{background:linear-gradient(120deg,#0B1E4A,#123A8C);color:#fff;padding:20px 16px 56px}.top .in,.wrap{max-width:860px;margin:0 auto}
+.top img{height:30px;display:block;margin-bottom:12px}.top small{opacity:.8;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase}.top h1{margin:6px 0 2px;font-size:21px;line-height:1.25}.top p{margin:0;opacity:.85;font-size:14px}
+.wrap{padding:0 16px 40px;margin-top:-40px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px;box-shadow:0 4px 18px rgba(15,30,70,.06)}
+.doc{font-family:Georgia,'Times New Roman',serif;font-size:14.5px;color:#1b1b1b;line-height:1.6}.doc h2{font-family:Inter,sans-serif;text-align:center;font-size:16px;letter-spacing:.03em;margin:4px 0 2px}.doc .ct{text-align:center;color:#555;font-size:12.5px;margin-bottom:16px;font-family:Inter,sans-serif}
+.doc p{text-align:justify;margin:0 0 10px}.doc b.cl{font-family:Inter,sans-serif;font-size:13.5px}.doc table{width:100%;border-collapse:collapse;font-family:Inter,sans-serif;font-size:13px;margin:6px 0 12px}.doc td,.doc th{border:1px solid #CBD5E8;padding:6px 8px;text-align:left}.doc th{background:#EEF2FA}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:12px}.fld label{display:block;font-size:13px;font-weight:600;margin-bottom:5px}.inp{width:100%;min-height:46px;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit}
+canvas{width:100%;height:160px;border:1.5px dashed #9AA8C7;border-radius:12px;touch-action:none;background:#fff;display:block}
+.ft{width:100%;height:160px;border-radius:12px;background:#E8EEF8;display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--mut);font-size:13.5px;text-align:center;padding:8px}.ft video,.ft img{width:100%;height:100%;object-fit:cover;border-radius:10px}.ft video{transform:scaleX(-1)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:10px 16px;font:inherit;font-weight:700;min-height:46px;cursor:pointer;color:var(--nav)}.btn.p{background:var(--pri);border-color:var(--pri);color:#fff}.btn:disabled{opacity:.6}
+.ck{display:flex;gap:10px;align-items:flex-start;margin:12px 0}.ck input{width:22px;height:22px;flex:none}
+.sel{display:inline-block;border-radius:999px;padding:4px 12px;font-weight:700;font-size:13px;background:var(--okb);color:var(--ok)}.hint{color:var(--mut);font-size:13px}
+.cert{border:1px solid #CBD5E8;border-radius:12px;padding:12px 14px;background:#F7F9FF;font-size:13px}.cert td{padding:4px 6px;vertical-align:top}.cert img{max-height:110px;border-radius:8px}
+.msg{padding:16px;text-align:center}.cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:8px 0 14px;font-family:Inter,sans-serif}.cmp>div{border:1px solid var(--line);border-radius:14px;padding:14px}.cmp>div.nv{border:2px solid var(--pri);background:#F5F8FF}.cmp small{color:var(--mut);font-weight:700;text-transform:uppercase;font-size:11.5px}.cmp b.pl{display:block;font-size:18px}.cmp .vl{font-size:26px;font-weight:800;color:var(--nav)}.cmp ul{margin:8px 0 0;padding-left:18px;font-size:13.5px;color:#333}.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#0B1E4A;color:#fff;padding:12px 18px;border-radius:12px;font-weight:600;z-index:9;max-width:calc(100% - 24px)}.toast.bad{background:var(--bad)}
+@media (max-width:640px){.cmp{grid-template-columns:1fr}.g{grid-template-columns:1fr}.card{padding:14px}.doc p{text-align:left}}
+@media print{.top,.nao-imp{display:none!important}.wrap{margin:0}.card{box-shadow:none;border:0}}
+</style></head><body>
+<div class="top"><div class="in"><img src="email-logo.png" alt="NEXUM"><small>Proposta comercial</small><h1 id="t">Proposta de plano</h1><p id="st">Carregando…</p></div></div>
+<div class="wrap"><div class="card" id="c-doc"><div class="msg">Carregando o contrato…</div></div><div id="c-ass"></div></div>
+<script>
+(function () {
+  var API = 'AIzaSyDdcLJdO2qnmiGsR1EsKFu-uJfs4FRNvA4', FS = 'https://firestore.googleapis.com/v1/projects/nexum-30044/databases/(default)/documents/';
+  var tok = (new URLSearchParams(location.search).get('p') || '').replace(/[^\w-]/g, ''), D = null, PUB = {}, DOC = { html: '', texto: '' }, foto = '', stream = null, riscou = false;
+  var NOME = { essencial: 'Ponto Essencial', profissional: 'Profissional', empresa: 'Empresa' };
+  var REC = { essencial: ['Ponto pelo rosto com prova de vida', 'Banco de horas e atestados', 'Holerite e chat no celular', 'Até 10 funcionários'], profissional: ['Todos os recursos do NEXUM RH', 'Portal do colaborador completo', 'Várias lojas e gerentes', 'Até 50 funcionários'], empresa: ['Todos os recursos do NEXUM RH', 'Portal do colaborador completo', 'Várias lojas e gerentes', 'Funcionários ilimitados'] };
+  var $ = function (s) { return document.querySelector(s); };
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function brl(v) { return 'R$ ' + (+v || 0).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+  function dt(d) { return String(d || '').slice(0, 10).split('-').reverse().join('/'); }
+  function fmtDoc(d) { var x = String(d || '').replace(/\D/g, ''); return x.length === 14 ? x.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5') : x.length === 11 ? x.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : String(d || ''); }
+  function toast(m, bad) { var t = document.createElement('div'); t.className = 'toast' + (bad ? ' bad' : ''); t.textContent = m; document.body.appendChild(t); setTimeout(function () { t.remove(); }, 4200); }
+  function val(v) { if (!v) return null; if ('stringValue' in v) return v.stringValue; if ('integerValue' in v) return +v.integerValue; if ('doubleValue' in v) return v.doubleValue; if ('booleanValue' in v) return v.booleanValue; if ('timestampValue' in v) return v.timestampValue; if ('nullValue' in v) return null;
+    if ('arrayValue' in v) return (v.arrayValue.values || []).map(val); if ('mapValue' in v) { var o = {}; Object.keys(v.mapValue.fields || {}).forEach(function (k) { o[k] = val(v.mapValue.fields[k]); }); return o; } return null; }
+  function obj(j) { var o = {}; Object.keys((j && j.fields) || {}).forEach(function (k) { o[k] = val(j.fields[k]); }); return o; }
+  function montar() {
+    var c = PUB, dif = (+D.precoPara || 0) - (+D.precoDe || 0), n = 0, cl = function (t) { n++; return '<p><b class="cl">' + n + '. ' + t + '.</b> '; };
+    return '<h2>PROPOSTA COMERCIAL E TERMO ADITIVO DE ALTERAÇÃO DE PLANO</h2><div class="ct">NEXUM RH · Proposta válida até ' + dt(D.validaAte) + '</div>' +
+      '<p>Olá, <b>' + esc(D.empresa) + '</b>! A sua equipe cresceu: hoje são <b>' + esc(D.colab) + ' funcionários</b> para um limite de <b>' + esc(D.limite) + '</b> no plano ' + esc(NOME[D.de] || D.de) + '. Para continuar crescendo sem travar o cadastro de novos funcionários, preparamos esta proposta.</p>' +
+      '<div class="cmp"><div><small>Plano atual</small><b class="pl">' + esc(NOME[D.de] || D.de) + '</b><div class="vl">' + brl(D.precoDe) + '<span style="font-size:14px;font-weight:500">/mês</span></div><ul>' + (REC[D.de] || []).map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>' +
+      '<div class="nv"><small>Proposta</small><b class="pl">' + esc(NOME[D.para] || D.para) + '</b><div class="vl">' + brl(D.precoPara) + '<span style="font-size:14px;font-weight:500">/mês</span></div><ul>' + (REC[D.para] || []).map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div></div>' +
+      '<p style="font-family:Inter,sans-serif;font-size:14px">Diferença: <b>' + brl(dif) + ' por mês</b>. O plano novo é liberado na hora do aceite e a próxima mensalidade já vem no valor novo. Não há cobrança proporcional do mês em curso.</p>' +
+      '<p><b class="cl">TERMO ADITIVO.</b> CONTRATADA: ' + esc(c.razao || 'NEXUM RH') + (c.cnpj ? ', CNPJ ' + esc(c.cnpj) : '') + '. CONTRATANTE: ' + esc(D.empresa) + (D.cnpj ? ', CNPJ/CPF ' + esc(fmtDoc(D.cnpj)) : '') + '. As partes, já vinculadas pelo Contrato de Prestação de Serviços de Software NEXUM RH, ajustam o seguinte:</p>' +
+      cl('Do objeto') + 'Alteração do plano contratado de ' + esc(NOME[D.de] || D.de) + ' para <b>' + esc(NOME[D.para] || D.para) + '</b>, a partir da data deste aceite.</p>' +
+      cl('Do preço') + 'A mensalidade passa a ser de <b>' + brl(D.precoPara) + '</b>, cobrada nas mesmas condições, forma e data de vencimento do contrato principal, a partir da próxima cobrança.</p>' +
+      cl('Da vigência') + 'Este aditivo vigora por prazo indeterminado, junto com o contrato principal, podendo a CONTRATANTE voltar ao plano anterior a partir do mês seguinte, desde que respeite o limite de funcionários daquele plano.</p>' +
+      cl('Das demais cláusulas') + 'Permanecem inalteradas e em pleno vigor todas as demais cláusulas do Contrato de Prestação de Serviços (rh.nexumdp.com.br/contrato.html), dos Termos de Uso (rh.nexumdp.com.br/termos.html) e da Política de Privacidade (rh.nexumdp.com.br/privacidade.html), que a CONTRATANTE declara conhecer e aceitar.</p>' +
+      cl('Da assinatura eletrônica') + 'As partes reconhecem a validade do aceite eletrônico deste aditivo, com o registro de data, hora, IP, assinatura manuscrita digitalizada e código de integridade (SHA-256), nos termos do art. 10, § 2º, da MP 2.200-2/2001, da Lei 14.063/2020 e dos arts. 107 e 425 do Código Civil.</p>';
+  }
+  function certHtml(d) {
+    var q = d.aceitaEm ? new Date(d.aceitaEm).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : '';
+    return '<div class="cert"><b>Certificado do aceite eletrônico</b><table>' + [['Aceito por', d.nome], ['CPF', fmtDoc(d.cpf)], ['Em nome de', D.empresa], ['Data e hora (Brasília)', q], ['IP', d.ip], ['Cidade aproximada', d.cidadeIp], ['Aparelho', d.aparelho], ['Código de integridade (SHA-256)', d.hash]].filter(function (x) { return x[1]; }).map(function (x) { return '<tr><td class="hint">' + esc(x[0]) + '</td><td><b style="word-break:break-all">' + esc(x[1]) + '</b></td></tr>'; }).join('') + '</table>' +
+      '<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:10px">' + (d.assinatura ? '<div style="text-align:center"><img src="' + d.assinatura + '" alt="Assinatura" style="background:#fff;border:1px solid #CBD5E8;max-width:260px"><div class="hint">Assinatura</div></div>' : '') + (d.foto ? '<div style="text-align:center"><img src="' + d.foto + '" alt="Foto"><div class="hint">Foto no momento do aceite</div></div>' : '') + '</div></div>';
+  }
+  function pdfBtn() { return '<button class="btn" id="b-pr">Baixar em PDF</button>'; }
+  function ligarPdf() { var b = $('#b-pr'); if (b) b.onclick = function () { print(); }; }
+  function telaFinal(msg) {
+    $('#c-doc').innerHTML = '<div class="doc">' + (D.html || DOC.html) + '</div>' + (D.status === 'aceita' ? certHtml(D) : '');
+    $('#c-ass').innerHTML = '<div class="card nao-imp" style="text-align:center"><p style="margin:0 0 10px">' + msg + '</p>' + pdfBtn() + ' <a class="btn p" href="https://rh.nexumdp.com.br/">Abrir o NEXUM RH</a></div>'; ligarPdf();
+  }
+  function telaAceitar() {
+    $('#st').textContent = 'Leia a proposta e, se estiver de acordo, aceite no final.';
+    $('#c-doc').innerHTML = '<div class="doc">' + DOC.html + '</div>';
+    $('#c-ass').innerHTML = '<div class="card nao-imp"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h2 style="margin:0;font-size:17px">Aceitar a proposta</h2>' + pdfBtn() + '</div><label class="ck"><input type="checkbox" id="li"><span>Li a proposta e o termo aditivo, conheço o contrato, os termos de uso e a política de privacidade, e aceito a mudança para o plano <b>' + esc(NOME[D.para] || D.para) + '</b> em nome de <b>' + esc(D.empresa) + '</b>.</span></label>' +
+      '<div class="g"><div class="fld"><label for="nm">Nome completo de quem aceita</label><input class="inp" id="nm" autocomplete="name"></div><div class="fld"><label for="cp">CPF</label><input class="inp" id="cp" inputmode="numeric" placeholder="000.000.000-00"></div></div>' +
+      '<div class="g" style="margin-top:12px"><div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b style="font-size:14px">Assinatura</b><button class="btn" id="lp" style="min-height:36px;padding:6px 10px">Limpar</button></div><canvas id="cv"></canvas></div>' +
+      '<div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b style="font-size:14px">Foto (opcional)</b><button class="btn" id="bf" style="min-height:36px;padding:6px 10px">Ligar a câmera</button></div><div class="ft" id="fx">A foto reforça a prova de quem aceitou.</div></div></div>' +
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="btn" id="rc">Agora não</button><button class="btn p" id="ok" style="flex:1">Aceitar e mudar de plano</button></div></div>';
+    ligarPdf();
+    var cv = $('#cv'), ctx = cv.getContext('2d'), r = cv.getBoundingClientRect(); cv.width = r.width * 2; cv.height = r.height * 2; ctx.scale(2, 2); ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.strokeStyle = '#0B1E4A';
+    var des = false, pt = function (e) { var b = cv.getBoundingClientRect(); return [e.clientX - b.left, e.clientY - b.top]; };
+    cv.onpointerdown = function (e) { des = true; cv.setPointerCapture(e.pointerId); var p = pt(e); ctx.beginPath(); ctx.moveTo(p[0], p[1]); };
+    cv.onpointermove = function (e) { if (!des) return; var p = pt(e); ctx.lineTo(p[0], p[1]); ctx.stroke(); riscou = true; };
+    cv.onpointerup = cv.onpointercancel = function () { des = false; };
+    $('#lp').onclick = function () { ctx.clearRect(0, 0, cv.width, cv.height); riscou = false; };
+    $('#cp').oninput = function (e) { var v = e.target.value.replace(/\D/g, '').slice(0, 11); e.target.value = v.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2'); };
+    $('#bf').onclick = function () { var fx = $('#fx'), b = this;
+      if (stream) { var v = fx.querySelector('video'), c = document.createElement('canvas'), s = Math.min(v.videoWidth, v.videoHeight) || 320; c.width = c.height = 320; c.getContext('2d').drawImage(v, (v.videoWidth - s) / 2, (v.videoHeight - s) / 2, s, s, 0, 0, 320, 320); foto = c.toDataURL('image/jpeg', 0.8); stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; fx.innerHTML = '<img src="' + foto + '" alt="Foto">'; b.textContent = 'Tirar de novo'; return; }
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640 }, audio: false }).then(function (s) { stream = s; fx.innerHTML = '<video autoplay playsinline muted></video>'; fx.querySelector('video').srcObject = s; b.textContent = 'Tirar a foto'; foto = ''; })
+        .catch(function () { fx.textContent = 'Não consegui abrir a câmera. Você pode aceitar sem a foto.'; }); };
+    var enviar = function (corpo, b, txt) { b.disabled = true; b.textContent = 'Enviando…';
+      return fetch((PUB.asaasUrl || '').replace(/\/+$/, '') + '/api/nx/proposta', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) })
+        .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.erro || 'Não foi possível agora.'); return j; }); })
+        .catch(function (e) { toast(e.message, true); b.disabled = false; b.textContent = txt; throw e; }); };
+    $('#rc').onclick = function () { var b = this; if (!confirm('Não quer mudar de plano agora? Esta proposta não volta pelos próximos 60 dias.')) return;
+      enviar({ p: tok, recusar: true }, b, 'Agora não').then(function () { D.status = 'recusada'; $('#st').textContent = 'Tudo certo, você continua no plano atual.'; telaFinal('Combinado! Você continua no plano ' + esc(NOME[D.de] || D.de) + '. Se mudar de ideia, fale com a gente pelo suporte.'); }).catch(function () { }); };
+    $('#ok').onclick = function () { var b = this, nome = $('#nm').value.trim(), cpf = $('#cp').value.replace(/\D/g, '');
+      if (!$('#li').checked) return toast('Marque que leu e aceita.', true); if (nome.split(' ').filter(Boolean).length < 2) return toast('Escreva o nome completo.', true);
+      if (cpf.length !== 11) return toast('Confira o CPF.', true); if (!riscou) return toast('Desenhe a assinatura no quadro.', true); if (stream && !foto) return toast('Toque em "Tirar a foto" ou desligue a câmera.', true);
+      enviar({ p: tok, nome: nome, cpf: cpf, assinatura: cv.toDataURL('image/png'), foto: foto, html: DOC.html, texto: DOC.texto }, b, 'Aceitar e mudar de plano')
+        .then(function (j) { Object.assign(D, j.dados || {}, { status: 'aceita' }); $('#st').innerHTML = '<span class="sel">Aceita em ' + new Date().toLocaleDateString('pt-BR') + '</span>'; telaFinal('<b>Pronto! O plano ' + esc(NOME[D.para] || D.para) + ' já está liberado no seu NEXUM RH.</b> Uma cópia vai para o seu e-mail.'); scrollTo(0, 0); }).catch(function () { }); };
+  }
+  if (!tok) { $('#st').textContent = 'Link incompleto.'; $('#c-doc').innerHTML = '<div class="msg">Este link está incompleto.</div>'; return; }
+  Promise.all([fetch(FS + 'upgradeOfertas/' + tok + '?key=' + API).then(function (r) { return r.ok ? r.json() : null; }), fetch(FS + 'plataforma/publico?key=' + API).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })])
+    .then(function (x) { if (!x[0]) throw new Error('nao'); D = obj(x[0]); PUB = obj(x[1]);
+      $('#t').textContent = 'Proposta: plano ' + (NOME[D.para] || D.para) + ' · ' + (D.empresa || '');
+      DOC.html = montar(); var tmp = document.createElement('div'); tmp.innerHTML = DOC.html; DOC.texto = tmp.textContent.replace(/\s+/g, ' ').trim();
+      if (D.status === 'aceita') { $('#st').innerHTML = '<span class="sel">Aceita em ' + new Date(D.aceitaEm).toLocaleDateString('pt-BR') + '</span>'; telaFinal('Proposta aceita. O plano ' + esc(NOME[D.para] || D.para) + ' está ativo.'); }
+      else if (D.status === 'recusada') { $('#st').textContent = 'Proposta recusada.'; telaFinal('Esta proposta foi recusada. Se mudar de ideia, fale com a gente pelo suporte.'); }
+      else if (D.validaAte && D.validaAte < new Date().toISOString().slice(0, 10)) { $('#st').textContent = 'Proposta vencida.'; $('#c-doc').innerHTML = '<div class="msg">Esta proposta venceu em ' + dt(D.validaAte) + '. Fale com a gente pelo suporte para receber uma nova.</div>'; }
+      else telaAceitar(); })
+    .catch(function () { $('#st').textContent = 'Proposta não encontrada.'; $('#c-doc').innerHTML = '<div class="msg">Não encontramos esta proposta. Confira o link.</div>'; });
+})();
+</script>
+</body></html>

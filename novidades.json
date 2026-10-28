@@ -1,0 +1,45 @@
+{
+  "sobre": "Novidades automáticas do NEXUM: a cada atualização publicada, entra um aviso aqui. O NEXUM RH mostra para os clientes; o Painel do Dono pode esconder qualquer um.",
+  "itens": [
+    {
+      "id": "auto-2026-10-28-pay",
+      "em": "2026-10-28T08:00:00-03:00",
+      "tag": "novidade",
+      "sistemas": [
+        "rh"
+      ],
+      "titulo": "NEXUM PAY: pague o seu plano pelo app",
+      "texto": "Agora você paga a mensalidade pelo NEXUM PAY, com PIX (libera na hora), cartão de crédito, boleto ou carnê com parcelas mensais. Entre com o mesmo e-mail e senha do NEXUM RH em rh.nexumdp.com.br/pay.html. A nota fiscal e o comprovante ficam lá e chegam no seu e-mail."
+    },
+    {
+      "id": "auto-2026-10-27-atualiza",
+      "em": "2026-10-27T23:00:00-03:00",
+      "tag": "melhoria",
+      "sistemas": [
+        "rh"
+      ],
+      "titulo": "O sistema agora se atualiza sozinho",
+      "texto": "Quando sair uma melhoria, o NEXUM RH e o Portal do Colaborador atualizam sozinhos. Não precisa mais fechar a aba nem recarregar a página."
+    },
+    {
+      "id": "auto-2026-10-27-biolink",
+      "em": "2026-10-27T18:00:00-03:00",
+      "tag": "novidade",
+      "sistemas": [
+        "rh"
+      ],
+      "titulo": "Biometria e foto por link, em vários ângulos",
+      "texto": "No cadastro do funcionário, toque em \"Enviar link de cadastro\". Ele cadastra o rosto pelo celular, em vários ângulos, e a foto dele passa a aparecer no lugar das iniciais em todo o sistema. Para recadastrar, use \"Enviar link para recadastrar\"."
+    },
+    {
+      "id": "auto-2026-10-27-ferias",
+      "em": "2026-10-27T17:00:00-03:00",
+      "tag": "melhoria",
+      "sistemas": [
+        "rh"
+      ],
+      "titulo": "Férias e planejamento de férias juntos",
+      "texto": "O planejamento de férias agora fica dentro de Férias, numa aba. Tudo sobre férias num lugar só."
+    }
+  ]
+}
