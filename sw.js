@@ -1,8 +1,8 @@
 /* NEXUM RH — service worker
-   Páginas: abrem na hora com a última versão salva e, ao mesmo tempo, buscam a nova na internet.
-   Se chegou versão nova, o app avisa "Nova versão disponível". Sem internet, abre a última salva.
+   Páginas: abrem sempre a versão mais nova da internet; sem internet (ou se demorar), a última salva.
+   As abas abertas também se atualizam sozinhas (o sistema confere a versão a cada 5 minutos).
    Reconhecimento facial (jsdelivr) e os arquivos do Firebase: baixa uma vez e guarda. Os dados do Firebase nunca passam pelo cache. */
-const VERSAO = 'nexum-v7';
+const VERSAO = 'nexum-v8';
 const BASE = ['./', './index.html', './nexum_portal.html', './manifest-rh.webmanifest', './manifest-portal.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(VERSAO).then(c => Promise.all(BASE.map(u => c.add(u).catch(() => { })))).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== VERSAO).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
@@ -21,11 +21,13 @@ self.addEventListener('fetch', e => {
   if (u.origin !== location.origin) return;
   if (/\.(mp4|webm)$/.test(u.pathname)) return; /* videoaulas: o navegador busca em partes, não guarda no cache */
   if (r.mode === 'navigate' || r.destination === 'document') {
+    /* páginas: primeiro a versão da internet (sempre a mais nova); sem internet ou se demorar, a cópia salva */
     e.respondWith((async () => {
-      const c = await caches.open(VERSAO), h = await c.match(r, { ignoreSearch: true });
-      const rede = fetch(r).then(async n => { if (n.ok) { const novo = n.clone(), txt = await n.clone().text(); const velho = h ? await h.clone().text() : null; await c.put(r, novo); if (h && velho !== txt) { const cl = await self.clients.matchAll({ type: 'window' }); cl.forEach(x => x.postMessage('nexum-nova-versao')); } } return n; });
-      if (h) { e.waitUntil(rede.catch(() => { })); return h; }
-      try { return await rede; } catch (er) { return (await caches.match('./')) || Response.error(); }
+      const c = await caches.open(VERSAO);
+      try { const n = await Promise.race([fetch(r, { cache: 'no-store' }), new Promise((_, rej) => setTimeout(() => rej(new Error('demorou')), 5000))]);
+        if (n.ok) { const h = await c.match(r, { ignoreSearch: true }); const txt = await n.clone().text(); if (h && (await h.clone().text()) !== txt) { const cl = await self.clients.matchAll({ type: 'window' }); cl.forEach(x => x.postMessage('nexum-nova-versao')); } await c.put(r, n.clone()); }
+        return n; }
+      catch (er) { return (await c.match(r, { ignoreSearch: true })) || (await caches.match('./')) || Response.error(); }
     })());
     return;
   }
