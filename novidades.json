@@ -2,6 +2,16 @@
   "sobre": "Novidades automáticas do NEXUM: a cada atualização publicada, entra um aviso aqui. O NEXUM RH mostra para os clientes; o Painel do Dono pode esconder qualquer um.",
   "itens": [
     {
+      "id": "auto-2026-10-28-pay2",
+      "em": "2026-10-28T13:00:00-03:00",
+      "tag": "novidade",
+      "sistemas": [
+        "rh"
+      ],
+      "titulo": "NEXUM PAY: desconto, débito automático e mais",
+      "texto": "No NEXUM PAY (pay.nexumdp.com.br) agora você tem: desconto pagando antes do vencimento, pagar 3, 6 ou 12 meses de uma vez com desconto maior, débito automático no cartão, pedido de negociação de atraso, extrato do ano em PDF para o contador, acesso para o financeiro ou o contador, e o app no celular com avisos antes de vencer."
+    },
+    {
       "id": "auto-2026-10-28-pay",
       "em": "2026-10-28T08:00:00-03:00",
       "tag": "novidade",

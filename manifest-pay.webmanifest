@@ -1,0 +1,16 @@
+{
+  "name": "NEXUM PAY",
+  "short_name": "NEXUM PAY",
+  "description": "Pague as mensalidades do NEXUM RH com PIX, boleto, cartão ou carnê.",
+  "start_url": "./?app=1",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#050E26",
+  "theme_color": "#050E26",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
