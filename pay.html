@@ -172,7 +172,7 @@ body.lg-on:before,body.lg-on:after{display:none}body.lg-on main{padding:0;max-wi
       rjLigar(); if ((b = document.getElementById('b-neg'))) b.onclick = telaNegociar;
       if ((b = document.getElementById('b-adi'))) b.onclick = telaAdiantar;
       if ((b = document.getElementById('b-deb'))) b.onclick = telaAuto; if ((b = document.getElementById('b-sadd'))) b.onclick = function (e) { e.stopPropagation(); telaAddSaldo(); }; if ((b = document.getElementById('b-sver'))) b.onclick = function (e) { e.stopPropagation(); telaSaldo(); }; if ((b = document.getElementById('b-emp'))) b.onclick = telaEmpresas;
-      if ((b = document.getElementById('b-carne'))) b.onclick = function () { var n = prompt('Em quantas parcelas mensais? (de 2 a 12)', '12'); if (!n) return; b.style.pointerEvents = 'none'; b.textContent = 'Gerando o carnê…';
+      if ((b = document.getElementById('b-carne'))) b.onclick = async function () { var n = (await nxPrompt('Em quantas parcelas mensais? (de 2 a 12)', '12')); if (!n) return; b.style.pointerEvents = 'none'; b.textContent = 'Gerando o carnê…';
         api('/api/pay/carne', { parcelas: +n }, true).then(function (r) { msg('Carnê gerado com ' + r.parcelas + ' parcelas de ' + brl(r.mensal) + '.'); window.open(BASE + r.pdf, '_blank'); telaLista(); }).catch(function (e) { msg(e.message, true); b.style.pointerEvents = ''; b.textContent = 'Gerar carnê (boletos mensais)'; }); };
     },
     plano: function () { [].forEach.call(app.querySelectorAll('[data-mud]'), function (b) { b.onclick = function () { b.disabled = true; b.textContent = '…'; api('/api/pay/proposta', { para: b.dataset.mud }, true).then(function (r) { location.href = r.link; }).catch(function (e) { msg(e.message, true); b.disabled = false; b.textContent = 'Mudar'; }); }; }); },
@@ -181,17 +181,17 @@ body.lg-on:before,body.lg-on:after{display:none}body.lg-on main{padding:0;max-wi
       quitCarregar(); document.getElementById('ano').onchange = r; r();
       [].forEach.call(app.querySelectorAll('[data-comp]'), function (x) { x.onclick = function () { var c = ESTADO.pagas[+x.dataset.comp]; x.textContent = '…'; comprovantePdf(Object.assign({ empresa: ESTADO.empresa }, c)).catch(function (e) { msg(e.message, true); }).then(function () { x.textContent = 'PDF'; }); }; });
       document.getElementById('b-ext').onclick = function () { var b = this; b.disabled = true; b.textContent = 'Gerando…'; extratoPdf(document.getElementById('ano').value).then(function (p) { var a = document.createElement('a'); a.href = p.uri; a.download = p.nome; a.click(); }).catch(function (e) { msg(e.message, true); }).then(function () { b.disabled = false; b.textContent = 'Baixar extrato em PDF'; }); };
-      document.getElementById('b-cont').onclick = function () { var b = this, para = prompt('E-mail do seu contador:'); if (!para) return; b.disabled = true; b.textContent = 'Enviando…'; var ano = document.getElementById('ano').value;
+      document.getElementById('b-cont').onclick = async function () { var b = this, para = (await nxPrompt('E-mail do seu contador:')); if (!para) return; b.disabled = true; b.textContent = 'Enviando…'; var ano = document.getElementById('ano').value;
         extratoPdf(ano).then(function (p) { return api('/api/pay/extrato', { para: para.trim(), pdf: p.base64, ano: ano }, true); }).then(function (r) { msg(r.enviados ? 'Extrato enviado para ' + para.trim() + '.' : 'O e-mail não foi enviado agora. Tente mais tarde.', !r.enviados); }).catch(function (e) { msg(e.message, true); }).then(function () { b.disabled = false; b.textContent = 'Mandar para o meu contador'; }); };
     },
     mais: function () {
       var papel = 'pagar', b;
       [].forEach.call(app.querySelectorAll('[data-pp]'), function (x) { x.onclick = function () { papel = x.dataset.pp; [].forEach.call(app.querySelectorAll('[data-pp]'), function (y) { y.classList.toggle('on', y === x); }); }; });
       if ((b = document.getElementById('b-conv'))) b.onclick = function () { var e = document.getElementById('pe-e').value.trim(); if (!/@/.test(e)) return msg('Escreva o e-mail da pessoa.', true); b.disabled = true; api('/api/pay/pessoas', { email: e, papel: papel }, true).then(function (r) { msg('Convite enviado para ' + r.email + '.'); telaLista(); ABA = 'mais'; }).catch(function (er) { msg(er.message, true); b.disabled = false; }); };
-      [].forEach.call(app.querySelectorAll('[data-rem]'), function (x) { x.onclick = function () { if (!confirm('Tirar o acesso de ' + x.dataset.rem + '?')) return; api('/api/pay/pessoas', { email: x.dataset.rem, remover: true }, true).then(function () { msg('Acesso retirado.'); ABA = 'mais'; telaLista(); }).catch(function (er) { msg(er.message, true); }); }; });
+      [].forEach.call(app.querySelectorAll('[data-rem]'), function (x) { x.onclick = async function () { if (!(await nxConfirm('Tirar o acesso de ' + x.dataset.rem + '?'))) return; api('/api/pay/pessoas', { email: x.dataset.rem, remover: true }, true).then(function () { msg('Acesso retirado.'); ABA = 'mais'; telaLista(); }).catch(function (er) { msg(er.message, true); }); }; });
       document.getElementById('b-ind').onclick = function () { navigator.clipboard.writeText((ESTADO.indicacao || {}).link || '').then(function () { msg('Link copiado!'); }); };
       agendaCarregar(); cartoesCarregar(); document.getElementById('b-inst').onclick = instalar;
-      document.getElementById('b-trv').onclick = function () { if (travaLer()) { if (!confirm('Desligar o PIN e a digital neste aparelho?')) return; travaSalvar(null); msg('Entrada rápida desligada.'); desenhar(); } else telaPinCriar(); };
+      document.getElementById('b-trv').onclick = async function () { if (travaLer()) { if (!(await nxConfirm('Desligar o PIN e a digital neste aparelho?'))) return; travaSalvar(null); msg('Entrada rápida desligada.'); desenhar(); } else telaPinCriar(); };
       document.getElementById('b-sup').onclick = function () { window.nxPaySuporte(); };
       if (/iphone|ipad/i.test(navigator.userAgent) && !navigator.standalone) document.getElementById('inst-ios').style.display = 'block';
     }
@@ -214,7 +214,7 @@ body.lg-on:before,body.lg-on:after{display:none}body.lg-on main{padding:0;max-wi
       '<p class="dt" style="margin:10px 0">' + (d.ativo ? 'A mensalidade cai sozinha no cartão todo mês. Se o cartão for recusado, avisamos por e-mail e WhatsApp e você paga no PIX sem perder o acesso.' : 'Você digita o cartão uma vez na página segura do Asaas (a instituição que processa os pagamentos da NEXUM) e a mensalidade cai sozinha todo mês. Os dados do cartão nunca passam pelo NEXUM.') + '</p>' +
       (d.ativo ? '<button class="bt2" id="b-dd">Desligar o débito automático</button><p class="dt" style="text-align:center;font-size:12px">Para trocar o cartão: desligue e ligue de novo.</p>' : '<button class="bt" id="b-dl">Ligar o débito automático</button>') + '</div>' + rodape; ligar();
     var b = document.getElementById('b-dl'); if (b) b.onclick = function () { b.disabled = true; api('/api/pay/debito', { ligar: true }, true).then(function (r) { if (r.fatura) { msg('Agora cadastre o cartão na página do Asaas.'); window.open(r.fatura, '_blank'); } telaLista(); }).catch(function (e) { msg(e.message, true); b.disabled = false; }); };
-    var x = document.getElementById('b-dd'); if (x) x.onclick = function () { if (!confirm('Desligar o débito automático? As próximas mensalidades voltam a chegar para pagar no PIX, boleto ou cartão.')) return; x.disabled = true; api('/api/pay/debito', { ligar: false }, true).then(function () { msg('Débito automático desligado.'); telaLista(); }).catch(function (e) { msg(e.message, true); x.disabled = false; }); };
+    var x = document.getElementById('b-dd'); if (x) x.onclick = async function () { if (!(await nxConfirm('Desligar o débito automático? As próximas mensalidades voltam a chegar para pagar no PIX, boleto ou cartão.'))) return; x.disabled = true; api('/api/pay/debito', { ligar: false }, true).then(function () { msg('Débito automático desligado.'); telaLista(); }).catch(function (e) { msg(e.message, true); x.disabled = false; }); };
   }
   /* ---------- negociar o atraso ---------- */
   function telaNegociar() {
@@ -311,7 +311,7 @@ body.lg-on:before,body.lg-on:after{display:none}body.lg-on main{padding:0;max-wi
         if (fase === 1 && p1.length === 4) { fase = 2; setTimeout(des, 150); }
         else if (fase === 2 && p2.length === 4) { if (p1 !== p2) { msg('Os PINs não são iguais. Comece de novo.', true); p1 = p2 = ''; fase = 1; return des(); }
           var salt = hex(crypto.getRandomValues(new Uint8Array(12))); pinHash(salt, p1).then(function (h) { var t = { salt: salt, hash: h, bio: '', em: Date.now() }; travaSalvar(t); TRAVA.aberta = true;
-            bioDisp().then(function (ok) { if (ok && confirm('Quer entrar também com a digital ou o rosto deste celular?')) return bioCriar().then(function (id) { t.bio = id; travaSalvar(t); msg('Pronto! Digital/rosto e PIN ligados.'); }).catch(function () { msg('PIN ligado. A digital não foi ligada agora.'); });
+            bioDisp().then(async function (ok) { if (ok && (await nxConfirm('Quer entrar também com a digital ou o rosto deste celular?'))) return bioCriar().then(function (id) { t.bio = id; travaSalvar(t); msg('Pronto! Digital/rosto e PIN ligados.'); }).catch(function () { msg('PIN ligado. A digital não foi ligada agora.'); });
               msg('PIN ligado neste aparelho.'); }).then(function () { ABA = 'mais'; telaLista(); }); }); } }; }); };
     des();
   }
@@ -376,7 +376,7 @@ body.lg-on:before,body.lg-on:after{display:none}body.lg-on main{padding:0;max-wi
         if ((b = document.getElementById('cpb'))) b.onclick = function () { navigator.clipboard.writeText(document.getElementById('cp').textContent).then(function () { msg('Copiado! Cole no app do seu banco.'); }).catch(function () { msg('Selecione e copie o código.', true); }); };
         if ((b = document.getElementById('b-pxa'))) b.onclick = telaAuto;
         if ((b = document.getElementById('b-pxl'))) b.onclick = function () { if (!PODE()) return msg('Seu acesso é só para ver.', true); var x = this; x.disabled = true; x.textContent = 'Gerando a autorização…'; api('/api/pay/pixauto', { acao: 'ligar' }, true).then(function (r) { px = r; des('pix'); }).catch(function (e) { msg(e.message, true); x.disabled = false; x.textContent = 'Ligar o PIX Automático'; }); };
-        if ((b = document.getElementById('b-pxd'))) b.onclick = function () { if (!confirm('Desligar o PIX Automático? As próximas mensalidades voltam a chegar para pagar no PIX, boleto ou cartão.')) return; var x = this; x.disabled = true; api('/api/pay/pixauto', { acao: 'desligar' }, true).then(function () { msg('PIX Automático desligado.'); telaAuto(); }).catch(function (e) { msg(e.message, true); x.disabled = false; }); };
+        if ((b = document.getElementById('b-pxd'))) b.onclick = async function () { if (!(await nxConfirm('Desligar o PIX Automático? As próximas mensalidades voltam a chegar para pagar no PIX, boleto ou cartão.'))) return; var x = this; x.disabled = true; api('/api/pay/pixauto', { acao: 'desligar' }, true).then(function () { msg('PIX Automático desligado.'); telaAuto(); }).catch(function (e) { msg(e.message, true); x.disabled = false; }); };
       };
       des(d.ativo && !px.ativo ? 'car' : 'pix');
     });
@@ -520,8 +520,8 @@ body.lg-on:before,body.lg-on:after{display:none}body.lg-on main{padding:0;max-wi
   function telaListaSilenciosa() { api('/api/pay/minhas', {}, true).then(function (j) { ESTADO = j; if (document.querySelector('.bnav')) desenhar(); }).catch(function () { }); }
   window.nxPaySuporte = function () { SP.aberto = true; SP.tela = 'lista'; spRender(); };
   /* ---------- confirmar que é o dono do celular antes de pagar com o cartão salvo (PIN ou digital) ---------- */
-  function confirmarId(texto) {
-    var t = travaLer(); if (!t || !t.hash) return Promise.resolve(confirm(texto));
+  async function confirmarId(texto) {
+    var t = travaLer(); if (!t || !t.hash) return Promise.resolve((await nxConfirm(texto)));
     return new Promise(function (ok) {
       var pin = '', d = document.createElement('div'); d.id = 'cid'; document.body.appendChild(d);
       var fim = function (v) { d.remove(); ok(v); };
@@ -559,7 +559,7 @@ body.lg-on:before,body.lg-on:after{display:none}body.lg-on main{padding:0;max-wi
         : '<div class="cb" style="display:block"><div class="t"><b>' + a.ano + '</b><span style="white-space:normal">Pague as pendências de ' + a.ano + ' para liberar a declaração.</span></div>' + (a.pendentes || []).map(function (p) { return '<div class="ln2"><span>' + brl(p.valor) + ' · venceu ' + dt(p.vencimento) + '</span><a class="lnk" style="margin:0" data-qpg="' + esc(p.id) + '" data-qk="' + esc(p.k) + '">Pagar</a></div>'; }).join('') + '</div>'; }).join('') : '<div class="vazio">A declaração aparece aqui depois do primeiro ano com pagamentos.</div>') +
         '<p class="dt" style="font-size:12px;margin:4px 0 0">A declaração de ' + q.anoAtual + ' sai em janeiro de ' + (q.anoAtual + 1) + ', se todos os pagamentos do ano estiverem em dia.</p>';
       [].forEach.call(box.querySelectorAll('[data-qpdf]'), function (x) { x.onclick = function () { x.textContent = '…'; quitPdf(q.anos[+x.dataset.qpdf]).then(function (p) { var a = document.createElement('a'); a.href = p.uri; a.download = p.nome; a.click(); }).catch(function (e) { msg(e.message, true); }).then(function () { x.textContent = 'PDF'; }); }; });
-      [].forEach.call(box.querySelectorAll('[data-qem]'), function (x) { x.onclick = function () { var a = q.anos[+x.dataset.qem], para = prompt('Mandar a declaração para qual e-mail?'); if (!para) return; x.textContent = '…';
+      [].forEach.call(box.querySelectorAll('[data-qem]'), function (x) { x.onclick = async function () { var a = q.anos[+x.dataset.qem], para = (await nxPrompt('Mandar a declaração para qual e-mail?')); if (!para) return; x.textContent = '…';
         quitPdf(a).then(function (p) { return api('/api/pay/extrato', { para: para.trim(), pdf: p.base64, ano: String(a.ano), tipo: 'quitacao' }, true); }).then(function (r) { msg(r.enviados ? 'Declaração enviada para ' + para.trim() + '.' : 'O e-mail não foi enviado agora.', !r.enviados); }).catch(function (e) { msg(e.message, true); }).then(function () { x.textContent = 'E-mail'; }); }; });
       [].forEach.call(box.querySelectorAll('[data-qpg]'), function (x) { x.onclick = function () { telaPagar(x.dataset.qpg, x.dataset.qk, true); }; }); };
     if (QUIT && QUIT.tid === (ESTADO.tid || '')) return des();
@@ -595,8 +595,8 @@ body.lg-on:before,body.lg-on:after{display:none}body.lg-on main{padding:0;max-wi
     var des = function (r) { box.innerHTML = '<div class="cb" style="display:block"><b>Vencimentos na sua agenda</b><p class="dt" style="margin:4px 0 8px;font-size:12.5px">Mensalidades, parcelas e avulsos entram na agenda com lembrete 3 dias antes e o link para pagar. A agenda se atualiza sozinha.</p>' +
       '<a class="bt" style="height:48px;font-size:14.5px;text-decoration:none" href="' + esc(r.google) + '" target="_blank" rel="noopener">Adicionar ao Google Agenda</a><a class="bt2" style="height:46px;margin-top:8px;text-decoration:none" href="' + esc(r.webcal) + '">Adicionar à agenda do iPhone</a>' +
       '<div class="duo" style="margin-top:8px"><button class="bt2" id="ag-cp" style="height:42px;font-size:13px">Copiar o link</button><button class="bt2" id="ag-tr" style="height:42px;font-size:13px">Trocar o link</button></div></div>';
-      document.getElementById('ag-cp').onclick = function () { navigator.clipboard.writeText(r.url).then(function () { msg('Link da agenda copiado.'); }).catch(function () { prompt('Copie o link:', r.url); }); };
-      document.getElementById('ag-tr').onclick = function () { if (!confirm('Trocar o link? A agenda antiga para de atualizar e você adiciona a nova.')) return; api('/api/pay/agenda', { acao: 'trocar' }, true).then(function (n) { msg('Link trocado. Adicione a agenda de novo.'); des(n); }).catch(function (e) { msg(e.message, true); }); }; };
+      document.getElementById('ag-cp').onclick = function () { navigator.clipboard.writeText(r.url).then(function () { msg('Link da agenda copiado.'); }).catch(async function () { (await nxPrompt('Copie o link:', r.url)); }); };
+      document.getElementById('ag-tr').onclick = async function () { if (!(await nxConfirm('Trocar o link? A agenda antiga para de atualizar e você adiciona a nova.'))) return; api('/api/pay/agenda', { acao: 'trocar' }, true).then(function (n) { msg('Link trocado. Adicione a agenda de novo.'); des(n); }).catch(function (e) { msg(e.message, true); }); }; };
     api('/api/pay/agenda', {}, true).then(des).catch(function () { box.innerHTML = ''; });
   }
   /* ---------- cartões salvos (Mais) ---------- */
@@ -605,7 +605,7 @@ body.lg-on:before,body.lg-on:after{display:none}body.lg-on main{padding:0;max-wi
     cartaoLer().then(function (r) { if (!r) return box.innerHTML = '';
       box.innerHTML = r.tem ? '<div class="cartao"><small>Cartão salvo para pagar com 1 toque</small><b>•••• •••• •••• ' + esc(r.final) + '</b><small>' + esc(r.bandeira || 'Cartão') + ' · salvo em ' + dt(String(r.em || '').slice(0, 10)) + '</small></div><button class="bt2" id="ct-rm" style="height:44px">Tirar este cartão</button><p class="dt" style="font-size:12px;text-align:center">Os números do cartão ficam guardados no Asaas, não no NEXUM.</p>'
         : '<div class="cb"><div class="t"><b>Nenhum cartão salvo</b><span style="white-space:normal">Pague uma vez com o cartão e ele fica salvo para as próximas cobranças.</span></div></div>';
-      var b = document.getElementById('ct-rm'); if (b) b.onclick = function () { if (!confirm('Tirar o cartão salvo?')) return; api('/api/pay/cartao', { acao: 'remover' }, true).then(function () { CARTAO = { tem: false }; msg('Cartão removido.'); cartoesCarregar(); }).catch(function (e) { msg(e.message, true); }); };
+      var b = document.getElementById('ct-rm'); if (b) b.onclick = async function () { if (!(await nxConfirm('Tirar o cartão salvo?'))) return; api('/api/pay/cartao', { acao: 'remover' }, true).then(function () { CARTAO = { tem: false }; msg('Cartão removido.'); cartoesCarregar(); }).catch(function (e) { msg(e.message, true); }); };
     });
   }
   /* ---------- início ---------- */
@@ -617,5 +617,165 @@ body.lg-on:before,body.lg-on:after{display:none}body.lg-on main{padding:0;max-wi
       firebase.initializeApp(CFG); firebase.auth().onAuthStateChanged(function (u) { if (u) { document.body.classList.remove('lg-on'); if (sesLer()) { if (travaLer() && !TRAVA.aberta) telaTrava(); else telaLista(); } else telaCodigo(); } else { spDesligar(); app.classList.remove('com-nav'); telaLogin(); } });
     });
 })();
+</script>
+<script>
+/* =====================================================================
+   LOTE 61 (NEXUM PAY): confirmações e perguntas no visual do NEXUM
+   1 pergunta antes de descartar o que foi preenchido · 2 rodapé fixo · 3 no celular abre de baixo para cima
+   4 modal sobre modal (volta para o primeiro) · 5 confirmações no visual do NEXUM · 6 botão que trava enquanto salva
+   7 erro no campo · 8 rascunho automático · 9 teclado (Enter, Esc, Tab, foco) · 10 etapas em formulário longo
+   11 tamanhos padrão · 12 animação e fundo travado
+   ===================================================================== */
+function nxModalKit(cfg) {
+  if (window.__nxKit) return; window.__nxKit = cfg;
+  const W = window, D = document, esc2 = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const escuro = cfg.tema === 'escuro', PERIGO = /excluir|apagar|desligar|remover|tirar|descartar|bloquear|cancelar a|cancelar o|cancelar est|encerrar|desativar|estornar|reprovar|recusar/i;
+  /* ---------- estilos ---------- */
+  const OV = cfg.ov, BOX = cfg.box, BODY = cfg.body, FOOT = cfg.foot, HEAD = cfg.head, R = cfg.root;
+  const css = `
+.nxd-ov{position:fixed;inset:0;z-index:2147483000;background:rgba(6,14,36,.55);display:flex;align-items:center;justify-content:center;padding:16px;animation:nxFd .14s ease-out;backdrop-filter:blur(2px)}
+.nxd{width:100%;max-width:420px;border-radius:16px;padding:20px 20px 16px;box-shadow:0 24px 70px rgba(6,14,36,.35);animation:nxPop .18s ease-out;font:inherit;${escuro ? 'background:#0A1636;color:#EAF1FF;border:1px solid #233A6E' : 'background:#fff;color:#14203D'}}
+.nxd h4{margin:0 0 6px;font-size:17px;line-height:1.3}.nxd p{margin:0;font-size:14.5px;line-height:1.5;white-space:pre-wrap;${escuro ? 'color:#C8D6F2' : 'color:#46507A'}}
+.nxd input{width:100%;margin-top:12px;height:46px;border-radius:12px;padding:0 14px;font:inherit;font-size:15px;outline:none;${escuro ? 'background:rgba(255,255,255,.06);color:#fff;border:1.5px solid #233A6E' : 'background:#fff;color:#14203D;border:1.5px solid #D5DCEB'}}.nxd input:focus{border-color:#1F6BFF;box-shadow:0 0 0 3px rgba(31,107,255,.18)}
+.nxd-b{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}.nxd-b button{min-height:44px;padding:0 18px;border-radius:12px;font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;border:1.5px solid transparent}
+.nxd-b .nao{background:transparent;${escuro ? 'color:#C8D6F2;border-color:#233A6E' : 'color:#14203D;border-color:#D5DCEB'}}.nxd-b .sim{background:#1F6BFF;color:#fff}.nxd-b .sim.perigo{background:#D92D20}
+@keyframes nxFd{from{opacity:0}to{opacity:1}}@keyframes nxPop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}@keyframes nxSobe{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+@keyframes nxGira{to{transform:rotate(360deg)}}
+.nx-busy{position:relative;pointer-events:none;opacity:.85}.nx-busy:after{content:"";display:inline-block;width:14px;height:14px;margin-left:8px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:nxGira .7s linear infinite;vertical-align:-2px}
+.nx-erro{border-color:#D92D20!important;box-shadow:0 0 0 3px rgba(217,45,32,.14)!important}.nx-erro-msg{color:#D92D20;font-size:12.5px;font-weight:600;margin:4px 0 0}
+.nx-ban{border-radius:12px;padding:10px 12px;margin:0 0 12px;font-size:13.5px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.nx-ban.err{background:#FDECEC;color:#9B1C14;border:1px solid #F5C2BE}.nx-ban.ras{background:#EAF1FF;color:#14306E;border:1px solid #C9D6F2}.nx-ban b{flex:1;min-width:160px}.nx-ban button{border:0;border-radius:9px;padding:7px 12px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;background:#1F6BFF;color:#fff}.nx-ban button.s{background:transparent;color:inherit;text-decoration:underline}
+.nx-et{position:sticky;top:0;z-index:2;display:flex;gap:6px;overflow-x:auto;padding:8px 0 10px;margin:-6px 0 8px;scrollbar-width:none}.nx-et::-webkit-scrollbar{display:none}.nx-et button{flex:none;border:1.5px solid #D5DCEB;background:#fff;border-radius:99px;padding:6px 12px;font:inherit;font-size:12.5px;font-weight:600;color:#46507A;cursor:pointer;white-space:nowrap}.nx-et button.on{border-color:#1F6BFF;background:#EAF1FF;color:#1749BE}.nx-et i{display:block;position:absolute;left:0;bottom:4px;height:3px;border-radius:3px;background:#1F6BFF;transition:width .2s}
+.nx-alca{display:none}
+html.nx-trava,html.nx-trava body{overflow:hidden!important}html.nx-trava #sup-b,html.nx-trava #sp-bol,html.nx-trava #sp-pn{display:none!important}@media (max-width:640px){html.nx-trava .toast,html.nx-trava #toast,html.nx-trava #toasts{top:calc(12px + env(safe-area-inset-top));bottom:auto!important}}html.nx-trava .content{overflow:hidden!important}
+${R ? `${OV}{align-items:center!important;overflow:hidden!important}
+${BOX}{display:flex!important;flex-direction:column;max-height:calc(100dvh - 32px);border-radius:16px;animation:nxPop .18s ease-out}
+${BODY}{overflow-y:auto;overflow-x:hidden;flex:1 1 auto;min-height:0;overscroll-behavior:contain}
+${FOOT}{flex:none;position:sticky;bottom:0;z-index:3;background:inherit;border-bottom-left-radius:16px;border-bottom-right-radius:16px}
+${HEAD}{flex:none}
+${BOX}.nx-lg{max-width:920px}
+@media (max-width:640px){${OV}{align-items:flex-end!important;padding:0!important}${BOX}{max-width:100%!important;width:100%!important;max-height:94dvh;border-radius:20px 20px 0 0!important;animation:nxSobe .22s ease-out}${FOOT}{border-radius:0;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+.nx-alca{display:block;flex:none;width:44px;height:5px;border-radius:5px;background:#C9D1E3;margin:8px auto 0;touch-action:none}}` : ''}`;
+  const st = D.createElement('style'); st.id = 'nx-kit61'; st.textContent = css; D.head.appendChild(st);
+
+  /* ---------- 5. confirmações e perguntas no visual do NEXUM ---------- */
+  function dialogo(o) {
+    return new Promise(ok => {
+      const prev = D.activeElement, ov = D.createElement('div'); ov.className = 'nxd-ov'; ov.setAttribute('role', 'alertdialog'); ov.setAttribute('aria-modal', 'true');
+      const perigo = o.perigo != null ? o.perigo : PERIGO.test(o.msg || ''), tit = o.titulo || (o.prompt ? 'Preencha' : perigo ? 'Tem certeza?' : 'Confirmar');
+      ov.innerHTML = `<div class="nxd"><h4>${esc2(tit)}</h4><p>${esc2(o.msg || '')}</p>${o.prompt ? `<input type="text" value="${esc2(o.padrao == null ? '' : o.padrao)}" aria-label="${esc2(o.msg || 'Resposta')}">` : ''}<div class="nxd-b">${o.so ? '' : `<button type="button" class="nao">${esc2(o.nao || 'Cancelar')}</button>`}<button type="button" class="sim ${perigo && !o.prompt ? 'perigo' : ''}">${esc2(o.sim || (o.so ? 'Entendi' : perigo ? 'Sim, continuar' : 'OK'))}</button></div></div>`;
+      D.body.appendChild(ov); W.__nxDlg = ov;
+      const inp = ov.querySelector('input'), fim = v => { if (!ov.isConnected) return; ov.remove(); W.__nxDlg = null; try { prev && prev.focus && prev.focus(); } catch (e) { } ok(v); };
+      ov.querySelector('.sim').onclick = () => fim(o.prompt ? inp.value : true); const n = ov.querySelector('.nao'); if (n) n.onclick = () => fim(o.prompt ? null : false);
+      ov.addEventListener('mousedown', e => { if (e.target === ov) fim(o.prompt ? null : false); });
+      ov.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); fim(o.prompt ? null : false); } else if (e.key === 'Enter' && (inp ? D.activeElement === inp : true)) { e.preventDefault(); e.stopPropagation(); ov.querySelector('.sim').click(); }
+        else if (e.key === 'Tab') { const f = [...ov.querySelectorAll('input,button')]; const i = f.indexOf(D.activeElement); e.preventDefault(); f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length].focus(); } });
+      setTimeout(() => { if (inp) { inp.focus(); inp.select(); } else ov.querySelector('.sim').focus(); }, 30);
+    });
+  }
+  W.nxConfirm = (msg, o) => dialogo({ ...(o || {}), msg: String(msg == null ? '' : msg) });
+  W.nxPrompt = (msg, padrao, o) => dialogo({ ...(o || {}), msg: String(msg == null ? '' : msg), prompt: true, padrao });
+  W.nxAviso = (msg, o) => dialogo({ ...(o || {}), msg: String(msg == null ? '' : msg), so: true });
+  if (!R) return;
+
+  /* ---------- estado ---------- */
+  const raiz = () => D.querySelector(R), caixaAtual = () => { const r = raiz(); return r ? r.querySelector(BOX) : null; };
+  let ultimoFoco = null, ultimoClique = { t: 0, el: null }, aberto = null; const pilha = [], guarda = D.createElement('div'); guarda.id = 'nx-pilha'; guarda.style.display = 'none';
+  D.addEventListener('DOMContentLoaded', () => D.body.appendChild(guarda)); if (D.body) D.body.appendChild(guarda);
+  D.addEventListener('focusin', e => { const r = raiz(); if (r && !r.contains(e.target) && !(W.__nxDlg && W.__nxDlg.contains(e.target))) ultimoFoco = e.target; }, true);
+  D.addEventListener('pointerdown', e => { ultimoClique = { t: Date.now(), el: e.target }; }, true);
+  const campos = b => [...b.querySelectorAll('input,select,textarea')].filter(x => !['hidden', 'file', 'password', 'button', 'submit', 'image', 'reset'].includes(x.type) && !x.closest('.nx-et,.nx-ban') && !/^cc-/.test(x.autocomplete || ''));
+  const titulo = b => { const h = b.querySelector(HEAD + ' h3, ' + HEAD + ' h2, h3'); return (h ? h.textContent : '').trim().slice(0, 80); };
+  const chaveR = b => 'nxRasc:' + (cfg.sistema || '') + ':' + titulo(b);
+
+  /* ---------- 8. rascunho automático ---------- */
+  function salvarRasc(b) { const cs = campos(b); if (cs.length < 5) return; const v = cs.map((x, i) => ({ i, id: x.id || '', nm: x.name || '', t: x.type, v: x.type === 'checkbox' || x.type === 'radio' ? x.checked : String(x.value || '').slice(0, 5000) }));
+    try { localStorage.setItem(chaveR(b), JSON.stringify({ em: Date.now(), n: cs.length, v })); } catch (e) { } }
+  function limparRasc(b) { try { localStorage.removeItem(chaveR(b)); } catch (e) { } }
+  function ofertaRasc(b) {
+    const cs = campos(b); if (cs.length < 5) return; let r = null; try { r = JSON.parse(localStorage.getItem(chaveR(b)) || 'null'); } catch (e) { } if (!r || !r.v || Date.now() - r.em > 7 * 864e5) return;
+    const mudou = r.v.some(x => { const c = (x.id && b.querySelector('#' + CSS.escape(x.id))) || cs[x.i]; if (!c) return false; return x.t === 'checkbox' || x.t === 'radio' ? c.checked !== x.v : String(c.value) !== String(x.v); }); if (!mudou) return;
+    const bd = b.querySelector(BODY) || b; const ban = D.createElement('div'); ban.className = 'nx-ban ras'; ban.innerHTML = `<b>Você tem um rascunho de ${new Date(r.em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}. Continuar de onde parou?</b><button type="button">Continuar</button><button type="button" class="s">Descartar</button>`;
+    bd.insertBefore(ban, bd.firstChild);
+    ban.querySelector('button').onclick = () => { r.v.forEach(x => { const c = (x.id && b.querySelector('#' + CSS.escape(x.id))) || cs[x.i]; if (!c) return; if (x.t === 'checkbox' || x.t === 'radio') c.checked = !!x.v; else c.value = x.v; c.dispatchEvent(new Event('input', { bubbles: true })); c.dispatchEvent(new Event('change', { bubbles: true })); }); b.__nxSujo = true; ban.remove(); };
+    ban.querySelector('.s').onclick = () => { limparRasc(b); ban.remove(); };
+  }
+  /* ---------- 10. etapas em formulário longo ---------- */
+  function etapas(b) {
+    const bd = b.querySelector(BODY); if (!bd || bd.querySelector('.nx-et')) return;
+    const hs = [...bd.querySelectorAll('h3,h4,legend,.sec-t,.fs-t')].filter(h => h.offsetParent !== null && h.textContent.trim().length > 1 && !h.closest('.nx-ban,table,.nxd'));
+    if (hs.length < 3 || bd.scrollHeight < bd.clientHeight * 1.5) return;
+    const nav = D.createElement('div'); nav.className = 'nx-et'; nav.style.background = getComputedStyle(b).backgroundColor || '#fff';
+    nav.innerHTML = hs.slice(0, 8).map((h, i) => `<button type="button" data-i="${i}">${i + 1} ${esc2(h.textContent.trim().slice(0, 22))}</button>`).join('') + '<i></i>';
+    bd.insertBefore(nav, bd.firstChild); const barra = nav.querySelector('i');
+    nav.querySelectorAll('button').forEach(x => x.onclick = () => { const h = hs[+x.dataset.i]; bd.scrollTo({ top: h.offsetTop - nav.offsetHeight - 6, behavior: 'smooth' }); });
+    const marca = () => { const y = bd.scrollTop + nav.offsetHeight + 12; let k = 0; hs.forEach((h, i) => { if (h.offsetTop <= y) k = i; }); nav.querySelectorAll('button').forEach((x, i) => x.classList.toggle('on', i === k)); barra.style.width = Math.min(100, Math.round(bd.scrollTop / Math.max(1, bd.scrollHeight - bd.clientHeight) * 100)) + '%'; };
+    bd.addEventListener('scroll', marca, { passive: true }); marca();
+  }
+  /* ---------- prepara cada modal que abre ---------- */
+  function preparar(b) {
+    if (b.__nxOk) return; b.__nxOk = true; b.__nxSujo = false; b.__nxAbriu = Date.now();
+    if (!b.matches('.lg,.xl,.sm,.full,.nx-lg') && b.querySelector('table') && (b.querySelector('table').offsetWidth || 0) > 640) b.classList.add('nx-lg');
+    const al = D.createElement('div'); al.className = 'nx-alca'; al.setAttribute('aria-hidden', 'true'); b.insertBefore(al, b.firstChild);
+    let tm = null; b.addEventListener('input', e => { if (!e.isTrusted) return; b.__nxSujo = true; clearTimeout(tm); tm = setTimeout(() => salvarRasc(b), 600); const c = e.target.closest('.nx-erro'); if (c) { c.classList.remove('nx-erro'); const m = c.parentNode && c.parentNode.querySelector('.nx-erro-msg'); if (m) m.remove(); } });
+    b.addEventListener('change', e => { if (e.isTrusted) { b.__nxSujo = true; clearTimeout(tm); tm = setTimeout(() => salvarRasc(b), 600); } });
+    /* 3. arrastar para baixo fecha (celular) */
+    let y0 = null; const hd = b.querySelector(HEAD); [al, hd].forEach(z => { if (!z) return; z.addEventListener('touchstart', e => { y0 = e.touches[0].clientY; }, { passive: true });
+      z.addEventListener('touchmove', e => { if (y0 == null) return; const dy = e.touches[0].clientY - y0; if (dy > 0) b.style.transform = `translateY(${dy}px)`; }, { passive: true });
+      z.addEventListener('touchend', e => { if (y0 == null) return; const dy = (e.changedTouches[0].clientY - y0); y0 = null; b.style.transform = ''; if (dy > 90) tentarFechar(b); }); });
+    setTimeout(() => { if (!b.isConnected) return; ofertaRasc(b); etapas(b); }, 120);
+  }
+  /* ---------- 1. descartar o que foi preenchido? ---------- */
+  async function tentarFechar(b) {
+    if (b.__nxSujo) { const ok = await W.nxConfirm('Você preencheu dados neste formulário. Se fechar agora, o que foi digitado não será salvo.', { titulo: 'Descartar o que você preencheu?', sim: 'Descartar', nao: 'Continuar preenchendo', perigo: true }); if (!ok) return; limparRasc(b); }
+    b.__nxSujo = false; b.__nxUsuario = true; cfg.fechar();
+  }
+  D.addEventListener('mousedown', e => { const b = caixaAtual(); if (b && e.target === b.closest(OV) && e.isTrusted) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+  D.addEventListener('click', e => {
+    const b = caixaAtual(); if (!b || (W.__nxDlg && W.__nxDlg.contains(e.target))) return; const ov = b.closest(OV);
+    const fechar = (e.target === ov) || (e.target.closest(cfg.x) && b.contains(e.target.closest(cfg.x)));
+    if (fechar && e.isTrusted) { e.preventDefault(); e.stopImmediatePropagation(); tentarFechar(b); return; }
+    /* 6. botão que trava enquanto salva */
+    const bt = e.target.closest(FOOT + ' button, ' + FOOT + ' .btn'); if (!bt || !b.contains(bt) || bt.matches(cfg.x) || bt.matches('.sec,.ghost,.cl,.nao') || bt.disabled) return;
+    if (bt.__nxAte && bt.__nxAte > Date.now()) { e.preventDefault(); e.stopImmediatePropagation(); return; }
+    bt.__nxAte = Date.now() + 2000; setTimeout(() => { if (!bt.isConnected || bt.disabled) return; bt.classList.add('nx-busy'); bt.__nxTm = setTimeout(() => { bt.classList.remove('nx-busy'); }, 1750); }, 250);
+  }, true);
+  /* 9. teclado: Esc, Enter e Tab */
+  W.addEventListener('keydown', e => {
+    if (W.__nxDlg) return; const b = caixaAtual(); if (!b) return;
+    if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); tentarFechar(b); return; }
+    if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) { const t = e.target; if (!b.contains(t) || t.tagName !== 'INPUT' || ['checkbox', 'radio', 'file', 'button', 'submit'].includes(t.type) || t.closest('form')) return;
+      const ps = [...b.querySelectorAll(FOOT + ' button, ' + FOOT + ' .btn')].filter(x => !x.matches(cfg.x) && !x.matches('.sec,.ghost,.cl') && !x.disabled && x.offsetParent !== null); if (ps.length === 1) { e.preventDefault(); ps[0].click(); } return; }
+    if (e.key === 'Tab') { const f = [...b.querySelectorAll('a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])')].filter(x => !x.disabled && x.offsetParent !== null); if (!f.length) return; const i = f.indexOf(D.activeElement);
+      if (i < 0 || (e.shiftKey && i === 0) || (!e.shiftKey && i === f.length - 1)) { e.preventDefault(); f[e.shiftKey ? (i <= 0 ? f.length - 1 : i - 1) : (i === f.length - 1 || i < 0 ? 0 : i + 1)].focus(); } }
+  }, true);
+  /* 7. erro no campo: o aviso de erro também aparece no campo certo */
+  if (cfg.toastFn && typeof W[cfg.toastFn] === 'function') { const T0 = W[cfg.toastFn]; W[cfg.toastFn] = function (m, ruim) { const r = T0.apply(this, arguments); try { if (ruim) erroNoModal(String(m || '')); } catch (e) { } return r; }; }
+  function erroNoModal(m) {
+    const b = caixaAtual(); if (!b || !m) return; b.querySelectorAll(FOOT + ' .nx-busy').forEach(x => { x.classList.remove('nx-busy'); x.__nxAte = 0; });
+    const bd = b.querySelector(BODY) || b, low = m.toLowerCase(); let alvo = null;
+    for (const lb of bd.querySelectorAll('label')) { const t = lb.textContent.replace(/\(.*?\)|[*:]/g, '').trim().toLowerCase(); if (t.length < 3 || t.length > 40) continue;
+      const pal = t.split(/\s+/).filter(w => w.length > 3); if (low.includes(t) || (pal.length && pal.every(w => low.includes(w)))) { const c = lb.htmlFor ? bd.querySelector('#' + CSS.escape(lb.htmlFor)) : lb.querySelector('input,select,textarea'); if (c && c.offsetParent !== null) { alvo = c; break; } } }
+    bd.querySelectorAll('.nx-ban.err').forEach(x => x.remove());
+    if (alvo) { alvo.classList.add('nx-erro'); const ant = alvo.parentNode.querySelector('.nx-erro-msg'); if (ant) ant.remove(); const d = D.createElement('div'); d.className = 'nx-erro-msg'; d.textContent = m; alvo.insertAdjacentElement('afterend', d); alvo.scrollIntoView({ block: 'center', behavior: 'smooth' }); setTimeout(() => { try { alvo.focus(); } catch (e) { } }, 250); }
+    else { const ban = D.createElement('div'); ban.className = 'nx-ban err'; ban.setAttribute('role', 'alert'); ban.textContent = m; bd.insertBefore(ban, bd.firstChild); bd.scrollTo({ top: 0, behavior: 'smooth' }); }
+  }
+  /* 4. modal sobre modal: o formulário de baixo fica guardado e volta quando o de cima fecha */
+  if (cfg.abrirFn && typeof W[cfg.abrirFn] === 'function') { const A0 = W[cfg.abrirFn]; W[cfg.abrirFn] = function () {
+    const b = caixaAtual(), bd = b && (b.querySelector(BODY) || b), c = ultimoClique;
+    if (b && bd && c.el && bd.contains(c.el) && Date.now() - c.t < 1500 && campos(b).length >= 2) { const ov = b.closest(OV) || b; pilha.push({ ov, onClose: cfg.estado ? cfg.estado.ler() : null, foco: ultimoFoco }); guarda.appendChild(ov); }
+    return A0.apply(this, arguments); }; }
+  /* 12. fundo travado + 9. foco volta + 4. devolve o modal guardado */
+  let opener = null;
+  const obs = new MutationObserver(() => {
+    const r = raiz(); if (!r) return; const b = r.querySelector(BOX);
+    if (b) { if (aberto && aberto !== b && !aberto.isConnected && !aberto.__nxUsuario && !guarda.contains(aberto)) limparRasc(aberto); if (!b.__nxOk) { if (!aberto) opener = ultimoFoco; preparar(b); } aberto = b; D.documentElement.classList.add('nx-trava'); return; }
+    if (aberto) { const fb = aberto; aberto = null; if (!fb.__nxUsuario) limparRasc(fb); }
+    if (pilha.length && !r.children.length) { const p = pilha.pop(); r.appendChild(p.ov); if (cfg.estado) cfg.estado.voltar(p.onClose); const bb = r.querySelector(BOX); aberto = bb; setTimeout(() => { const f = bb && campos(bb)[0]; if (f) f.focus(); }, 30); return; }
+    D.documentElement.classList.remove('nx-trava'); const o = opener; opener = null; if (o && o.isConnected && !W.__nxDlg) setTimeout(() => { try { o.focus({ preventScroll: true }); } catch (e) { } }, 20);
+  });
+  const ligar = () => { const r = raiz(); if (r) obs.observe(r, { childList: true }); else setTimeout(ligar, 500); }; ligar();
+}
+
+nxModalKit({ sistema: 'pay', root: null, tema: 'escuro' });
 </script>
 </body></html>
