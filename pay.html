@@ -164,7 +164,7 @@ body.lg-on:before,body.lg-on:after{display:none}body.lg-on main{padding:0;max-wi
     return '<h2>Ajuda</h2><div class="cb"><div class="t"><b>Problema com um pagamento?</b><span>Atendimento com protocolo, igual aos sistemas NEXUM</span></div><button id="b-sup">Suporte</button></div>' + (j.papel === 'dono' ? '<h2>Quem pode ver e pagar</h2>' + (j.pessoas || []).map(function (p) { return '<div class="cb"><div class="t"><b>' + esc(p.email) + '</b><span>' + (p.papel === 'ver' ? 'Só ver' : 'Ver e pagar') + '</span></div><a class="s" data-rem="' + esc(p.email) + '">Tirar</a></div>'; }).join('') +
       '<div class="cb" style="display:block"><label class="in" style="margin-bottom:8px;height:50px"><input id="pe-e" type="email" placeholder="E-mail da pessoa"></label><div class="op" style="margin:0 0 8px"><button class="on" data-pp="pagar">Ver e pagar<small>financeiro</small></button><button data-pp="ver">Só ver<small>contador</small></button></div><button class="bt" id="b-conv" style="height:48px;font-size:15px">Mandar convite</button><p class="dt" style="margin:8px 0 0;font-size:12px">A pessoa só vê os pagamentos: não entra no NEXUM RH.</p></div>' : '') +
       '<h2>Indique e ganhe</h2><div class="cb" style="display:block;text-align:center"><small class="dt">Cada empresa que assinar com o seu código</small><div style="font-size:26px;font-weight:700">+1 mês grátis</div><div class="cp" style="background:rgba(255,255,255,.06);color:#fff;border-color:var(--linha);margin:10px 0">' + esc(i.link || '') + '</div><div class="duo"><a class="bt" style="height:46px;font-size:14px;text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent('Conhece o NEXUM RH? Ponto pelo rosto, folha e holerite no celular. Assine pelo meu link: ' + (i.link || '')) + '">WhatsApp</a><button class="bt2" id="b-ind" style="height:46px">Copiar link</button></div><div class="ln2"><span>Indicações</span><b>' + (i.total || 0) + '</b></div><div class="ln2"><span>Assinaram</span><b>' + (i.assinaram || 0) + '</b></div><div class="ln2"><span>Meses ganhos</span><b style="color:var(--ok)">' + (i.meses || 0) + '</b></div></div>' +
-      '<h2>Segurança</h2><div class="cb"><div class="t"><b>Entrar mais rápido</b><span>' + (travaLer() ? 'PIN' + (travaLer().bio ? ' e digital/rosto' : '') + ' ligado neste aparelho' : 'PIN de 4 números e digital ou rosto') + '</span></div><button id="b-trv">' + (travaLer() ? 'Desligar' : 'Ligar') + '</button></div>' + '<h2>Cartões</h2><div id="ct-box"></div><h2>Agenda</h2><div id="ag-box"></div><h2>App e avisos</h2><div class="cb" style="display:block"><b>Instalar o NEXUM PAY</b><p class="dt" style="margin:4px 0 8px">Fica na tela do celular como um app e avisa antes de vencer e quando o pagamento é confirmado.</p><button class="bt" id="b-inst" style="height:48px;font-size:15px">Instalar e ligar os avisos</button><p class="dt" id="inst-ios" style="display:none;margin:8px 0 0;font-size:12.5px">No iPhone: toque em Compartilhar e em "Adicionar à Tela de Início". Depois abra pelo ícone e toque de novo aqui para ligar os avisos.</p></div>';
+      '<h2>Segurança</h2><div class="cb"><div class="t"><b>Entrar mais rápido</b><span>' + (travaLer() ? 'PIN' + (travaLer().bio ? ' e digital/rosto' : '') + ' ligado neste aparelho' : 'PIN de 4 números e digital ou rosto') + '</span></div><button id="b-trv">' + (travaLer() ? 'Desligar' : 'Ligar') + '</button></div>' + '<h2>Cartões</h2><div id="ct-box"></div><h2>Agenda</h2><div id="ag-box"></div><div id="sec-inst"><h2>App e avisos</h2><div class="cb" style="display:block"><b>Instalar o NEXUM PAY</b><p class="dt" style="margin:4px 0 8px">Fica na tela do celular como um app e avisa antes de vencer e quando o pagamento é confirmado.</p><button class="bt" id="b-inst" style="height:48px;font-size:15px">Instalar e ligar os avisos</button><p class="dt" id="inst-ios" style="display:none;margin:8px 0 0;font-size:12.5px">No iPhone: toque em Compartilhar e em "Adicionar à Tela de Início". Depois abra pelo ícone e toque de novo aqui para ligar os avisos.</p></div></div>';
   }
   var ligarAba = {
     inicio: function () {
@@ -777,5 +777,17 @@ ${BOX}.nx-lg{max-width:920px}
 }
 
 nxModalKit({ sistema: 'pay', root: null, tema: 'escuro' });
+</script>
+<script>
+/* =====================================================================
+   LOTE 63 (NEXUM PAY): dentro do app da Play Store e da App Store
+   Esconde o "instalar o app" (já é o app) e, no iPhone, o link de contratar pelo site (regra da Apple).
+   ===================================================================== */
+(function () {
+  var cap = window.Capacitor, nat = !!(cap && cap.isNativePlatform && cap.isNativePlatform());
+  try { if (/[?&]app=nativo/.test(location.search)) sessionStorage.setItem('nx:nativo', '1'); nat = nat || sessionStorage.getItem('nx:nativo') === '1'; } catch (e) { }
+  if (!nat) return; var h = document.documentElement; h.classList.add('nx-nativo'); if (cap && cap.getPlatform && cap.getPlatform() === 'ios') h.classList.add('nx-ios');
+  var st = document.createElement('style'); st.textContent = '.nx-nativo #sec-inst{display:none!important}.nx-ios .lg2-f .ou,.nx-ios .lg2-f a.bt2[href*="planos"]{display:none!important}'; document.head.appendChild(st);
+})();
 </script>
 </body></html>
