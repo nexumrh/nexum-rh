@@ -72,6 +72,40 @@ body.lg-on:before,body.lg-on:after{display:none}body.lg-on main{padding:0;max-wi
 .vals{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.vals button{height:56px;border-radius:14px;border:1px solid var(--linha);background:none;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font:inherit;font-weight:700;font-size:14.5px;cursor:pointer}.vals button small{font-size:10.5px;color:#4ADE80;font-weight:600}.vals .on{border-color:#3B82F6;background:rgba(59,130,246,.16)}
 .bonus{margin-top:12px;border-radius:14px;padding:11px 13px;background:rgba(232,196,106,.1);border:1px solid rgba(232,196,106,.35);font-size:13px;color:#F3DDA0;line-height:1.45}
 #cid{position:fixed;inset:0;z-index:20;background:rgba(2,8,24,.82);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}.cid-c{width:100%;max-width:440px;background:#0A1636;border:1px solid var(--linha);border-radius:24px 24px 0 0;padding:20px 18px calc(18px + env(safe-area-inset-bottom));text-align:center}
+
+/* LOTE 64: enviar, gráfico, contestar */
+.cb a.env64{background:transparent;border:1.5px solid var(--ok);color:var(--ok);margin-left:6px}
+.gr64{display:block}.gr64-t{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.gr64-t span{color:var(--mut);font-size:12.5px}.gr64-t b{display:block;font-size:24px}
+.gr64-a{display:flex;align-items:center;gap:4px}.gr64-a span{color:var(--txt);font-weight:700;font-size:14px;min-width:42px;text-align:center}.gr64 .gr64-a button{min-height:36px;width:36px;padding:0;justify-content:center;background:transparent;border:1px solid var(--linha);color:var(--txt)}.gr64 .gr64-a button:disabled{opacity:.35}
+.gr64-b{display:flex;align-items:flex-end;gap:5px;height:130px;margin:14px 0 4px;border-bottom:1px solid var(--linha)}
+.gr64 .gr64-b button{flex:1;height:100%;display:flex;align-items:flex-end;padding:0;min-height:0;background:transparent;border-radius:6px 6px 0 0}.gr64 .gr64-b button.on{background:rgba(31,123,255,.12)}
+.gr64-b i{display:block;width:100%;border-radius:5px 5px 0 0;background:var(--azul)}.gr64-b i.x{background:var(--ok)}.gr64-b i.z{height:3px!important;background:var(--linha)}
+.gr64-m{display:flex;gap:5px}.gr64-m span{flex:1;text-align:center;font-size:10px;color:var(--mut)}
+.gr64-l{display:flex;gap:12px;font-size:11px;color:var(--mut);margin-top:10px;flex-wrap:wrap}.gr64-l i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:4px;background:var(--azul)}.gr64-l i.x{background:var(--ok)}
+.gr64-d{margin-top:10px;border-top:1px solid var(--linha);padding-top:8px}.gr64-d>b{font-size:13px;text-transform:capitalize}
+.gr64-k{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 6px}.gr64-k div{border:1px solid var(--linha);background:var(--card);border-radius:14px;padding:10px 12px}.gr64-k b{display:block;font-size:16px}.gr64-k span{font-size:11.5px;color:var(--mut)}
+#ct64-ov{position:fixed;inset:0;z-index:20;background:rgba(2,8,24,.72);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px)}
+.ct64-c{width:100%;max-width:460px;background:#0A1636;border:1px solid var(--linha);border-radius:24px 24px 0 0;padding:20px 18px calc(18px + env(safe-area-inset-bottom));max-height:92dvh;overflow:auto}
+.ct64-c>b{font-size:18px}.ct64-c>p{margin:4px 0 12px;color:var(--mut);font-size:13px}.ct64-o{display:flex;flex-direction:column;gap:8px}
+.ct64-o button{border:1.5px solid var(--linha);background:rgba(255,255,255,.03);color:var(--txt);border-radius:14px;padding:12px 14px;text-align:left;font:inherit;font-weight:600;font-size:14px;cursor:pointer;min-height:48px}.ct64-o button.on{border-color:var(--azul);background:rgba(31,123,255,.14)}
+.ct64-c textarea{width:100%;margin-top:10px;border:1.5px solid var(--linha);border-radius:14px;background:rgba(255,255,255,.04);color:var(--txt);padding:10px 12px;font:inherit;font-size:14px;resize:vertical}
+.ct64-n{font-size:12px;color:var(--mut);margin:8px 0 12px}
+/* LOTE 64: modo claro (só dentro da conta; a tela de entrada continua escura) */
+html.pay-claro{--fundo:#F3F6FC;--card:#FFFFFF;--linha:#DCE3F0;--txt:#0E1A3A;--mut:#5B6B8C;--ok:#0E8A5F;--bad:#C8341F;--warn:#9A6400;background:#F3F6FC;color-scheme:light}
+html.pay-claro body{background:#F3F6FC}html.pay-claro body:before,html.pay-claro body:after{display:none}
+html.pay-claro .cb,html.pay-claro .gr64-k div{box-shadow:0 2px 10px rgba(14,26,58,.05)}
+html.pay-claro .bt2,html.pay-claro .op button,html.pay-claro .sel,html.pay-claro .vals button,html.pay-claro .tl2 div b,html.pay-claro .emp .v strong,html.pay-claro .bnav button.on,html.pay-claro .sp-op button,html.pay-claro .sp-it,html.pay-claro .sp-f input,html.pay-claro .cup input,html.pay-claro .acs span,html.pay-claro .sp-h button{color:var(--txt)}
+html.pay-claro .op button,html.pay-claro .cb .op button{background:#fff}html.pay-claro .op button.on,html.pay-claro .cb .op button.on,html.pay-claro .vals .on{background:#E8F0FF;border-color:#1F5FE8}
+html.pay-claro .emp{background:linear-gradient(135deg,#E3ECFF,#FFFFFF)}
+html.pay-claro .bnav{background:rgba(255,255,255,.96)}html.pay-claro .bnav button.on{background:#E8F0FF;color:#1749BE}
+html.pay-claro .barra{background:#E3E9F5}html.pay-claro .ln2,html.pay-claro .ex{border-bottom-color:#E6EBF4}
+html.pay-claro .ex .mais,html.pay-claro .vals button small{color:var(--ok)}html.pay-claro .bonus{background:#FFF7E0;border-color:#F0D58A;color:#6B4E00}
+html.pay-claro .tag.ab{background:#FFF1D1}html.pay-claro .tag.ok{background:#E1F5EC}html.pay-claro .tag.at{background:#FDE8E5}
+html.pay-claro #sp-pn,html.pay-claro .cid-c,html.pay-claro .ct64-c{background:#fff;color:var(--txt)}html.pay-claro .sp-m{background:#EEF2FA}html.pay-claro .sp-m.eu{background:#DCE8FF}html.pay-claro .sp-m small{color:#1749BE}
+html.pay-claro .sp-ax,html.pay-claro .sp-h button,html.pay-claro .acs span{background:#EEF2FA}html.pay-claro .cup input,html.pay-claro .ct64-c textarea{background:#fff}
+html.pay-claro .lnk{color:#1663F0}html.pay-claro .gr64 .gr64-b button.on{background:#E8F0FF}
+html.pay-claro .msg{background:#0E1A3A;color:#fff}html.pay-claro #ct64-ov,html.pay-claro #cid{background:rgba(14,26,58,.45)}
+html.pay-claro .top img{filter:brightness(0) saturate(100%) invert(9%) sepia(36%) saturate(2500%) hue-rotate(205deg)}
 </style></head><body><main id="app"></main>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -155,13 +189,13 @@ body.lg-on:before,body.lg-on:after{display:none}body.lg-on main{padding:0;max-wi
   }
   function abaDocs() {
     var j = ESTADO, anos = {}; (j.pagas || []).forEach(function (c) { anos[String(c.pagoEm || c.vencimento).slice(0, 4)] = 1; }); var la = Object.keys(anos).sort().reverse(); if (!la.length) la = [String(new Date().getFullYear())];
-    return '<h2>Declaração de quitação</h2><div id="qt-box"><div class="vazio">Carregando…</div></div><h2>Extrato do ano</h2><div class="cb" style="display:block"><div class="ln2"><select id="ano" class="sel">' + la.map(function (a) { return '<option>' + a + '</option>'; }).join('') + '</select><span id="ano-r"></span></div><button class="bt" id="b-ext" style="height:48px;font-size:15px;margin-top:10px">Baixar extrato em PDF</button><button class="bt2" id="b-cont" style="height:46px;margin-top:8px">Mandar para o meu contador</button></div>' +
+    return grafico64() + '<h2>Declaração de quitação</h2><div id="qt-box"><div class="vazio">Carregando…</div></div><h2>Extrato do ano</h2><div class="cb" style="display:block"><div class="ln2"><select id="ano" class="sel">' + la.map(function (a) { return '<option>' + a + '</option>'; }).join('') + '</select><span id="ano-r"></span></div><button class="bt" id="b-ext" style="height:48px;font-size:15px;margin-top:10px">Baixar extrato em PDF</button><button class="bt2" id="b-cont" style="height:46px;margin-top:8px">Mandar para o meu contador</button></div>' +
       '<h2>Contratos assinados</h2>' + ((j.docs || []).length ? j.docs.map(function (d) { return '<div class="cb"><div class="t"><b>' + esc(d.titulo) + '</b><span>' + (d.em ? 'aceito em ' + dt(String(d.em).slice(0, 10)) : '') + (d.versao ? ' · versão ' + esc(d.versao) : '') + '</span></div>' + (d.url ? '<a class="s" href="' + esc(d.url) + '" target="_blank" rel="noopener">Abrir</a>' : '') + '</div>'; }).join('') : '<div class="vazio">Nenhum contrato registrado.</div>') +
-      '<h2>Comprovantes</h2>' + ((j.pagas || []).length ? j.pagas.slice(0, 24).map(function (c, i) { return '<div class="cb"><div class="t"><b>' + brl(c.valor) + '</b><span>' + dt(c.pagoEm || c.vencimento) + (c.forma ? ' · ' + esc(c.forma) : '') + '</span></div><a class="s" data-comp="' + i + '">PDF</a></div>'; }).join('') : '<div class="vazio">Nenhum pagamento ainda.</div>') + '<h2>Notas fiscais</h2>' + ((j.pagas || []).filter(function (c) { return c.nf; }).length ? j.pagas.filter(function (c) { return c.nf; }).map(function (c) { return '<div class="cb"><div class="t"><b>Nº ' + esc(c.nf.numero) + '</b><span>' + brl(c.valor) + ' · ' + dt(c.pagoEm || c.vencimento) + '</span></div>' + (c.nf.pdf ? '<a class="s" href="' + esc(c.nf.pdf) + '" target="_blank" rel="noopener">PDF</a>' : '') + '</div>'; }).join('') : '<div class="vazio">As notas aparecem aqui assim que a prefeitura autoriza.</div>');
+      '<h2>Comprovantes</h2>' + ((j.pagas || []).length ? j.pagas.slice(0, 24).map(function (c, i) { return '<div class="cb"><div class="t"><b>' + brl(c.valor) + '</b><span>' + dt(c.pagoEm || c.vencimento) + (c.forma ? ' · ' + esc(c.forma) : '') + '</span></div><a class="s" data-comp="' + i + '">PDF</a><a class="s env64" data-env="' + i + '">Enviar</a></div>'; }).join('') : '<div class="vazio">Nenhum pagamento ainda.</div>') + '<h2>Notas fiscais</h2>' + ((j.pagas || []).filter(function (c) { return c.nf; }).length ? j.pagas.filter(function (c) { return c.nf; }).map(function (c) { return '<div class="cb"><div class="t"><b>Nº ' + esc(c.nf.numero) + '</b><span>' + brl(c.valor) + ' · ' + dt(c.pagoEm || c.vencimento) + '</span></div>' + (c.nf.pdf ? '<a class="s" href="' + esc(c.nf.pdf) + '" target="_blank" rel="noopener">PDF</a>' : '') + '</div>'; }).join('') : '<div class="vazio">As notas aparecem aqui assim que a prefeitura autoriza.</div>');
   }
   function abaMais() {
     var j = ESTADO, i = j.indicacao || {};
-    return '<h2>Ajuda</h2><div class="cb"><div class="t"><b>Problema com um pagamento?</b><span>Atendimento com protocolo, igual aos sistemas NEXUM</span></div><button id="b-sup">Suporte</button></div>' + (j.papel === 'dono' ? '<h2>Quem pode ver e pagar</h2>' + (j.pessoas || []).map(function (p) { return '<div class="cb"><div class="t"><b>' + esc(p.email) + '</b><span>' + (p.papel === 'ver' ? 'Só ver' : 'Ver e pagar') + '</span></div><a class="s" data-rem="' + esc(p.email) + '">Tirar</a></div>'; }).join('') +
+    return '<h2>Aparência</h2><div class="op tema64">' + [['escuro', 'Escuro', 'como sempre'], ['claro', 'Claro', 'fundo claro'], ['auto', 'Automático', 'segue o celular']].map(function (x) { return '<button data-tema="' + x[0] + '" class="' + (tema64() === x[0] ? 'on' : '') + '">' + x[1] + '<small>' + x[2] + '</small></button>'; }).join('') + '</div><h2>Ajuda</h2><div class="cb"><div class="t"><b>Problema com um pagamento?</b><span>Atendimento com protocolo, igual aos sistemas NEXUM</span></div><button id="b-sup">Suporte</button></div>' + (j.papel === 'dono' ? '<h2>Quem pode ver e pagar</h2>' + (j.pessoas || []).map(function (p) { return '<div class="cb"><div class="t"><b>' + esc(p.email) + '</b><span>' + (p.papel === 'ver' ? 'Só ver' : 'Ver e pagar') + '</span></div><a class="s" data-rem="' + esc(p.email) + '">Tirar</a></div>'; }).join('') +
       '<div class="cb" style="display:block"><label class="in" style="margin-bottom:8px;height:50px"><input id="pe-e" type="email" placeholder="E-mail da pessoa"></label><div class="op" style="margin:0 0 8px"><button class="on" data-pp="pagar">Ver e pagar<small>financeiro</small></button><button data-pp="ver">Só ver<small>contador</small></button></div><button class="bt" id="b-conv" style="height:48px;font-size:15px">Mandar convite</button><p class="dt" style="margin:8px 0 0;font-size:12px">A pessoa só vê os pagamentos: não entra no NEXUM RH.</p></div>' : '') +
       '<h2>Indique e ganhe</h2><div class="cb" style="display:block;text-align:center"><small class="dt">Cada empresa que assinar com o seu código</small><div style="font-size:26px;font-weight:700">+1 mês grátis</div><div class="cp" style="background:rgba(255,255,255,.06);color:#fff;border-color:var(--linha);margin:10px 0">' + esc(i.link || '') + '</div><div class="duo"><a class="bt" style="height:46px;font-size:14px;text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent('Conhece o NEXUM RH? Ponto pelo rosto, folha e holerite no celular. Assine pelo meu link: ' + (i.link || '')) + '">WhatsApp</a><button class="bt2" id="b-ind" style="height:46px">Copiar link</button></div><div class="ln2"><span>Indicações</span><b>' + (i.total || 0) + '</b></div><div class="ln2"><span>Assinaram</span><b>' + (i.assinaram || 0) + '</b></div><div class="ln2"><span>Meses ganhos</span><b style="color:var(--ok)">' + (i.meses || 0) + '</b></div></div>' +
       '<h2>Segurança</h2><div class="cb"><div class="t"><b>Entrar mais rápido</b><span>' + (travaLer() ? 'PIN' + (travaLer().bio ? ' e digital/rosto' : '') + ' ligado neste aparelho' : 'PIN de 4 números e digital ou rosto') + '</span></div><button id="b-trv">' + (travaLer() ? 'Desligar' : 'Ligar') + '</button></div>' + '<h2>Cartões</h2><div id="ct-box"></div><h2>Agenda</h2><div id="ag-box"></div><div id="sec-inst"><h2>App e avisos</h2><div class="cb" style="display:block"><b>Instalar o NEXUM PAY</b><p class="dt" style="margin:4px 0 8px">Fica na tela do celular como um app e avisa antes de vencer e quando o pagamento é confirmado.</p><button class="bt" id="b-inst" style="height:48px;font-size:15px">Instalar e ligar os avisos</button><p class="dt" id="inst-ios" style="display:none;margin:8px 0 0;font-size:12.5px">No iPhone: toque em Compartilhar e em "Adicionar à Tela de Início". Depois abra pelo ícone e toque de novo aqui para ligar os avisos.</p></div></div>';
@@ -178,7 +212,7 @@ body.lg-on:before,body.lg-on:after{display:none}body.lg-on main{padding:0;max-wi
     plano: function () { [].forEach.call(app.querySelectorAll('[data-mud]'), function (b) { b.onclick = function () { b.disabled = true; b.textContent = '…'; api('/api/pay/proposta', { para: b.dataset.mud }, true).then(function (r) { location.href = r.link; }).catch(function (e) { msg(e.message, true); b.disabled = false; b.textContent = 'Mudar'; }); }; }); },
     docs: function () {
       var r = function () { var a = document.getElementById('ano').value, l = (ESTADO.pagas || []).filter(function (c) { return String(c.pagoEm || c.vencimento).slice(0, 4) === a; }); document.getElementById('ano-r').textContent = l.length + ' pagamento(s) · ' + brl(l.reduce(function (s, c) { return s + (+c.valor || 0); }, 0)); };
-      quitCarregar(); document.getElementById('ano').onchange = r; r();
+      quitCarregar(); document.getElementById('ano').onchange = r; r(); grafLigar64(); [].forEach.call(app.querySelectorAll('[data-env]'), function (x) { x.onclick = function () { compEnviar64(ESTADO.pagas[+x.dataset.env], x); }; });
       [].forEach.call(app.querySelectorAll('[data-comp]'), function (x) { x.onclick = function () { var c = ESTADO.pagas[+x.dataset.comp]; x.textContent = '…'; comprovantePdf(Object.assign({ empresa: ESTADO.empresa }, c)).catch(function (e) { msg(e.message, true); }).then(function () { x.textContent = 'PDF'; }); }; });
       document.getElementById('b-ext').onclick = function () { var b = this; b.disabled = true; b.textContent = 'Gerando…'; extratoPdf(document.getElementById('ano').value).then(function (p) { var a = document.createElement('a'); a.href = p.uri; a.download = p.nome; a.click(); }).catch(function (e) { msg(e.message, true); }).then(function () { b.disabled = false; b.textContent = 'Baixar extrato em PDF'; }); };
       document.getElementById('b-cont').onclick = async function () { var b = this, para = (await nxPrompt('E-mail do seu contador:')); if (!para) return; b.disabled = true; b.textContent = 'Enviando…'; var ano = document.getElementById('ano').value;
@@ -382,7 +416,7 @@ body.lg-on:before,body.lg-on:after{display:none}body.lg-on main{padding:0;max-wi
     });
   }
   /* ---------- comprovante em PDF com a logo da NEXUM ---------- */
-  function comprovantePdf(c) {
+  function comprovantePdf(c, modo) {
     _h2p = _h2p || new Promise(function (ok, er) { if (window.html2pdf) return ok(); var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js'; s.onload = ok; s.onerror = function () { _h2p = null; er(new Error('Não consegui carregar o gerador de PDF.')); }; document.head.appendChild(s); });
     return _h2p.then(function () {
       var cod = 'PAY-' + String(c.id || '').replace(/^pay_/, '').slice(-6).toUpperCase(), ref = c.parcela ? 'Parcela ' + c.parcela : ({ multa: 'Multa do Plano Fidelidade', neg: 'Negociação', av: 'Cobrança avulsa', saldo: 'Saldo NEXUM' }[c.tipo] || 'Mensalidade do NEXUM RH');
@@ -394,8 +428,88 @@ body.lg-on:before,body.lg-on:after{display:none}body.lg-on main{padding:0;max-wi
         '<table style="width:100%;border-collapse:collapse">' + lin('Empresa', esc(c.empresa || '')) + lin('Pago em', dt(pg)) + lin('Forma', esc(c.forma || 'Asaas')) + lin('Referente a', esc(ref + (mes && !c.parcela ? ' · ' + mes : ''))) + (c.validade ? lin('Acesso liberado até', dt(c.validade)) : '') + (c.nf && c.nf.numero ? lin('Nota fiscal', 'nº ' + esc(c.nf.numero)) : '') + lin('Código', cod) + '</table>' +
         '<p style="color:#5E6782;font-size:11px;margin:18px 0 0;line-height:1.5">Recebido pela NEXUM (pay.nexumdp.com.br). Pagamento processado pelo Asaas. Este comprovante é emitido pelo NEXUM PAY e não substitui a nota fiscal de serviço.</p></div>';
       var nome = 'Comprovante NEXUM ' + cod + '.pdf';
-      return window.html2pdf().set({ margin: [10, 10, 10, 10], filename: nome, image: { type: 'jpeg', quality: 0.9 }, html2canvas: { scale: 1.6, backgroundColor: '#ffffff' }, jsPDF: { unit: 'mm', format: 'a5' } }).from(el).save();
+      return window.html2pdf().set({ margin: [10, 10, 10, 10], filename: nome, image: { type: 'jpeg', quality: 0.9 }, html2canvas: { scale: 1.6, backgroundColor: '#ffffff' }, jsPDF: { unit: 'mm', format: 'a5' } }).from(el)[modo === 'blob' ? 'outputPdf' : 'save'](modo === 'blob' ? 'blob' : nome).then(function (b) { return modo === 'blob' ? { blob: b, nome: nome } : b; });
     });
+  }
+
+  /* =====================================================================
+     LOTE 64 (NEXUM PAY): enviar o comprovante, gráfico do que paguei, modo claro e contestar uma fatura
+     ===================================================================== */
+  /* ---------- enviar o comprovante (WhatsApp, e-mail...) ---------- */
+  function compEnviar64(c, x) {
+    var txt = 'Segue o comprovante do pagamento de ' + brl(c.valor) + ' de ' + dt(c.pagoEm || c.vencimento) + (ESTADO.empresa ? ' · ' + ESTADO.empresa : '') + ' (NEXUM PAY).';
+    var compartilhar = function (p) {
+      var f = null; try { f = new File([p.blob], p.nome, { type: 'application/pdf' }); } catch (e) { }
+      if (f && navigator.canShare && navigator.canShare({ files: [f] })) return navigator.share({ files: [f], title: p.nome, text: txt }).then(function () { x._p = null; }).catch(function (e) {
+        if (e && e.name === 'AbortError') return; if (e && e.name === 'NotAllowedError') { x.textContent = 'Toque para enviar'; msg('O comprovante está pronto. Toque de novo em "Toque para enviar".'); return 'pronto'; } throw e; });
+      var u = URL.createObjectURL(p.blob), a = document.createElement('a'); a.href = u; a.download = p.nome; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 5000);
+      window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank', 'noopener'); msg('O PDF foi baixado. É só anexar na conversa do WhatsApp que abriu.'); x._p = null;
+    };
+    if (x._p) { var p0 = x._p; x._p = null; return Promise.resolve(compartilhar(p0)).then(function (r) { if (r === 'pronto') x._p = p0; else x.textContent = 'Enviar'; }).catch(function (e) { msg(e.message, true); x.textContent = 'Enviar'; }); }
+    x.textContent = '…';
+    comprovantePdf(Object.assign({ empresa: ESTADO.empresa }, c), 'blob').then(function (p) { x._p = p; return Promise.resolve(compartilhar(p)).then(function (r) { if (r !== 'pronto') { x._p = null; x.textContent = 'Enviar'; } }); })
+      .catch(function (e) { msg(e.message, true); x.textContent = 'Enviar'; });
+  }
+  /* ---------- gráfico do que paguei ---------- */
+  var GR64 = { ano: null, mes: null };
+  function grafico64() {
+    var pg = (ESTADO.pagas || []).filter(function (c) { return c.pagoEm || c.vencimento; }), anos = {}; pg.forEach(function (c) { anos[String(c.pagoEm || c.vencimento).slice(0, 4)] = 1; });
+    var la = Object.keys(anos).sort(); if (!la.length) return ''; if (!GR64.ano || la.indexOf(GR64.ano) < 0) GR64.ano = la[la.length - 1];
+    var M = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'], m = M.map(function () { return { v: 0, l: [], extra: false }; });
+    pg.forEach(function (c) { var d = String(c.pagoEm || c.vencimento); if (d.slice(0, 4) !== GR64.ano) return; var o = m[+d.slice(5, 7) - 1]; if (!o) return; o.v += +c.valor || 0; o.l.push(c); if (['av', 'neg', 'saldo', 'multa'].indexOf(c.tipo) >= 0) o.extra = true; });
+    m.forEach(function (o) { if (o.l.length > 1) o.extra = true; });
+    var tot = m.reduce(function (s, o) { return s + o.v; }, 0), com = m.filter(function (o) { return o.v > 0; }), max = Math.max.apply(null, m.map(function (o) { return o.v; }).concat([1])), maior = m.indexOf(m.reduce(function (a, o) { return o.v > a.v ? o : a; }, m[0]));
+    var todos = [].concat.apply([], m.map(function (o) { return o.l; })), emDia = todos.filter(function (c) { return c.pagoEm && c.vencimento && String(c.pagoEm).slice(0, 10) <= String(c.vencimento).slice(0, 10); }).length, ia = la.indexOf(GR64.ano);
+    var det = GR64.mes != null && m[GR64.mes] && m[GR64.mes].l.length ? '<div class="gr64-d"><b>' + M[GR64.mes] + '/' + GR64.ano + '</b>' + m[GR64.mes].l.map(function (c) { return '<div class="ln2"><span>' + dt(c.pagoEm || c.vencimento) + (c.forma ? ' · ' + esc(c.forma) : '') + (c.parcela ? ' · parcela ' + esc(c.parcela) : '') + '</span><b>' + brl(c.valor) + '</b></div>'; }).join('') + '</div>' : '';
+    return '<h2>O que paguei</h2><div class="cb gr64"><div class="gr64-t"><div><span>Pago em ' + GR64.ano + '</span><b>' + brl(tot) + '</b></div><div class="gr64-a">' + '<button data-gra="-1" aria-label="Ano anterior"' + (ia <= 0 ? ' disabled' : '') + '>‹</button><span>' + GR64.ano + '</span><button data-gra="1" aria-label="Próximo ano"' + (ia >= la.length - 1 ? ' disabled' : '') + '>›</button></div></div>' +
+      '<div class="gr64-b" role="img" aria-label="Valor pago por mês em ' + GR64.ano + '">' + m.map(function (o, i) { return '<button data-grm="' + i + '" title="' + M[i] + ': ' + brl(o.v) + '" class="' + (GR64.mes === i ? 'on' : '') + '"><i class="' + (o.v ? (o.extra ? 'x' : '') : 'z') + '" style="height:' + (o.v ? Math.max(4, Math.round(o.v / max * 100)) : 0) + '%"></i></button>'; }).join('') + '</div>' +
+      '<div class="gr64-m">' + M.map(function (x) { return '<span>' + x[0].toUpperCase() + '</span>'; }).join('') + '</div><div class="gr64-l"><span><i></i>mensalidade</span><span><i class="x"></i>com outros pagamentos</span><span style="margin-left:auto">toque na barra</span></div>' + det + '</div>' +
+      '<div class="gr64-k"><div><b>' + brl(com.length ? tot / com.length : 0) + '</b><span>média por mês pago</span></div><div><b>' + emDia + ' de ' + todos.length + '</b><span>pagas em dia</span></div><div><b>' + (m[maior].v ? M[maior] : '—') + '</b><span>' + (m[maior].v ? 'maior mês (' + brl(m[maior].v) + ')' : 'maior mês') + '</span></div><div><b>' + com.length + '</b><span>' + (com.length === 1 ? 'mês com pagamento' : 'meses com pagamento') + '</span></div></div>';
+  }
+  function grafLigar64() {
+    var re = function () { var g = app.querySelector('.gr64'); if (!g) return; var h = document.createElement('div'); h.innerHTML = grafico64(); var k = app.querySelector('.gr64-k'), t = g.previousElementSibling; [t, g, k].forEach(function (e, i) { if (e) e.replaceWith(h.children[0]); }); grafLigar64(); };
+    [].forEach.call(app.querySelectorAll('[data-gra]'), function (b) { b.onclick = function () { var la = Object.keys((ESTADO.pagas || []).reduce(function (o, c) { o[String(c.pagoEm || c.vencimento).slice(0, 4)] = 1; return o; }, {})).sort(), i = la.indexOf(GR64.ano) + (+b.dataset.gra); if (la[i]) { GR64.ano = la[i]; GR64.mes = null; re(); } }; });
+    [].forEach.call(app.querySelectorAll('[data-grm]'), function (b) { b.onclick = function () { var i = +b.dataset.grm; GR64.mes = GR64.mes === i ? null : i; re(); }; });
+  }
+  /* ---------- aparência: escuro (padrão), claro ou automático. A tela de entrada continua escura. ---------- */
+  function tema64() { try { return localStorage.getItem('nxpay:tema') || 'escuro'; } catch (e) { return 'escuro'; } }
+  function temaAplicar64() {
+    var t = tema64(), claro = t === 'claro' || (t === 'auto' && window.matchMedia && !matchMedia('(prefers-color-scheme: dark)').matches);
+    var dentro = !!(app && app.querySelector('.top')) && !app.querySelector('.lg2,.trv'), on = claro && dentro, h = document.documentElement;
+    if (h.classList.contains('pay-claro') !== on) h.classList.toggle('pay-claro', on);
+    var mt = document.querySelector('meta[name="theme-color"]'); if (mt) mt.setAttribute('content', on ? '#F3F6FC' : '#050E26');
+  }
+  try { new MutationObserver(temaAplicar64).observe(app, { childList: true }); matchMedia('(prefers-color-scheme: dark)').addEventListener('change', temaAplicar64); } catch (e) { }
+  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-tema]'); if (!b) return; try { localStorage.setItem('nxpay:tema', b.dataset.tema); } catch (x) { }
+    [].forEach.call(document.querySelectorAll('[data-tema]'), function (y) { y.classList.toggle('on', y === b); }); temaAplicar64(); });
+  /* ---------- contestar uma fatura (vira um atendimento com protocolo) ---------- */
+  var CT64 = [['valor', 'Valor diferente do combinado'], ['pago', 'Já paguei esta cobrança'], ['dobro', 'Cobrança em dobro'], ['desconheco', 'Não reconheço esta cobrança'], ['outro', 'Outro motivo']];
+  function ctAberto64(id) { return (SP.lista || []).find(function (x) { return x.cobranca && x.cobranca.id === id && (x.status === 'bot' || x.status === 'analise'); }); }
+  function ctLink64(id) { if (!window.firebase || !firebase.auth || !firebase.auth().currentUser || !ESTADO || !ESTADO.tid) return ''; var a = ctAberto64(id);
+    return a ? '<p class="dt" style="text-align:center;margin:12px 0 0"><span class="tag ab">Contestação em análise · protocolo ' + esc(a.protocolo) + '</span></p><a class="lnk" id="ct64-v">Ver o atendimento</a>' : '<a class="lnk" id="ct64" style="color:var(--mut);text-decoration:underline;font-weight:500">Algo errado nesta cobrança?</a>'; }
+  function ctLigar64(id, c, j, recarregar) {
+    var v = document.getElementById('ct64-v'); if (v) v.onclick = function () { var a = ctAberto64(id); if (a) { spLigar(); SP.aberto = true; var pn = document.getElementById('sp-pn'); if (pn) pn.classList.remove('hide'); spAbrir(a.protocolo); } };
+    var b = document.getElementById('ct64'); if (!b) return; b.onclick = function () {
+      var sel = 'valor', ov = document.createElement('div'); ov.id = 'ct64-ov';
+      var des = function () { ov.innerHTML = '<div class="ct64-c" role="dialog" aria-modal="true" aria-labelledby="ct64-h"><b id="ct64-h">O que está errado?</b><p>' + brl(c.valor) + ' · vence em ' + dt(c.vencimento) + '</p><div class="ct64-o">' + CT64.map(function (x) { return '<button data-ct="' + x[0] + '" class="' + (sel === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join('') + '</div>' +
+        '<textarea id="ct64-t" rows="3" maxlength="1500" placeholder="' + (sel === 'pago' ? 'Quando e como você pagou? (opcional)' : 'Conte o que aconteceu (opcional)') + '"></textarea><p class="ct64-n">Depois você pode mandar o comprovante ou um print pelo 📎 no atendimento.</p><button class="bt" id="ct64-e">Enviar para a NEXUM</button><button class="bt2" id="ct64-x" style="margin-top:8px">Voltar</button></div>';
+        [].forEach.call(ov.querySelectorAll('[data-ct]'), function (y) { y.onclick = function () { var t = ov.querySelector('#ct64-t').value; sel = y.dataset.ct; des(); ov.querySelector('#ct64-t').value = t; }; });
+        ov.querySelector('#ct64-x').onclick = fecha; ov.querySelector('#ct64-e').onclick = enviar; };
+      var fecha = function () { ov.remove(); document.removeEventListener('keydown', esc0); }, esc0 = function (e) { if (e.key === 'Escape') fecha(); };
+      var enviar = function () { var e = ov.querySelector('#ct64-e'), obs = ov.querySelector('#ct64-t').value.trim(), nome = (CT64.find(function (x) { return x[0] === sel; }) || [])[1]; e.disabled = true; e.textContent = 'Enviando…';
+        var abrir = function () {
+          var prot = spProt(), u = firebase.auth().currentUser, agora = new Date().toISOString(), det = 'Contestação de cobrança\nValor: ' + brl(c.valor) + '\nVencimento: ' + dt(c.vencimento) + '\nMotivo: ' + nome + (obs ? '\nMensagem: ' + obs : '');
+          var d = { protocolo: prot, origem: 'pay', assunto: 'Cobrança contestada', cobranca: { id: id, valor: +c.valor || 0, vencimento: c.vencimento || '', motivo: sel, motivoTxt: nome }, tid: ESTADO.tid || '', empresa: ESTADO.empresa || j.empresa || '', uid: u.uid, nome: u.email || '', email: u.email || '', status: 'bot', criadoEm: agora, atualizadoEm: agora, naoLidoDono: false, naoLidoRh: false,
+            msgs: [spMsg('bot', 'Olá! Recebemos a sua contestação. Seu protocolo é ' + prot + '.'), spMsg('rh', det)] };
+          return db().doc('suporte/' + prot).set(d).then(function () { SP.lista = [d].concat(SP.lista || []); SP.doc = d;
+            return spAtendente('Um atendente da NEXUM vai conferir esta cobrança. Enquanto isso, ela aparece como "em análise" e nada é cancelado ou cobrado em dobro.'); })
+            .then(function () { fecha(); msg('Contestação enviada. Protocolo ' + prot + '.'); if (recarregar) recarregar(); });
+        };
+        var p = sel === 'pago' ? api('/api/pay/conferir', {}, true).then(function (r) { if (r && r.liberou) { fecha(); msg('Encontramos o seu pagamento e o acesso já foi liberado. Não precisa contestar. 🎉'); telaLista(); return 'ok'; } }).catch(function () { }) : Promise.resolve();
+        p.then(function (r) { if (r !== 'ok') return abrir(); }).catch(function (x) { msg('Não foi possível enviar: ' + (x.code || x.message), true); e.disabled = false; e.textContent = 'Enviar para a NEXUM'; });
+      };
+      des(); document.body.appendChild(ov); document.addEventListener('keydown', esc0); ov.addEventListener('click', function (e) { if (e.target === ov) fecha(); }); setTimeout(function () { var f = ov.querySelector('.on'); if (f) f.focus(); }, 30);
+    };
   }
   /* ---------- instalar o app e ligar os avisos ---------- */
   var PROMPT = null; window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); PROMPT = e; });
@@ -429,10 +543,10 @@ body.lg-on:before,body.lg-on:after{display:none}body.lg-on main{padding:0;max-wi
             : '<div class="qr"><b>Carnê</b><p style="font-size:13.5px;color:#33415F">Para pagar as mensalidades em boletos mensais, entre no NEXUM PAY com o seu login e toque em "Gerar carnê". Cada parcela paga renova o acesso por mais um mês.</p></div>';
           app.innerHTML = topo + '<div class="pg"><div class="dt">' + esc(j.empresa) + '</div><div class="vl">' + brl(c.valor) + '</div><div class="dt">' + esc(c.parcela ? 'Parcela ' + c.parcela + ' · ' : '') + 'vence em ' + dt(c.vencimento) + '</div>' +
             (c.cupom ? '<div style="text-align:center;margin:8px 0 0"><span class="tag ok">Cupom ' + esc(c.cupom.codigo) + ' aplicado: −' + (c.cupom.pct ? c.cupom.pct + '%' : brl(c.cupom.valor)) + (c.valorOriginal ? ' (era ' + brl(c.valorOriginal) + ')' : '') + '</span></div>' : !c.parcela && c.tipo !== 'multa' && c.tipo !== 'saldo' ? '<div class="cup"><input id="cu-c" placeholder="Tem um cupom?" autocomplete="off" maxlength="30"><button id="cu-b">Aplicar</button></div>' : '') + '<div class="op"><button data-f="pix" class="' + (forma === 'pix' ? 'on' : '') + '">PIX<small>libera na hora</small></button><button data-f="cartao" class="' + (forma === 'cartao' ? 'on' : '') + '">Cartão de crédito<small>no ambiente seguro</small></button><button data-f="boleto" class="' + (forma === 'boleto' ? 'on' : '') + '">Boleto<small>1 a 2 dias úteis</small></button><button data-f="carne" class="' + (forma === 'carne' ? 'on' : '') + '">Carnê<small>parcelas mensais</small></button></div>' + corpo +
-            (CARTAO && CARTAO.tem && forma !== 'cartao' ? '<button class="bt2" id="b-1t2" style="margin-top:12px">💳 Pagar com 1 toque · cartão •••• ' + esc(CARTAO.final) + '</button>' : '') + '<a class="lnk" id="jp">Já paguei? Atualizar</a></div>' + rodape;
+            (CARTAO && CARTAO.tem && forma !== 'cartao' ? '<button class="bt2" id="b-1t2" style="margin-top:12px">💳 Pagar com 1 toque · cartão •••• ' + esc(CARTAO.final) + '</button>' : '') + '<a class="lnk" id="jp">Já paguei? Atualizar</a>' + ctLink64(id) + '</div>' + rodape;
           [].forEach.call(app.querySelectorAll('[data-f]'), function (b) { b.onclick = function () { forma = b.dataset.f; desenha(); }; });
           var cpb = document.getElementById('cpb'); if (cpb) cpb.onclick = function () { navigator.clipboard.writeText(document.getElementById('cp').textContent).then(function () { msg('Copiado! Cole no app do seu banco.'); }).catch(function () { msg('Selecione e copie o código.', true); }); };
-          document.getElementById('jp').onclick = function () { telaPagar(id, k, voltar); };
+          document.getElementById('jp').onclick = function () { telaPagar(id, k, voltar); }; ctLigar64(id, c, j, function () { telaPagar(id, k, voltar); });
           ['b-1t', 'b-1t2'].forEach(function (x) { var e = document.getElementById(x); if (e) e.onclick = function () { pagarCartaoSalvo(c, k, voltar, e); }; });
           var cub = document.getElementById('cu-b'); if (cub) cub.onclick = function () { var cod = document.getElementById('cu-c').value.trim(); if (!cod) return msg('Escreva o código do cupom.', true); cub.disabled = true; cub.textContent = '…'; api('/api/pay/cupom', { c: id, k: k, codigo: cod }).then(function (r) { msg('Cupom aplicado: você economiza ' + brl(r.desconto) + '!'); telaPagar(id, k, voltar); }).catch(function (e) { msg(e.message, true); cub.disabled = false; cub.textContent = 'Aplicar'; }); };
         }
