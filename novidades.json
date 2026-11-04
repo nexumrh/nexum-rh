@@ -1,55 +1,281 @@
 {
-  "sobre": "Novidades automáticas do NEXUM: a cada atualização publicada, entra um aviso aqui. O NEXUM RH mostra para os clientes; o Painel do Dono pode esconder qualquer um.",
-  "itens": [
-    {
-      "id": "auto-2026-10-28-pay2",
-      "em": "2026-10-28T13:00:00-03:00",
-      "tag": "novidade",
-      "sistemas": [
-        "rh"
-      ],
-      "titulo": "NEXUM PAY: desconto, débito automático e mais",
-      "texto": "No NEXUM PAY (pay.nexumdp.com.br) agora você tem: desconto pagando antes do vencimento, pagar 3, 6 ou 12 meses de uma vez com desconto maior, débito automático no cartão, pedido de negociação de atraso, extrato do ano em PDF para o contador, acesso para o financeiro ou o contador, e o app no celular com avisos antes de vencer."
-    },
-    {
-      "id": "auto-2026-10-28-pay",
-      "em": "2026-10-28T08:00:00-03:00",
-      "tag": "novidade",
-      "sistemas": [
-        "rh"
-      ],
-      "titulo": "NEXUM PAY: pague o seu plano pelo app",
-      "texto": "Agora você paga a mensalidade pelo NEXUM PAY, com PIX (libera na hora), cartão de crédito, boleto ou carnê com parcelas mensais. Entre com o mesmo e-mail e senha do NEXUM RH em rh.nexumdp.com.br/pay.html. A nota fiscal e o comprovante ficam lá e chegam no seu e-mail."
-    },
-    {
-      "id": "auto-2026-10-27-atualiza",
-      "em": "2026-10-27T23:00:00-03:00",
-      "tag": "melhoria",
-      "sistemas": [
-        "rh"
-      ],
-      "titulo": "O sistema agora se atualiza sozinho",
-      "texto": "Quando sair uma melhoria, o NEXUM RH e o Portal do Colaborador atualizam sozinhos. Não precisa mais fechar a aba nem recarregar a página."
-    },
-    {
-      "id": "auto-2026-10-27-biolink",
-      "em": "2026-10-27T18:00:00-03:00",
-      "tag": "novidade",
-      "sistemas": [
-        "rh"
-      ],
-      "titulo": "Biometria e foto por link, em vários ângulos",
-      "texto": "No cadastro do funcionário, toque em \"Enviar link de cadastro\". Ele cadastra o rosto pelo celular, em vários ângulos, e a foto dele passa a aparecer no lugar das iniciais em todo o sistema. Para recadastrar, use \"Enviar link para recadastrar\"."
-    },
-    {
-      "id": "auto-2026-10-27-ferias",
-      "em": "2026-10-27T17:00:00-03:00",
-      "tag": "melhoria",
-      "sistemas": [
-        "rh"
-      ],
-      "titulo": "Férias e planejamento de férias juntos",
-      "texto": "O planejamento de férias agora fica dentro de Férias, numa aba. Tudo sobre férias num lugar só."
-    }
-  ]
+ "sobre": "Novidades automáticas do NEXUM: a cada atualização publicada, entra um aviso aqui. O NEXUM RH mostra para os clientes; o Painel do Dono pode esconder qualquer um.",
+ "itens": [
+  {
+   "id": "auto-2026-11-04-rh-totens",
+   "em": "2026-11-04T09:00:00-03:00",
+   "tag": "novidade",
+   "sistemas": [
+    "rh"
+   ],
+   "titulo": "Totens de ponto: rosto ou código de barras",
+   "texto": "No Painel Tempo Real e no Cartão Ponto, o botão \"Totens de ponto\" abre os dois totens: biometria facial e código de barras. Deixe o celular ou o tablet da loja logado e o funcionário bate o ponto na hora, com data e hora."
+  },
+  {
+   "id": "auto-2026-11-04-rh-codigo",
+   "em": "2026-11-04T08:55:00-03:00",
+   "tag": "novidade",
+   "sistemas": [
+    "rh"
+   ],
+   "titulo": "Ponto pela carteirinha, crachá e leitor de bipagem",
+   "texto": "O funcionário mostra o código de barras da carteirinha do Portal (ele muda a cada 30 segundos, então print não vale) ou o crachá impresso. Imprima os crachás em Funcionários e use a câmera do celular da loja ou um leitor USB, igual ao do caixa. No Cartão Ponto, a batida aparece com a palavra \"código\"."
+  },
+  {
+   "id": "auto-2026-11-04-rh-afd",
+   "em": "2026-11-04T08:50:00-03:00",
+   "tag": "novidade",
+   "sistemas": [
+    "rh"
+   ],
+   "titulo": "Importar o arquivo do relógio de ponto (AFD)",
+   "texto": "No Cartão Ponto, \"Importar arquivo do relógio (AFD)\" traz as batidas de relógios homologados (Portaria 671 e 1510). Cada batida é ligada ao funcionário pelo CPF ou PIS, sem duplicar."
+  },
+  {
+   "id": "auto-2026-11-04-rh-pdi",
+   "em": "2026-11-04T08:45:00-03:00",
+   "tag": "novidade",
+   "sistemas": [
+    "rh"
+   ],
+   "titulo": "PDI com IA, 9Box e conversas 1:1",
+   "texto": "Novo menu \"PDI, 9Box e conversas\": monte o plano de desenvolvimento de cada um (a IA sugere os objetivos pela avaliação de desempenho), veja a matriz 9Box e registre as conversas do gestor com cada funcionário, que confirma pelo Portal.",
+   "planos": [
+    "profissional",
+    "empresa"
+   ]
+  },
+  {
+   "id": "auto-2026-11-04-rh-cargos",
+   "em": "2026-11-04T08:40:00-03:00",
+   "tag": "novidade",
+   "sistemas": [
+    "rh"
+   ],
+   "titulo": "Cargos e salários e quadro planejado",
+   "texto": "Cadastre a faixa salarial de cada cargo e veja quem está abaixo do mínimo ou acima do máximo. No Quadro planejado, defina quantas pessoas cada loja deve ter e peça a vaga ao Recrutamento em um clique.",
+   "planos": [
+    "profissional",
+    "empresa"
+   ]
+  },
+  {
+   "id": "auto-2026-11-04-rh-check",
+   "em": "2026-11-04T08:35:00-03:00",
+   "tag": "novidade",
+   "sistemas": [
+    "rh"
+   ],
+   "titulo": "Checklist das lojas com foto",
+   "texto": "Abertura, fechamento e visita do supervisor feitos pelo gerente no celular, com foto. No RH você vê a nota de cada loja e as pendências. Se passar do horário sem fazer, aparece um alerta.",
+   "planos": [
+    "profissional",
+    "empresa"
+   ]
+  },
+  {
+   "id": "auto-2026-11-04-rh-turno",
+   "em": "2026-11-04T08:30:00-03:00",
+   "tag": "novidade",
+   "sistemas": [
+    "rh"
+   ],
+   "titulo": "Turnos vagos e reembolsos",
+   "texto": "O sistema mostra os dias em que a loja fica abaixo do mínimo e você oferece o turno aos colegas pelo Portal. E o funcionário pede reembolso com a foto do recibo: você aprova e paga na folha ou por PIX.",
+   "planos": [
+    "profissional",
+    "empresa"
+   ]
+  },
+  {
+   "id": "auto-2026-11-04-rh-fcol",
+   "em": "2026-11-04T08:25:00-03:00",
+   "tag": "novidade",
+   "sistemas": [
+    "rh"
+   ],
+   "titulo": "Férias coletivas",
+   "texto": "Em Férias, lance férias para uma loja ou a empresa inteira de uma vez, com o valor de cada um e os avisos prontos.",
+   "planos": [
+    "profissional",
+    "empresa"
+   ]
+  },
+  {
+   "id": "auto-2026-11-04-rh-aulas",
+   "em": "2026-11-04T08:20:00-03:00",
+   "tag": "novidade",
+   "sistemas": [
+    "rh"
+   ],
+   "titulo": "40 videoaulas novas",
+   "texto": "O treinamento ganhou aulas com vídeo e voz de todas as novidades, e o módulo NEXUM PAY para o administrador. Fica em Configurações, aba Treinamento."
+  },
+  {
+   "id": "auto-2026-11-04-pt-codigo",
+   "em": "2026-11-04T09:00:00-03:00",
+   "tag": "novidade",
+   "sistemas": [
+    "portal"
+   ],
+   "titulo": "Bater o ponto pela carteirinha",
+   "texto": "Na loja que tem o leitor, abra \"Bater ponto pela carteirinha\" no Início e mostre o código de barras. Ele muda a cada 30 segundos."
+  },
+  {
+   "id": "auto-2026-11-04-pt-desenv",
+   "em": "2026-11-04T08:55:00-03:00",
+   "tag": "novidade",
+   "sistemas": [
+    "portal"
+   ],
+   "titulo": "Meu desenvolvimento",
+   "texto": "Veja o seu plano de desenvolvimento, marque o quanto já fez de cada objetivo e confirme as conversas com o seu gestor.",
+   "planos": [
+    "profissional",
+    "empresa"
+   ]
+  },
+  {
+   "id": "auto-2026-11-04-pt-reemb",
+   "em": "2026-11-04T08:50:00-03:00",
+   "tag": "novidade",
+   "sistemas": [
+    "portal"
+   ],
+   "titulo": "Pedir reembolso com a foto do recibo",
+   "texto": "Pagou alguma despesa pela empresa? Em Solicitações, toque em \"Pedir reembolso\" e tire a foto do recibo. A IA lê o valor e a data.",
+   "planos": [
+    "profissional",
+    "empresa"
+   ]
+  },
+  {
+   "id": "auto-2026-11-04-pt-turno",
+   "em": "2026-11-04T08:45:00-03:00",
+   "tag": "novidade",
+   "sistemas": [
+    "portal"
+   ],
+   "titulo": "Turno vago",
+   "texto": "Quando a loja precisar de alguém, aparece o cartão no Início. Toque em \"Quero cobrir\" e o RH confirma.",
+   "planos": [
+    "profissional",
+    "empresa"
+   ]
+  },
+  {
+   "id": "auto-2026-11-04-pt-check",
+   "em": "2026-11-04T08:40:00-03:00",
+   "tag": "novidade",
+   "sistemas": [
+    "portal"
+   ],
+   "titulo": "Checklist da loja (gerentes)",
+   "texto": "Quem é gerente faz a abertura, o fechamento e a visita do supervisor pelo celular, com foto.",
+   "planos": [
+    "profissional",
+    "empresa"
+   ]
+  },
+  {
+   "id": "auto-2026-11-04-pt-dinheiro",
+   "em": "2026-11-04T08:35:00-03:00",
+   "tag": "novidade",
+   "sistemas": [
+    "portal"
+   ],
+   "titulo": "Meu dinheiro e contagem das férias",
+   "texto": "Em Mais > Meu dinheiro você vê o salário previsto, o dia em que cai e o que está guardado (13º, férias e FGTS). E quando as férias estão chegando, o Início mostra quantos dias faltam e quanto você vai receber."
+  },
+  {
+   "id": "auto-2026-11-04-rs-testes",
+   "em": "2026-11-04T09:00:00-03:00",
+   "tag": "novidade",
+   "sistemas": [
+    "recrutamento"
+   ],
+   "titulo": "Testes de atendimento e de digitação",
+   "texto": "Em Questionários > Usar um modelo pronto: teste de atendimento com situações do dia a dia e teste de digitação cronometrado, com a nota calculada sozinha."
+  },
+  {
+   "id": "auto-2026-11-04-rs-custo",
+   "em": "2026-11-04T08:55:00-03:00",
+   "tag": "novidade",
+   "sistemas": [
+    "recrutamento"
+   ],
+   "titulo": "Tempo e custo de cada contratação",
+   "texto": "Em Relatórios, veja quantos dias cada etapa leva, a etapa mais lenta e o custo por contratação. Lance os gastos de cada vaga, como anúncios e exames."
+  },
+  {
+   "id": "auto-2026-11-04-rs-wa",
+   "em": "2026-11-04T08:50:00-03:00",
+   "tag": "novidade",
+   "sistemas": [
+    "recrutamento"
+   ],
+   "titulo": "WhatsApp automático para o candidato",
+   "texto": "Em Configurações > Mensagens padrão, escolha em quais etapas o candidato recebe a mensagem no WhatsApp sozinho: inscrição, teste, entrevista, aprovação e reprovação."
+  },
+  {
+   "id": "auto-2026-11-04-rs-vagas",
+   "em": "2026-11-04T08:45:00-03:00",
+   "tag": "novidade",
+   "sistemas": [
+    "recrutamento"
+   ],
+   "titulo": "Suas vagas no NEXUM Vagas",
+   "texto": "Em Configurações > Página de carreiras, marque \"Mostrar as minhas vagas abertas no NEXUM Vagas\" e elas aparecem no portal com as vagas de todas as empresas. O candidato também ganhou o treino de entrevista com IA."
+  },
+  {
+   "id": "auto-2026-10-28-pay2",
+   "em": "2026-10-28T13:00:00-03:00",
+   "tag": "novidade",
+   "sistemas": [
+    "rh"
+   ],
+   "titulo": "NEXUM PAY: desconto, débito automático e mais",
+   "texto": "No NEXUM PAY (pay.nexumdp.com.br) agora você tem: desconto pagando antes do vencimento, pagar 3, 6 ou 12 meses de uma vez com desconto maior, débito automático no cartão, pedido de negociação de atraso, extrato do ano em PDF para o contador, acesso para o financeiro ou o contador, e o app no celular com avisos antes de vencer."
+  },
+  {
+   "id": "auto-2026-10-28-pay",
+   "em": "2026-10-28T08:00:00-03:00",
+   "tag": "novidade",
+   "sistemas": [
+    "rh"
+   ],
+   "titulo": "NEXUM PAY: pague o seu plano pelo app",
+   "texto": "Agora você paga a mensalidade pelo NEXUM PAY, com PIX (libera na hora), cartão de crédito, boleto ou carnê com parcelas mensais. Entre com o mesmo e-mail e senha do NEXUM RH em rh.nexumdp.com.br/pay.html. A nota fiscal e o comprovante ficam lá e chegam no seu e-mail."
+  },
+  {
+   "id": "auto-2026-10-27-atualiza",
+   "em": "2026-10-27T23:00:00-03:00",
+   "tag": "melhoria",
+   "sistemas": [
+    "rh"
+   ],
+   "titulo": "O sistema agora se atualiza sozinho",
+   "texto": "Quando sair uma melhoria, o NEXUM RH e o Portal do Colaborador atualizam sozinhos. Não precisa mais fechar a aba nem recarregar a página."
+  },
+  {
+   "id": "auto-2026-10-27-biolink",
+   "em": "2026-10-27T18:00:00-03:00",
+   "tag": "novidade",
+   "sistemas": [
+    "rh"
+   ],
+   "titulo": "Biometria e foto por link, em vários ângulos",
+   "texto": "No cadastro do funcionário, toque em \"Enviar link de cadastro\". Ele cadastra o rosto pelo celular, em vários ângulos, e a foto dele passa a aparecer no lugar das iniciais em todo o sistema. Para recadastrar, use \"Enviar link para recadastrar\"."
+  },
+  {
+   "id": "auto-2026-10-27-ferias",
+   "em": "2026-10-27T17:00:00-03:00",
+   "tag": "melhoria",
+   "sistemas": [
+    "rh"
+   ],
+   "titulo": "Férias e planejamento de férias juntos",
+   "texto": "O planejamento de férias agora fica dentro de Férias, numa aba. Tudo sobre férias num lugar só."
+  }
+ ]
 }
